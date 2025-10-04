@@ -19,7 +19,8 @@ export default defineConfig({
     lib: {
       entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
       name: 'MioPreviewer',
-      formats: ['es', 'cjs', 'umd'],
+      // build only ES and CJS to avoid problematic UMD output
+      formats: ['es', 'cjs'],
       fileName: (format) => `mio-previewer.${format}.js`
     },
     rollupOptions: {
