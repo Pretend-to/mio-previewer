@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.2 - 2025-01-05
+
+- Apply GitHub markdown styles by default in MdRenderer component
+- Users no longer need to manually import CSS for GitHub-style rendering
+
+## 0.1.1 - 2025-01-05
+
+- On-demand plugin imports with subpath exports
+- Remove plugins aggregate; prefer individual plugin imports for tree-shaking
+- Streamlined package structure (only dist/ published)
+- CI optimizations (Node 20, skip Puppeteer downloads)
+- Fix CI publish workflow (disable git-checks for detached HEAD)
+
 ## 0.1.0 - Initial release
 
 - Plugin-based markdown renderer
