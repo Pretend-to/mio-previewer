@@ -10,7 +10,9 @@ export type {
 } from './types'
 
 // Export built-in plugins
-export { AlertPlugin, EmojiPlugin, CodeBlockPlugin, katexPlugin } from './plugins'
+// Per-plugin subpath entries are available under `mio-previewer/plugin-*`.
+// We intentionally avoid a single 'plugins' aggregate export to encourage
+// explicit, on-demand imports which are friendlier for tree-shaking.
 
 // Export helper functions
 export { createAlertContainer, createAllAlertContainers } from './helpers'

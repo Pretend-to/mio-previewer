@@ -86,10 +86,6 @@
       "import": "./dist/entries/plugin-mermaid.es.js",
       "require": "./dist/entries/plugin-mermaid.cjs.js"
     },
-    "./plugins": {
-      "import": "./dist/plugins/index.es.js",
-      "require": "./dist/plugins/index.cjs.js"
-    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -100,7 +96,7 @@
       "plugin-codeblock": ["dist/types/src/entries/plugin-codeblock.d.ts"],
       "plugin-katex": ["dist/types/src/entries/plugin-katex.d.ts"],
       "plugin-mermaid": ["dist/types/src/entries/plugin-mermaid.d.ts"],
-      "plugins": ["dist/types/src/plugins/index.d.ts"],
+      
       "*": ["dist/types/src/*"]
     }
   },

@@ -25,7 +25,7 @@ export default defineConfig({
         'entries/plugin-codeblock': fileURLToPath(new URL('./src/entries/plugin-codeblock.ts', import.meta.url)),
         'entries/plugin-katex': fileURLToPath(new URL('./src/entries/plugin-katex.ts', import.meta.url)),
         'entries/plugin-mermaid': fileURLToPath(new URL('./src/entries/plugin-mermaid.ts', import.meta.url)),
-        'plugins/index': fileURLToPath(new URL('./src/plugins/index.ts', import.meta.url)),
+  // 'plugins/index' removed: prefer per-plugin subpath entries for on-demand imports
       },
       name: 'MioPreviewer',
       // build only ES and CJS to avoid problematic UMD output
