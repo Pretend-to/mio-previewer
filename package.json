@@ -62,7 +62,47 @@
       "import": "./dist/mio-previewer.es.js",
       "require": "./dist/mio-previewer.cjs.js"
     },
+    "./md": {
+      "import": "./dist/entries/md.es.js",
+      "require": "./dist/entries/md.cjs.js"
+    },
+    "./plugin-alert": {
+      "import": "./dist/entries/plugin-alert.es.js",
+      "require": "./dist/entries/plugin-alert.cjs.js"
+    },
+    "./plugin-emoji": {
+      "import": "./dist/entries/plugin-emoji.es.js",
+      "require": "./dist/entries/plugin-emoji.cjs.js"
+    },
+    "./plugin-codeblock": {
+      "import": "./dist/entries/plugin-codeblock.es.js",
+      "require": "./dist/entries/plugin-codeblock.cjs.js"
+    },
+    "./plugin-katex": {
+      "import": "./dist/entries/plugin-katex.es.js",
+      "require": "./dist/entries/plugin-katex.cjs.js"
+    },
+    "./plugin-mermaid": {
+      "import": "./dist/entries/plugin-mermaid.es.js",
+      "require": "./dist/entries/plugin-mermaid.cjs.js"
+    },
+    "./plugins": {
+      "import": "./dist/plugins/index.es.js",
+      "require": "./dist/plugins/index.cjs.js"
+    },
     "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "md": ["dist/types/src/entries/md.d.ts"],
+      "plugin-alert": ["dist/types/src/entries/plugin-alert.d.ts"],
+      "plugin-emoji": ["dist/types/src/entries/plugin-emoji.d.ts"],
+      "plugin-codeblock": ["dist/types/src/entries/plugin-codeblock.d.ts"],
+      "plugin-katex": ["dist/types/src/entries/plugin-katex.d.ts"],
+      "plugin-mermaid": ["dist/types/src/entries/plugin-mermaid.d.ts"],
+      "plugins": ["dist/types/src/plugins/index.d.ts"],
+      "*": ["dist/types/src/*"]
+    }
   },
   "files": [
     "dist"
