@@ -59,10 +59,6 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/mio-previewer.es.js",
-      "require": "./dist/mio-previewer.cjs.js"
-    },
-    "./md": {
       "import": "./dist/entries/md.es.js",
       "require": "./dist/entries/md.cjs.js"
     },
@@ -90,7 +86,6 @@
   },
   "typesVersions": {
     "*": {
-      "md": ["dist/types/src/entries/md.d.ts"],
       "plugin-alert": ["dist/types/src/entries/plugin-alert.d.ts"],
       "plugin-emoji": ["dist/types/src/entries/plugin-emoji.d.ts"],
       "plugin-codeblock": ["dist/types/src/entries/plugin-codeblock.d.ts"],
