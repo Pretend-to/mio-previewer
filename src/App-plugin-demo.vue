@@ -35,7 +35,7 @@
 // @ts-nocheck - 禁用 TypeScript 检查以避免模板字符串中 $ 符号的误报错误
 import { ref } from 'vue'
 import MdRenderer from './MdRenderer.vue'
-import { AlertPlugin, EmojiPlugin, CodeBlockPlugin, katexPlugin } from './plugins'
+import { AlertPlugin, EmojiPlugin, CodeBlockPlugin, katexPlugin, mermaidPlugin } from './plugins'
 import { createAllAlertContainers } from './helpers'
 // @ts-ignore - markdown-it-container types issue
 import markdownItContainer from 'markdown-it-container'
@@ -215,6 +215,61 @@ class UserService {
 }
 \`\`\`
 
+## Mermaid 图表 :chart_with_upwards_trend:
+
+### 流程图
+
+\`\`\`mermaid
+graph TD
+    A[开始] --> B{是否成功?}
+    B -->|是| C[继续]
+    B -->|否| D[重试]
+    D --> B
+    C --> E[结束]
+\`\`\`
+
+### 时序图
+
+\`\`\`mermaid
+sequenceDiagram
+    participant 用户
+    participant 浏览器
+    participant 服务器
+    用户->>浏览器: 点击按钮
+    浏览器->>服务器: 发送请求
+    服务器-->>浏览器: 返回数据
+    浏览器-->>用户: 显示结果
+\`\`\`
+
+### 状态图
+
+\`\`\`mermaid
+stateDiagram-v2
+    [*] --> 待处理
+    待处理 --> 处理中: 开始
+    处理中 --> 已完成: 成功
+    处理中 --> 失败: 错误
+    失败 --> 待处理: 重试
+    已完成 --> [*]
+\`\`\`
+
+### 类图
+
+\`\`\`mermaid
+classDiagram
+    class User {
+        +String name
+        +String email
+        +login()
+        +logout()
+    }
+    class Admin {
+        +String permissions
+        +manageUsers()
+    }
+    User <|-- Admin
+\`\`\`
+
 ## 列表 :check:
 
 - 项目 1 :star:
@@ -239,6 +294,7 @@ class UserService {
 
 // 使用内置插件 (注意顺序：高优先级在前)
 const customPlugins = ref([
+  mermaidPlugin,    // priority: 80
   CodeBlockPlugin,  // priority: 70
   AlertPlugin,      // priority: 50
   EmojiPlugin       // priority: 10
