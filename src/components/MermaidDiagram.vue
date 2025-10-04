@@ -1,7 +1,7 @@
 <template>
   <div class="mermaid-diagram-wrapper">
     <div ref="diagramRef" class="mermaid-diagram"></div>
-    <div v-if="error" class="mermaid-error">
+    <div v-if="error && !isStreaming" class="mermaid-error">
       <strong>Mermaid 渲染错误:</strong>
       <pre>{{ error }}</pre>
     </div>
@@ -14,6 +14,7 @@ import mermaid from 'mermaid'
 
 const props = defineProps<{
   code: string
+  isStreaming?: boolean
 }>()
 
 const diagramRef = ref(null)
@@ -42,6 +43,7 @@ const detectTheme = (): 'dark' | 'default' => {
 // 初始化 mermaid 配置
 const initMermaid = (theme: 'dark' | 'default') => {
   mermaid.initialize({
+    suppressErrorRendering: true,
     startOnLoad: false,
     theme: theme,
     securityLevel: 'loose',
@@ -97,8 +99,14 @@ const renderDiagram = async () => {
     const { svg } = await mermaid.render(id, props.code)
     diagramRef.value.innerHTML = svg
   } catch (err: any) {
-    error.value = err?.message || String(err)
-    console.error('Mermaid render error:', err)
+    // 只在非流式模式下显示错误
+    // 流式模式下代码可能还未完整，忽略渲染错误
+    if (!props.isStreaming) {
+      error.value = err?.message || String(err)
+      console.error('Mermaid render error:', err)
+    }
+    // 流式模式下静默失败，不显示错误
+    console.log('Mermaid render skipped in streaming mode.')
   }
 }
 

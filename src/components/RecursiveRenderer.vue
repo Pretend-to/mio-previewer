@@ -3,7 +3,7 @@ import { h, defineComponent, type VNode } from 'vue'
 
 type Plugin = {
   test: (node: any) => boolean;
-  render: (node: any, renderChildren: () => any[], h: any) => VNode | string | null;
+  render: (node: any, renderChildren: () => any[], h: any, isStreaming?: boolean) => VNode | string | null;
 }
 
 export default defineComponent({
@@ -16,16 +16,20 @@ export default defineComponent({
     plugins: {
       type: Array as () => Plugin[],
       default: () => ([])
+    },
+    isStreaming: {
+      type: Boolean,
+      default: false
     }
   },
-  setup(props: { nodes: any[]; plugins?: any[] }) {
+  setup(props: { nodes: any[]; plugins?: any[]; isStreaming?: boolean }) {
     function renderNode(node: any): VNode | string | null {
       // 1. 优先检查插件
       const plugins = props.plugins || []
       for (const plugin of plugins) {
         if (plugin.test && plugin.render && plugin.test(node)) {
           const renderChildren = () => node.children ? node.children.map(renderNode) : [];
-          return plugin.render(node, renderChildren, h as any);
+          return plugin.render(node, renderChildren, h as any, props.isStreaming);
         }
       }
 

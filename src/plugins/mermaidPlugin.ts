@@ -57,7 +57,7 @@ export const mermaidPlugin: CustomPlugin = {
     return false
   },
 
-  render: (node: ASTNode, _renderChildren: any, _h: any) => {
+  render: (node: ASTNode, _renderChildren: any, _h: any, isStreaming?: boolean) => {
     // Find the code child and extract content
     const codeChild = node.children?.find(
       (child: ASTNode) => child.type === 'tag' && child.name === 'code'
@@ -69,6 +69,6 @@ export const mermaidPlugin: CustomPlugin = {
 
     const code = getCodeContent(codeChild)
     
-    return h(MermaidDiagram, { code })
+    return h(MermaidDiagram, { code, isStreaming: isStreaming || false })
   }
 }

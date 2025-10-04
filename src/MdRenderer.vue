@@ -1,7 +1,7 @@
 <!-- MdRenderer.vue (可选 Worker 版本) -->
 <template>
   <div class="markdown-body">
-    <RecursiveRenderer :nodes="ast" :plugins="allPlugins" />
+    <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :isStreaming="isStreaming" />
   </div>
 </template>
 
