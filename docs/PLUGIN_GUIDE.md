@@ -295,3 +295,229 @@ interface ASTNode {
 3. **错误处理**: 在 `render` 函数中添加 try-catch
 4. **类型安全**: 使用 TypeScript 和类型定义
 5. **可组合**: 设计小而专注的插件,易于组合使用
+
+## 内置插件
+
+mio-previewer 提供了多个开箱即用的插件:
+
+### 1. AlertPlugin (Custom 插件)
+
+渲染自定义警告框，支持 4 种类型。
+
+**优先级**: 50
+
+**使用方式**:
+```markdown
+::: info
+这是一个信息提示框
+:::
+
+::: warning
+警告内容
+:::
+
+::: error
+错误信息
+:::
+
+::: success
+成功提示
+:::
+```
+
+**依赖**: 需要配合 `markdown-it-container` 使用。
+
+### 2. EmojiPlugin (Custom 插件)
+
+将文本中的 emoji 代码转换为实际的 emoji 符号。
+
+**优先级**: 10
+
+**支持的 Emoji**:
+- `:smile:` → 😊
+- `:heart:` → ❤️
+- `:fire:` → 🔥
+- `:rocket:` → 🚀
+- `:star:` → ⭐
+- `:thumbsup:` → 👍
+- `:tada:` → 🎉
+- `:check:` → ✅
+- `:cross:` → ❌
+- `:eyes:` → 👀
+- `:thinking:` → 🤔
+- `:100:` → 💯
+
+### 3. CodeBlockPlugin (Custom 插件)
+
+使用 Prism 进行代码高亮，并提供复制和 HTML 预览功能。
+
+**优先级**: 70
+
+**特性**:
+- 🎨 支持 20+ 编程语言语法高亮
+- 📋 一键复制代码
+- 👁️ HTML 代码实时预览 (沙箱 iframe)
+- 🎯 语言标签显示
+- 🌙 暗色主题 (Tomorrow Night)
+
+**使用方式**:
+````javascript
+```javascript
+const hello = "world";
+console.log(hello);
+```
+````
+
+**HTML 预览**:
+````html
+```html
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Hello World</h1>
+</body>
+</html>
+```
+````
+
+点击预览按钮可在安全的 iframe 中预览 HTML 效果。
+
+**依赖**: `prismjs` 和 Prism 主题 CSS。
+
+**导入样式**:
+```typescript
+import 'mio-previewer/dist/style.css';  // 包含 Prism 主题
+```
+
+### 4. katexPlugin (markdown-it 插件)
+
+渲染数学公式，支持多种 LaTeX 定界符。
+
+**支持的语法**（按优先级排序）:
+
+1. **块级公式 - `$$...$$`**:
+```markdown
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+```
+
+2. **块级公式 - `\[...\]`**:
+```markdown
+\[
+E = mc^2
+\]
+```
+
+3. **行内公式 - `\(...\)`**:
+```markdown
+欧拉公式: \(e^{i\pi} + 1 = 0\)
+```
+
+4. **行内公式 - `$...$`**:
+```markdown
+质能方程: $E = mc^2$
+```
+
+**示例渲染效果**:
+
+- 行内: $E = mc^2$ 或 \(a^2 + b^2 = c^2\)
+- 块级: 
+$$
+\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
+$$
+
+**使用方式**:
+```typescript
+import { katexPlugin } from 'mio-previewer';
+
+const markdownItPlugins = [
+  { plugin: katexPlugin }
+];
+```
+
+**依赖**: `katex` 和 KaTeX CSS。
+
+**导入样式**:
+```typescript
+import 'katex/dist/katex.min.css';
+```
+
+**注意事项**:
+- 定界符按优先级匹配，长定界符（如 `$$`）优先于短定界符（如 `$`）
+- 支持转义字符 `\` 来避免意外匹配
+- 空白或仅空格的公式内容将被忽略
+- 语法错误的公式会显示错误信息而不会中断渲染
+
+## 完整使用示例
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { 
+  MdRenderer, 
+  AlertPlugin, 
+  EmojiPlugin, 
+  CodeBlockPlugin,
+  katexPlugin,
+  createAllAlertContainers 
+} from 'mio-previewer';
+import markdownItContainer from 'markdown-it-container';
+
+// 导入样式
+import 'mio-previewer/dist/style.css';
+import 'katex/dist/katex.min.css';
+
+const markdown = ref(`
+# 完整功能演示
+
+## 数学公式
+质能方程: $E = mc^2$
+
+## 代码高亮
+\`\`\`javascript
+console.log('Hello, World!');
+\`\`\`
+
+## 警告框
+::: warning
+⚠️ 注意事项
+:::
+
+## Emoji
+Hello :smile: :rocket:
+`);
+
+const customPlugins = [
+  CodeBlockPlugin,
+  AlertPlugin,
+  EmojiPlugin
+];
+
+const markdownItPlugins = [
+  ...createAllAlertContainers(markdownItContainer),
+  { plugin: katexPlugin }
+];
+</script>
+
+<template>
+  <MdRenderer
+    :md="markdown"
+    :customPlugins="customPlugins"
+    :markdownItPlugins="markdownItPlugins"
+  />
+</template>
+```
+
+## 安装依赖
+
+```bash
+# 核心依赖
+pnpm add mio-previewer
+
+# 可选插件依赖
+pnpm add prismjs katex markdown-it-container
+
+# 类型定义
+pnpm add -D @types/prismjs @types/katex @types/markdown-it-container
+```

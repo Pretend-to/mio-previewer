@@ -14,6 +14,9 @@ importers:
       htmlparser2:
         specifier: ^10.0.0
         version: 10.0.0
+      katex:
+        specifier: ^0.16.23
+        version: 0.16.23
       markdown-it:
         specifier: ^14.1.0
         version: 14.1.0
@@ -23,6 +26,9 @@ importers:
       markdown-it-katex:
         specifier: ^2.0.3
         version: 2.0.3
+      prismjs:
+        specifier: ^1.30.0
+        version: 1.30.0
       vue:
         specifier: ^3.5.22
         version: 3.5.22(typescript@5.9.3)
@@ -30,12 +36,18 @@ importers:
       '@types/htmlparser2':
         specifier: ^4.1.0
         version: 4.1.0
+      '@types/katex':
+        specifier: ^0.16.7
+        version: 0.16.7
       '@types/markdown-it':
         specifier: ^14.1.2
         version: 14.1.2
       '@types/markdown-it-container':
         specifier: ^2.0.10
         version: 2.0.10
+      '@types/prismjs':
+        specifier: ^1.26.5
+        version: 1.26.5
       '@vitejs/plugin-vue':
         specifier: ^6.0.1
         version: 6.0.1(vite@7.1.9(@types/node@24.6.2))(vue@3.5.22(typescript@5.9.3))
@@ -512,6 +524,9 @@ packages:
     resolution: {integrity: sha512-gjTGZEamCmIoGd0pfZZI5ufese3iTN/5JdWep9UEKwAA9itAViW63znsjD385FvGuAcWpgJRb6Wx+uHFqe8xWg==}
     deprecated: This is a stub types definition. htmlparser2 provides its own type definitions, so you do not need this installed.
 
+  '@types/katex@0.16.7':
+    resolution: {integrity: sha512-HMwFiRujE5PjrgwHQ25+bsLJgowjGjm5Z8FVSf0N6PwgJrwxH0QxzHYDcKsTfV3wva0vzrpqMTJS2jXPr5BMEQ==}
+
   '@types/linkify-it@5.0.0':
     resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
 
@@ -526,6 +541,9 @@ packages:
 
   '@types/node@24.6.2':
     resolution: {integrity: sha512-d2L25Y4j+W3ZlNAeMKcy7yDsK425ibcAOO2t7aPTz6gNMH0z2GThtwENCDc0d/Pw9wgyRqE5Px1wkV7naz8ang==}
+
+  '@types/prismjs@1.26.5':
+    resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
 
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
@@ -701,6 +719,10 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
+
+  commander@8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
+    engines: {node: '>= 12'}
 
   computeds@0.0.1:
     resolution: {integrity: sha512-7CEBgcMjVmitjYo5q8JTJVra6X5mQ20uTThdK+0kR7UEaDrAWEQcRiBtWJzga4eRpP6afNwwLsX2SET2JhVB1Q==}
@@ -989,6 +1011,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  katex@0.16.23:
+    resolution: {integrity: sha512-7VlC1hsEEolL9xNO05v9VjrvWZePkCVBJqj8ruICxYjZfHaHbaU53AlP+PODyFIXEnaEIEWi3wJy7FPZ95JAVg==}
+    hasBin: true
+
   katex@0.6.0:
     resolution: {integrity: sha512-rS4mY3SvHYg5LtQV6RBcK0if7ur6plyEukAOV+jGGPqFImuzu8fHL6M752iBmRGoUyF0bhZbAPoezehn7xYksA==}
     hasBin: true
@@ -1152,6 +1178,10 @@ packages:
   pretty-ms@9.3.0:
     resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
     engines: {node: '>=18'}
+
+  prismjs@1.30.0:
+    resolution: {integrity: sha512-DEvV2ZF2r2/63V+tK8hQvrR2ZGn10srHbXviTlcv7Kpzw8jWiNTqbVgjO3IY8RxrrOUF8VPMQQFysYYYv0YZxw==}
+    engines: {node: '>=6'}
 
   progress@2.0.3:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
@@ -1858,6 +1888,8 @@ snapshots:
     dependencies:
       htmlparser2: 10.0.0
 
+  '@types/katex@0.16.7': {}
+
   '@types/linkify-it@5.0.0': {}
 
   '@types/markdown-it-container@2.0.10':
@@ -1875,6 +1907,8 @@ snapshots:
     dependencies:
       undici-types: 7.13.0
     optional: true
+
+  '@types/prismjs@1.26.5': {}
 
   '@types/yauzl@2.10.3':
     dependencies:
@@ -2096,6 +2130,8 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
+
+  commander@8.3.0: {}
 
   computeds@0.0.1: {}
 
@@ -2379,6 +2415,10 @@ snapshots:
 
   json5@2.2.3: {}
 
+  katex@0.16.23:
+    dependencies:
+      commander: 8.3.0
+
   katex@0.6.0:
     dependencies:
       match-at: 0.1.1
@@ -2526,6 +2566,8 @@ snapshots:
   pretty-ms@9.3.0:
     dependencies:
       parse-ms: 4.0.0
+
+  prismjs@1.30.0: {}
 
   progress@2.0.3: {}
 

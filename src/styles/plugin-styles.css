@@ -1,0 +1,71 @@
+/**
+ * Global styles for mio-previewer plugins
+ * Import Prism theme and other plugin styles
+ */
+
+/* Prism theme - Tomorrow Night */
+@import 'prismjs/themes/prism-tomorrow.css';
+
+/* KaTeX styles for math rendering */
+@import 'katex/dist/katex.min.css';
+
+/* KaTeX error styles */
+.katex-error {
+  color: #cc0000;
+  background: #fff0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+/* ===== 自定义代码块样式 ===== */
+/* 在这里覆盖 Prism 主题的默认样式 */
+
+/* 示例：自定义语法高亮颜色
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6a9955 !important;
+}
+
+.token.keyword {
+  color: #569cd6 !important;
+}
+
+.token.string {
+  color: #ce9178 !important;
+}
+
+.token.function {
+  color: #dcdcaa !important;
+}
+
+.token.number {
+  color: #b5cea8 !important;
+}
+*/
+
+/* 示例：自定义代码块背景和边框
+.code-block-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.code-block-wrapper pre {
+  background: #1a1a2e !important;
+}
+*/
+
+/* 示例：自定义字体
+.code-block-wrapper pre,
+.code-block-wrapper code {
+  font-family: 'Source Code Pro', 'Consolas', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+*/
+.code-block-wrapper pre {
+  margin: 0 !important; /* 移除多余的外边距 */
+}
+

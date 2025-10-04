@@ -10,7 +10,7 @@ export type {
 } from './types'
 
 // Export built-in plugins
-export { AlertPlugin, EmojiPlugin } from './plugins'
+export { AlertPlugin, EmojiPlugin, CodeBlockPlugin, katexPlugin } from './plugins'
 
 // Export helper functions
 export { createAlertContainer, createAllAlertContainers } from './helpers'

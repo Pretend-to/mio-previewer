@@ -149,6 +149,8 @@ const MyPlugin = {
 
 - **AlertPlugin**: Renders custom alert boxes with types (info, warning, error, success)
 - **EmojiPlugin**: Converts emoji codes like `:smile:` → 😊
+- **CodeBlockPlugin**: Prism syntax highlighting with copy & HTML preview buttons (20+ languages)
+- **katexPlugin**: Renders math formulas with KaTeX (inline `$...$` and block `$$...$$`)
 
 ### Plugin Priority
 

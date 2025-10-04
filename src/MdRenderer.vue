@@ -61,6 +61,29 @@ function createMarkdownInstance() {
     });
   }
   
+  // 添加链接安全规则：为外部链接添加 target="_blank" 和 rel="noopener noreferrer"
+  const defaultRender = mdInstance.renderer.rules.link_open || function(tokens: any, idx: any, options: any, env: any, self: any) {
+    return self.renderToken(tokens, idx, options);
+  };
+  
+  mdInstance.renderer.rules.link_open = function(tokens: any, idx: any, options: any, env: any, self: any) {
+    const aIndex = tokens[idx].attrIndex('target');
+    if (aIndex < 0) {
+      tokens[idx].attrPush(['target', '_blank']);
+    } else {
+      if (tokens[idx].attrs) tokens[idx].attrs[aIndex][1] = '_blank';
+    }
+    
+    const relIndex = tokens[idx].attrIndex('rel');
+    if (relIndex < 0) {
+      tokens[idx].attrPush(['rel', 'noopener noreferrer']);
+    } else {
+      if (tokens[idx].attrs) tokens[idx].attrs[relIndex][1] = 'noopener noreferrer';
+    }
+    
+    return defaultRender(tokens, idx, options, env, self);
+  };
+  
   return mdInstance;
 }
 

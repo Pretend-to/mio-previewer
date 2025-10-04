@@ -18,15 +18,19 @@
   "dependencies": {
     "github-markdown-css": "^5.8.1",
     "htmlparser2": "^10.0.0",
+    "katex": "^0.16.23",
     "markdown-it": "^14.1.0",
     "markdown-it-container": "^4.0.0",
     "markdown-it-katex": "^2.0.3",
+    "prismjs": "^1.30.0",
     "vue": "^3.5.22"
   },
   "devDependencies": {
     "@types/htmlparser2": "^4.1.0",
+    "@types/katex": "^0.16.7",
     "@types/markdown-it": "^14.1.2",
     "@types/markdown-it-container": "^2.0.10",
+    "@types/prismjs": "^1.26.5",
     "@vitejs/plugin-vue": "^6.0.1",
     "puppeteer": "^20.7.4",
     "typescript": "^5.9.3",
