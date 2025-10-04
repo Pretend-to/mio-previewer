@@ -1,6 +1,17 @@
 # mio-previewer
 
-一个针对流式更新优化的小型 Vue 3 Markdown 预览器。渲染流程为：Markdown -> HTML -> htmlparser2 AST，然后将 AST 渲染为 Vue VNode。项目提供可选的模块 Worker（`public/parser.worker.js`）以将 Markdown 解析卸载到主线程之外。
+[English](./README.md) | 中文文档
+
+一个针对流式更新优化的小型 Vue 3 Markd## 流式行为与光标管理
+
+`isStreaming` prop 控制是否在渲染内容末尾显示闪烁的光标：
+
+- `isStreaming=false` — 不显示光标。用于静态内容或流式更新已结束的情况。
+- `isStreaming=true` — 在末尾显示闪烁光标，表示内容正在流式更新中。
+
+当 `isStreaming` 为 `true` 时，会在 AST 末尾插入一个特殊节点 `{ type: 'component', name: 'cursor' }` 来渲染 `BlinkingCursor` 组件。辅助函数 `manageCursor(ast, 'add'|'remove')` 负责插入与移除该光标节点。渲染流程为：Markdown -> HTML -> htmlparser2 AST，然后将 AST 渲染为 Vue VNode。项目提供可选的模块 Worker（`public/parser.worker.js`）以将 Markdown 解析卸载到主线程之外。
+
+本项目已配置为可发布的 npm 库（见 `package.json` 的脚本）。库从包根导出命名导出 `MdRenderer`（可通过 `import { MdRenderer } from 'mio-previewer'` 使用）。
 
 ## 快速开始
 
@@ -76,23 +87,84 @@ app.mount('#app')
 
 在流式模式下，代码会在 AST 末尾插入一个特殊节点 `{ type: 'component', name: 'cursor' }`，用于渲染 `BlinkingCursor`。辅助函数 `manageCursor(ast, 'add'|'remove')` 负责插入与移除该节点。
 
-## 插件 API（如何扩展渲染）
+## 插件系统
 
-`RecursiveRenderer` 接受一个 `plugins` 数组。每个插件是一个对象，包含两个函数：
+mio-previewer 提供强大的双层插件系统：
 
-- `test(node) => boolean` — 当插件应处理该节点时返回 `true`。
-- `render(node, renderChildren, h) => VNode` — 返回节点对应的 VNode（或 string）。`renderChildren()` 返回已渲染的子节点数组。
+### 1. Markdown-it 插件（语法扩展）
 
-示例（在 `MdRenderer.vue` 中的 CursorPlugin）：
+通过标准 markdown-it 插件扩展 Markdown 语法：
 
 ```js
-const CursorPlugin = {
-  test: node => node.type === 'component' && node.name === 'cursor',
-  render: (node, renderChildren, h) => h(BlinkingCursor, node.attribs || {})
-}
+import { MdRenderer } from 'mio-previewer'
+import markdownItSub from 'markdown-it-sub'
+import markdownItSup from 'markdown-it-sup'
+
+const markdownItPlugins = [
+  { plugin: markdownItSub },
+  { plugin: markdownItSup, options: { /* 插件选项 */ } }
+]
+
+// 在组件中使用
+<MdRenderer 
+  :md="text"
+  :markdownItPlugins="markdownItPlugins"
+  :markdownItOptions="{ html: true, linkify: true }"
+/>
 ```
 
-如需支持 mermaid、plantuml 或自定义组件渲染，可以实现相应插件并通过 `:plugins="[MyPlugin]"` 传入 `RecursiveRenderer`。
+### 2. 自定义插件（渲染扩展）
+
+为特定 AST 节点创建自定义渲染器：
+
+```js
+import { AlertPlugin, EmojiPlugin } from 'mio-previewer'
+
+// 内置插件
+const customPlugins = [AlertPlugin, EmojiPlugin]
+
+// 或创建自己的插件
+const MyPlugin = {
+  name: 'my-plugin',
+  priority: 50,  // 更高优先级先执行
+  test: (node) => node.type === 'tag' && node.name === 'custom',
+  render: (node, renderChildren, h) => {
+    return h('div', { class: 'my-custom' }, renderChildren())
+  }
+}
+
+<MdRenderer :md="text" :customPlugins="[MyPlugin, ...customPlugins]" />
+```
+
+### 内置插件
+
+- **AlertPlugin**：渲染自定义警告框，支持类型（info、warning、error、success）
+- **EmojiPlugin**：将表情代码如 `:smile:` 转换为 😊
+- **CodeBlockPlugin**：使用 Prism 语法高亮，支持复制和 HTML 预览按钮（20+ 种语言）
+- **katexPlugin**：使用 KaTeX 渲染数学公式（支持 `$...$`、`$$...$$`、`\(...\)`、`\[...\]` 定界符）
+- **mermaidPlugin**：使用 Mermaid 渲染图表（流程图、时序图、状态图、类图等），支持深色/浅色主题
+
+### 插件优先级
+
+插件按优先级顺序执行（优先级高的先执行）。内置 CursorPlugin 优先级为 100。
+
+**推荐范围：**
+- 100+：系统插件
+- 50-99：高优先级（容器、警告框）
+- 10-49：中优先级（图标、徽章）
+- 0-9：低优先级（文本处理、表情）
+
+### 文档
+
+详细文档、示例和最佳实践请参见 [插件指南](./docs/PLUGIN_GUIDE.md)。
+
+### 演示
+
+运行插件演示：
+```bash
+pnpm dev
+# 打开 http://localhost:5173/plugin-demo.html
+```
 
 ## Worker 合约
 
@@ -129,9 +201,6 @@ npx vue-tsc --noEmit
 - `src/components/BlinkingCursor.vue` — 用于流式的光标
 - `public/parser.worker.js` — 可选的 worker 解析契约
 
-如需我继续：
-- 添加示例插件（例如 mermaid）、
-- 用真实 `@types/*` 替换临时 shim 并运行 `vue-tsc`，或
-- 添加单元测试。
+## License
 
-告诉我你希望下一步做什么，我会继续并更新 todo 状态。
+MIT

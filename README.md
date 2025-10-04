@@ -1,5 +1,7 @@
 # mio-previewer
 
+[中文文档](./README.zh-CN.md) | English
+
 A small Vue 3 markdown previewer optimized for streaming updates. It
 converts Markdown -> HTML -> htmlparser2 AST and renders the AST to Vue
 VNode with a tiny recursive renderer. There's an optional module Worker
@@ -83,18 +85,12 @@ Publishing checklist
 
 ## Streaming behavior and cursor management
 
-This project supports two modes:
+The `isStreaming` prop controls whether a blinking cursor is displayed at the end of the rendered content:
 
-- Non-streaming: `isStreaming=false` — Markdown is fully re-parsed on
-	each update.
-- Streaming: `isStreaming=true` — updates are treated as incremental
-	chunks. `MdRenderer` will try a cheap append-to-last-text-node
-	optimization for simple text chunks, otherwise it falls back to
-	re-parsing the entire Markdown.
+- `isStreaming=false` — No cursor is shown. Use this for static content or when streaming has finished.
+- `isStreaming=true` — A blinking cursor is displayed at the end, indicating that content is actively streaming/updating.
 
-While streaming, a special AST node `{ type: 'component', name: 'cursor' }
-` is inserted at the end of the AST to render the `BlinkingCursor`. The
-helper `manageCursor(ast, 'add'|'remove')` handles insertion/removal.
+When `isStreaming` is `true`, a special AST node `{ type: 'component', name: 'cursor' }` is inserted at the end of the AST to render the `BlinkingCursor` component. The helper `manageCursor(ast, 'add'|'remove')` handles insertion/removal of this cursor node.
 
 ## Plugin System
 
@@ -150,7 +146,8 @@ const MyPlugin = {
 - **AlertPlugin**: Renders custom alert boxes with types (info, warning, error, success)
 - **EmojiPlugin**: Converts emoji codes like `:smile:` → 😊
 - **CodeBlockPlugin**: Prism syntax highlighting with copy & HTML preview buttons (20+ languages)
-- **katexPlugin**: Renders math formulas with KaTeX (inline `$...$` and block `$$...$$`)
+- **katexPlugin**: Renders math formulas with KaTeX (supports `$...$`, `$$...$$`, `\(...\)`, `\[...\]` delimiters)
+- **mermaidPlugin**: Renders diagrams with Mermaid (flowcharts, sequence diagrams, state diagrams, class diagrams, etc.) with dark/light theme support
 
 ### Plugin Priority
 
@@ -173,29 +170,6 @@ Run the plugin demo:
 pnpm dev
 # Open http://localhost:5173/plugin-demo.html
 ```
-
-## Plugin API (Legacy - for backwards compatibility)
-
-`RecursiveRenderer` accepts a `plugins` array. Each plugin must be an
-object with two properties:
-
-- `test(node) => boolean` — return `true` when the plugin should handle
-	this node.
-- `render(node, renderChildren, h) => VNode` — return a VNode (or
-	string) for the node. `renderChildren()` returns an array of rendered
-	children.
-
-Example (cursor plugin in `MdRenderer.vue`):
-
-```js
-const CursorPlugin = {
-	test: node => node.type === 'component' && node.name === 'cursor',
-	render: (node, renderChildren, h) => h(BlinkingCursor, node.attribs || {})
-}
-```
-
-To add custom component rendering (mermaid, custom tags, etc.), create
-a plugin and pass it to `RecursiveRenderer` via `:plugins="[MyPlugin]"`.
 
 ## Worker contract
 
@@ -239,11 +213,6 @@ packages.
 - `src/components/BlinkingCursor.vue` — streaming cursor
 - `public/parser.worker.js` — optional worker parsing contract
 
-If you want, I can:
-- add example plugins (e.g. mermaid integration),
-- replace the temporary type shims with real `@types/*` packages and
-	run `vue-tsc`, or
-- add unit tests for the renderer.
+## License
 
-Feedback or preferences? Tell me which of the next steps you'd like
-me to take.
+MIT
