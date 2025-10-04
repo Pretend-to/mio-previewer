@@ -287,20 +287,21 @@ watch(
 </script>
 
 <style>
-/* 样式保持不变 */
+/* Import GitHub markdown styles by default */
+@import 'github-markdown-css/github-markdown.css';
+
+/* Additional custom styles */
 .markdown-body {
-  font-family: sans-serif;
-  line-height: 1.6;
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
 }
 
-.markdown-body :deep(pre) {
-  background: #f5f5f5;
-  padding: 1em;
-  border-radius: 4px;
-  overflow-x: auto;
-}
-
-.markdown-body :deep(code) {
-  font-family: 'Courier New', monospace;
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
 }
 </style>
