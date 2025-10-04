@@ -35,7 +35,11 @@
 // @ts-nocheck - 禁用 TypeScript 检查以避免模板字符串中 $ 符号的误报错误
 import { ref } from 'vue'
 import MdRenderer from './MdRenderer.vue'
-import { AlertPlugin, EmojiPlugin, CodeBlockPlugin, katexPlugin, mermaidPlugin } from './plugins'
+import { AlertPlugin } from './plugins/AlertPlugin'
+import { EmojiPlugin } from './plugins/EmojiPlugin'
+import { CodeBlockPlugin } from './plugins/CodeBlockPlugin'
+import { katexPlugin } from './plugins/katexPlugin'
+import { mermaidPlugin } from './plugins/mermaidPlugin'
 import { createAllAlertContainers } from './helpers'
 // @ts-ignore - markdown-it-container types issue
 import markdownItContainer from 'markdown-it-container'
