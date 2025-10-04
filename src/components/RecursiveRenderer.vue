@@ -1,30 +1,31 @@
-<script>
-import { h, defineComponent } from 'vue'
+<script lang="ts">
+import { h, defineComponent, type VNode } from 'vue'
+
+type Plugin = {
+  test: (node: any) => boolean;
+  render: (node: any, renderChildren: () => any[], h: any) => VNode | string | null;
+}
 
 export default defineComponent({
   name: 'RecursiveRenderer',
   props: {
     nodes: {
-      type: Array,
+      type: Array as () => any[],
       required: true
     },
-    /**
-     * An array of plugins to customize rendering.
-     * Each plugin is { test: (node) => boolean, render: (node, renderChildren, h) => VNode }
-     * @type {Array}
-     */
     plugins: {
-      type: Array,
+      type: Array as () => Plugin[],
       default: () => ([])
     }
   },
-  setup(props) {
-    function renderNode(node) {
+  setup(props: { nodes: any[]; plugins?: any[] }) {
+    function renderNode(node: any): VNode | string | null {
       // 1. 优先检查插件
-      for (const plugin of props.plugins) {
+      const plugins = props.plugins || []
+      for (const plugin of plugins) {
         if (plugin.test && plugin.render && plugin.test(node)) {
           const renderChildren = () => node.children ? node.children.map(renderNode) : [];
-          return plugin.render(node, renderChildren, h);
+          return plugin.render(node, renderChildren, h as any);
         }
       }
 
@@ -37,6 +38,16 @@ export default defineComponent({
           node.attribs || {},
           node.children ? node.children.map(renderNode) : []
         );
+      }
+
+      // 2b. htmlparser2 有时会把整个文档包在 root/document 节点中，递归渲染其 children
+      if (node.type === 'root' || node.type === 'document') {
+        return node.children ? node.children.map(renderNode) : null;
+      }
+
+      // 忽略注释节点
+      if (node.type === 'comment') {
+        return null;
       }
 
       // 4. 渲染文本节点

@@ -5,7 +5,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import MdRenderer from './MdRenderer.vue'
 
@@ -20,28 +20,59 @@ const fullText = `
 ![测试图片](https://picsum.photos/400/300?random=1)
 
 这是一段普通的文字。这是一段普通的文字。这是一段普通的文字。
+# 图片加载测试
+
+这是一张测试图片：
+
+![测试图片](https://picsum.photos/400/300?random=1)
+
+这是一段普通的文字。这是一段普通的文字。这是一段普通的文字。# 图片加载测试
+
+这是一张测试图片：
+
+![测试图片](https://picsum.photos/400/300?random=1)
+
+这是一段普通的文字。这是一段普通的文字。这是一段普通的文字。# 图片加载测试
+
+这是一张测试图片：
+
+![测试图片](https://picsum.photos/400/300?random=1)
+
+这是一段普通的文字。这是一段普通的文字。这是一段普通的文字。# 图片加载测试
+
+这是一张测试图片：
+
+![测试图片](https://picsum.photos/400/300?random=1)
+
+这是一段普通的文字。这是一段普通的文字。这是一段普通的文字。# 图片加载测试
+
+这是一张测试图片：
+
+![测试图片](https://picsum.photos/400/300?random=1)
+
+这是一段普通的文字。这是一段普通的文字。这是一段普通的文字。
 `
 
-let intervalId = null
+let intervalId: number | null = null
 
 onMounted(() => {
-  let index = 0;
+  let index = 0
 
-  intervalId = setInterval(() => {
+  intervalId = window.setInterval(() => {
     if (index < fullText.length) {
       // 模拟流的增长，逐字追加
-      markdownStream.value += fullText[index];
-      index++;
+      markdownStream.value += fullText[index]
+      index++
     } else {
       // 流结束
-      isStreaming.value = false;
-      clearInterval(intervalId);
+      isStreaming.value = false
+      if (intervalId !== null) window.clearInterval(intervalId)
     }
-  }, 50); // 每 50 毫秒追加一个字符
-});
+  }, 50) // 每 50 毫秒追加一个字符
+})
 
 onUnmounted(() => {
-    clearInterval(intervalId)
+  if (intervalId !== null) window.clearInterval(intervalId)
 })
 </script>
 

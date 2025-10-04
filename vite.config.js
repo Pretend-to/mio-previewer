@@ -15,4 +15,21 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  build: {
+    lib: {
+      entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
+      name: 'MioPreviewer',
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => `mio-previewer.${format}.js`
+    },
+    rollupOptions: {
+      // don't bundle vue
+      external: ['vue'],
+      output: {
+        globals: {
+          vue: 'Vue'
+        }
+      }
+    }
+  }
 })

@@ -1,0 +1,893 @@
+{
+  "meta": {
+    "fixture": "complex",
+    "renderer": "vhtml",
+    "chunkSize": 35,
+    "delay": 5,
+    "repeat": 0,
+    "env": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36",
+      "cpuCores": 10,
+      "viewport": {
+        "width": 800,
+        "height": 600
+      },
+      "dpr": 1,
+      "memoryAvailable": true,
+      "timestamp": 1759572779979
+    },
+    "timestampStart": 1759572779234.4,
+    "timestampEnd": 1759572779979
+  },
+  "perChunk": [
+    {
+      "chunkIndex": 0,
+      "chunkSize": 35,
+      "accLength": 35,
+      "tsStart": 979.5,
+      "tsAfterAssign": 982.3999999985099,
+      "tsAfterRAF1": 983.5,
+      "tsAfterRAF2": 984.1999999992549,
+      "renderTimeJs": 2.899999998509884,
+      "renderTimePaint": 4.699999999254942,
+      "totalNodes": 70,
+      "renderNodes": 4,
+      "htmlLength": 60,
+      "memory": {
+        "used": 12764189,
+        "total": 15037605,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 1,
+      "chunkSize": 35,
+      "accLength": 70,
+      "tsStart": 990.5999999977648,
+      "tsAfterAssign": 990.7999999970198,
+      "tsAfterRAF1": 992.0999999977648,
+      "tsAfterRAF2": 1000.5,
+      "renderTimeJs": 0.19999999925494194,
+      "renderTimePaint": 9.900000002235174,
+      "totalNodes": 70,
+      "renderNodes": 4,
+      "htmlLength": 95,
+      "memory": {
+        "used": 12764189,
+        "total": 15037605,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "chunkSize": 35,
+      "accLength": 105,
+      "tsStart": 1006.1999999992549,
+      "tsAfterAssign": 1006.2999999970198,
+      "tsAfterRAF1": 1009.5,
+      "tsAfterRAF2": 1017.0999999977648,
+      "renderTimeJs": 0.09999999776482582,
+      "renderTimePaint": 10.899999998509884,
+      "totalNodes": 76,
+      "renderNodes": 4,
+      "htmlLength": 130,
+      "memory": {
+        "used": 12764189,
+        "total": 15037605,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "chunkSize": 35,
+      "accLength": 140,
+      "tsStart": 1022.8999999985099,
+      "tsAfterAssign": 1023,
+      "tsAfterRAF1": 1025.5999999977648,
+      "tsAfterRAF2": 1034,
+      "renderTimeJs": 0.10000000149011612,
+      "renderTimePaint": 11.100000001490116,
+      "totalNodes": 77,
+      "renderNodes": 5,
+      "htmlLength": 170,
+      "memory": {
+        "used": 12764189,
+        "total": 15037605,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "chunkSize": 35,
+      "accLength": 175,
+      "tsStart": 1039.699999999255,
+      "tsAfterAssign": 1040.699999999255,
+      "tsAfterRAF1": 1042.199999999255,
+      "tsAfterRAF2": 1050.199999999255,
+      "renderTimeJs": 1,
+      "renderTimePaint": 10.5,
+      "totalNodes": 78,
+      "renderNodes": 6,
+      "htmlLength": 209,
+      "memory": {
+        "used": 12962422,
+        "total": 15563278,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 5,
+      "chunkSize": 35,
+      "accLength": 210,
+      "tsStart": 1056,
+      "tsAfterAssign": 1056.3999999985099,
+      "tsAfterRAF1": 1059,
+      "tsAfterRAF2": 1067.2999999970198,
+      "renderTimeJs": 0.3999999985098839,
+      "renderTimePaint": 11.299999997019768,
+      "totalNodes": 81,
+      "renderNodes": 9,
+      "htmlLength": 270,
+      "memory": {
+        "used": 12962422,
+        "total": 15563278,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 6,
+      "chunkSize": 35,
+      "accLength": 245,
+      "tsStart": 1073.0999999977648,
+      "tsAfterAssign": 1074.699999999255,
+      "tsAfterRAF1": 1075.5999999977648,
+      "tsAfterRAF2": 1083.8999999985099,
+      "renderTimeJs": 1.6000000014901161,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 82,
+      "renderNodes": 10,
+      "htmlLength": 316,
+      "memory": {
+        "used": 12962422,
+        "total": 15563278,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 7,
+      "chunkSize": 35,
+      "accLength": 280,
+      "tsStart": 1089.699999999255,
+      "tsAfterAssign": 1091.5,
+      "tsAfterRAF1": 1093.199999999255,
+      "tsAfterRAF2": 1100.5,
+      "renderTimeJs": 1.800000000745058,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 83,
+      "renderNodes": 11,
+      "htmlLength": 365,
+      "memory": {
+        "used": 13156551,
+        "total": 15565147,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 8,
+      "chunkSize": 35,
+      "accLength": 315,
+      "tsStart": 1106.3999999985099,
+      "tsAfterAssign": 1107.5,
+      "tsAfterRAF1": 1109.0999999977648,
+      "tsAfterRAF2": 1117.2999999970198,
+      "renderTimeJs": 1.1000000014901161,
+      "renderTimePaint": 10.899999998509884,
+      "totalNodes": 88,
+      "renderNodes": 16,
+      "htmlLength": 455,
+      "memory": {
+        "used": 13156551,
+        "total": 15565147,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 9,
+      "chunkSize": 35,
+      "accLength": 350,
+      "tsStart": 1123.199999999255,
+      "tsAfterAssign": 1124,
+      "tsAfterRAF1": 1125.7999999970198,
+      "tsAfterRAF2": 1133.7999999970198,
+      "renderTimeJs": 0.8000000007450581,
+      "renderTimePaint": 10.599999997764826,
+      "totalNodes": 89,
+      "renderNodes": 17,
+      "htmlLength": 495,
+      "memory": {
+        "used": 13156551,
+        "total": 15565147,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 10,
+      "chunkSize": 35,
+      "accLength": 385,
+      "tsStart": 1139.699999999255,
+      "tsAfterAssign": 1140.0999999977648,
+      "tsAfterRAF1": 1142.199999999255,
+      "tsAfterRAF2": 1150.5999999977648,
+      "renderTimeJs": 0.3999999985098839,
+      "renderTimePaint": 10.899999998509884,
+      "totalNodes": 92,
+      "renderNodes": 20,
+      "htmlLength": 550,
+      "memory": {
+        "used": 13354806,
+        "total": 15568114,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 11,
+      "chunkSize": 35,
+      "accLength": 420,
+      "tsStart": 1156.3999999985099,
+      "tsAfterAssign": 1156.7999999970198,
+      "tsAfterRAF1": 1158.8999999985099,
+      "tsAfterRAF2": 1167.2999999970198,
+      "renderTimeJs": 0.3999999985098839,
+      "renderTimePaint": 10.899999998509884,
+      "totalNodes": 94,
+      "renderNodes": 22,
+      "htmlLength": 597,
+      "memory": {
+        "used": 13354806,
+        "total": 15568114,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 12,
+      "chunkSize": 35,
+      "accLength": 455,
+      "tsStart": 1173.0999999977648,
+      "tsAfterAssign": 1173.699999999255,
+      "tsAfterRAF1": 1175.699999999255,
+      "tsAfterRAF2": 1184,
+      "renderTimeJs": 0.6000000014901161,
+      "renderTimePaint": 10.900000002235174,
+      "totalNodes": 96,
+      "renderNodes": 24,
+      "htmlLength": 641,
+      "memory": {
+        "used": 13354806,
+        "total": 15568114,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 13,
+      "chunkSize": 35,
+      "accLength": 490,
+      "tsStart": 1189.7999999970198,
+      "tsAfterAssign": 1190.5,
+      "tsAfterRAF1": 1192.2999999970198,
+      "tsAfterRAF2": 1200.699999999255,
+      "renderTimeJs": 0.7000000029802322,
+      "renderTimePaint": 10.900000002235174,
+      "totalNodes": 97,
+      "renderNodes": 25,
+      "htmlLength": 683,
+      "memory": {
+        "used": 13503715,
+        "total": 15834067,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 14,
+      "chunkSize": 35,
+      "accLength": 525,
+      "tsStart": 1206.5999999977648,
+      "tsAfterAssign": 1207,
+      "tsAfterRAF1": 1208.8999999985099,
+      "tsAfterRAF2": 1217.0999999977648,
+      "renderTimeJs": 0.4000000022351742,
+      "renderTimePaint": 10.5,
+      "totalNodes": 97,
+      "renderNodes": 25,
+      "htmlLength": 718,
+      "memory": {
+        "used": 13503715,
+        "total": 15834067,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 15,
+      "chunkSize": 35,
+      "accLength": 560,
+      "tsStart": 1223,
+      "tsAfterAssign": 1223.5,
+      "tsAfterRAF1": 1225.699999999255,
+      "tsAfterRAF2": 1233.5999999977648,
+      "renderTimeJs": 0.5,
+      "renderTimePaint": 10.599999997764826,
+      "totalNodes": 98,
+      "renderNodes": 26,
+      "htmlLength": 758,
+      "memory": {
+        "used": 13503715,
+        "total": 15834067,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 16,
+      "chunkSize": 35,
+      "accLength": 595,
+      "tsStart": 1239.199999999255,
+      "tsAfterAssign": 1240.2999999970198,
+      "tsAfterRAF1": 1242.2999999970198,
+      "tsAfterRAF2": 1250.5999999977648,
+      "renderTimeJs": 1.0999999977648258,
+      "renderTimePaint": 11.399999998509884,
+      "totalNodes": 100,
+      "renderNodes": 28,
+      "htmlLength": 829,
+      "memory": {
+        "used": 13642392,
+        "total": 16362932,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 17,
+      "chunkSize": 35,
+      "accLength": 630,
+      "tsStart": 1256.5999999977648,
+      "tsAfterAssign": 1257.3999999985099,
+      "tsAfterRAF1": 1259.0999999977648,
+      "tsAfterRAF2": 1266.7999999970198,
+      "renderTimeJs": 0.8000000007450581,
+      "renderTimePaint": 10.199999999254942,
+      "totalNodes": 100,
+      "renderNodes": 28,
+      "htmlLength": 865,
+      "memory": {
+        "used": 13642392,
+        "total": 16362932,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 18,
+      "chunkSize": 35,
+      "accLength": 665,
+      "tsStart": 1272.699999999255,
+      "tsAfterAssign": 1273.3999999985099,
+      "tsAfterRAF1": 1275.699999999255,
+      "tsAfterRAF2": 1284,
+      "renderTimeJs": 0.6999999992549419,
+      "renderTimePaint": 11.300000000745058,
+      "totalNodes": 100,
+      "renderNodes": 28,
+      "htmlLength": 900,
+      "memory": {
+        "used": 13642392,
+        "total": 16362932,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 19,
+      "chunkSize": 35,
+      "accLength": 700,
+      "tsStart": 1290,
+      "tsAfterAssign": 1290.699999999255,
+      "tsAfterRAF1": 1292.2999999970198,
+      "tsAfterRAF2": 1300.5999999977648,
+      "renderTimeJs": 0.6999999992549419,
+      "renderTimePaint": 10.599999997764826,
+      "totalNodes": 100,
+      "renderNodes": 28,
+      "htmlLength": 930,
+      "memory": {
+        "used": 13773025,
+        "total": 16368289,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 20,
+      "chunkSize": 35,
+      "accLength": 735,
+      "tsStart": 1306.5999999977648,
+      "tsAfterAssign": 1307.5999999977648,
+      "tsAfterRAF1": 1309,
+      "tsAfterRAF2": 1317.2999999970198,
+      "renderTimeJs": 1,
+      "renderTimePaint": 10.699999999254942,
+      "totalNodes": 103,
+      "renderNodes": 31,
+      "htmlLength": 993,
+      "memory": {
+        "used": 13773025,
+        "total": 16368289,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 21,
+      "chunkSize": 35,
+      "accLength": 770,
+      "tsStart": 1323.3999999985099,
+      "tsAfterAssign": 1324,
+      "tsAfterRAF1": 1325.699999999255,
+      "tsAfterRAF2": 1333.8999999985099,
+      "renderTimeJs": 0.6000000014901161,
+      "renderTimePaint": 10.5,
+      "totalNodes": 103,
+      "renderNodes": 31,
+      "htmlLength": 1022,
+      "memory": {
+        "used": 13773025,
+        "total": 16368289,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 22,
+      "chunkSize": 35,
+      "accLength": 805,
+      "tsStart": 1339.7999999970198,
+      "tsAfterAssign": 1340.5999999977648,
+      "tsAfterRAF1": 1342.2999999970198,
+      "tsAfterRAF2": 1350.5999999977648,
+      "renderTimeJs": 0.8000000007450581,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 105,
+      "renderNodes": 33,
+      "htmlLength": 1070,
+      "memory": {
+        "used": 13773025,
+        "total": 16368289,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 23,
+      "chunkSize": 35,
+      "accLength": 840,
+      "tsStart": 1356.5,
+      "tsAfterAssign": 1357.699999999255,
+      "tsAfterRAF1": 1359,
+      "tsAfterRAF2": 1367.2999999970198,
+      "renderTimeJs": 1.199999999254942,
+      "renderTimePaint": 10.799999997019768,
+      "totalNodes": 115,
+      "renderNodes": 43,
+      "htmlLength": 1240,
+      "memory": {
+        "used": 13967877,
+        "total": 16639069,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 24,
+      "chunkSize": 35,
+      "accLength": 875,
+      "tsStart": 1372.5999999977648,
+      "tsAfterAssign": 1373.5,
+      "tsAfterRAF1": 1375.5,
+      "tsAfterRAF2": 1384.0999999977648,
+      "renderTimeJs": 0.9000000022351742,
+      "renderTimePaint": 11.5,
+      "totalNodes": 120,
+      "renderNodes": 48,
+      "htmlLength": 1342,
+      "memory": {
+        "used": 13967877,
+        "total": 16639069,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 25,
+      "chunkSize": 35,
+      "accLength": 910,
+      "tsStart": 1390,
+      "tsAfterAssign": 1390.7999999970198,
+      "tsAfterRAF1": 1392.2999999970198,
+      "tsAfterRAF2": 1400.7999999970198,
+      "renderTimeJs": 0.7999999970197678,
+      "renderTimePaint": 10.799999997019768,
+      "totalNodes": 122,
+      "renderNodes": 50,
+      "htmlLength": 1391,
+      "memory": {
+        "used": 13967877,
+        "total": 16639069,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 26,
+      "chunkSize": 35,
+      "accLength": 945,
+      "tsStart": 1406.7999999970198,
+      "tsAfterAssign": 1407.5999999977648,
+      "tsAfterRAF1": 1409.0999999977648,
+      "tsAfterRAF2": 1417.199999999255,
+      "renderTimeJs": 0.8000000007450581,
+      "renderTimePaint": 10.400000002235174,
+      "totalNodes": 126,
+      "renderNodes": 54,
+      "htmlLength": 1472,
+      "memory": {
+        "used": 14147332,
+        "total": 16647476,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 27,
+      "chunkSize": 35,
+      "accLength": 980,
+      "tsStart": 1423.2999999970198,
+      "tsAfterAssign": 1424.199999999255,
+      "tsAfterRAF1": 1425.5999999977648,
+      "tsAfterRAF2": 1433.8999999985099,
+      "renderTimeJs": 0.9000000022351742,
+      "renderTimePaint": 10.600000001490116,
+      "totalNodes": 127,
+      "renderNodes": 55,
+      "htmlLength": 1510,
+      "memory": {
+        "used": 14147332,
+        "total": 16647476,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 28,
+      "chunkSize": 35,
+      "accLength": 1015,
+      "tsStart": 1439.7999999970198,
+      "tsAfterAssign": 1440.5999999977648,
+      "tsAfterRAF1": 1442.199999999255,
+      "tsAfterRAF2": 1449.699999999255,
+      "renderTimeJs": 0.8000000007450581,
+      "renderTimePaint": 9.900000002235174,
+      "totalNodes": 129,
+      "renderNodes": 57,
+      "htmlLength": 1558,
+      "memory": {
+        "used": 14147332,
+        "total": 16647476,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 29,
+      "chunkSize": 35,
+      "accLength": 1050,
+      "tsStart": 1455.5999999977648,
+      "tsAfterAssign": 1456.5999999977648,
+      "tsAfterRAF1": 1459.0999999977648,
+      "tsAfterRAF2": 1467.2999999970198,
+      "renderTimeJs": 1,
+      "renderTimePaint": 11.699999999254942,
+      "totalNodes": 129,
+      "renderNodes": 57,
+      "htmlLength": 1596,
+      "memory": {
+        "used": 13241270,
+        "total": 16918950,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 30,
+      "chunkSize": 35,
+      "accLength": 1085,
+      "tsStart": 1473.2999999970198,
+      "tsAfterAssign": 1474.5,
+      "tsAfterRAF1": 1476.5999999977648,
+      "tsAfterRAF2": 1484.0999999977648,
+      "renderTimeJs": 1.2000000029802322,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 130,
+      "renderNodes": 58,
+      "htmlLength": 1629,
+      "memory": {
+        "used": 13241270,
+        "total": 16918950,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 31,
+      "chunkSize": 35,
+      "accLength": 1120,
+      "tsStart": 1490,
+      "tsAfterAssign": 1490.7999999970198,
+      "tsAfterRAF1": 1492.2999999970198,
+      "tsAfterRAF2": 1500.699999999255,
+      "renderTimeJs": 0.7999999970197678,
+      "renderTimePaint": 10.699999999254942,
+      "totalNodes": 130,
+      "renderNodes": 58,
+      "htmlLength": 1664,
+      "memory": {
+        "used": 13241270,
+        "total": 16918950,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 32,
+      "chunkSize": 35,
+      "accLength": 1155,
+      "tsStart": 1506.5,
+      "tsAfterAssign": 1507.2999999970198,
+      "tsAfterRAF1": 1509,
+      "tsAfterRAF2": 1517.2999999970198,
+      "renderTimeJs": 0.7999999970197678,
+      "renderTimePaint": 10.799999997019768,
+      "totalNodes": 132,
+      "renderNodes": 60,
+      "htmlLength": 1708,
+      "memory": {
+        "used": 13463871,
+        "total": 16928943,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 33,
+      "chunkSize": 35,
+      "accLength": 1190,
+      "tsStart": 1522.699999999255,
+      "tsAfterAssign": 1523.5999999977648,
+      "tsAfterRAF1": 1525.5999999977648,
+      "tsAfterRAF2": 1533.5,
+      "renderTimeJs": 0.8999999985098839,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 133,
+      "renderNodes": 61,
+      "htmlLength": 1747,
+      "memory": {
+        "used": 13463871,
+        "total": 16928943,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 34,
+      "chunkSize": 35,
+      "accLength": 1225,
+      "tsStart": 1539.3999999985099,
+      "tsAfterAssign": 1540.5,
+      "tsAfterRAF1": 1542.0999999977648,
+      "tsAfterRAF2": 1550.699999999255,
+      "renderTimeJs": 1.1000000014901161,
+      "renderTimePaint": 11.300000000745058,
+      "totalNodes": 134,
+      "renderNodes": 62,
+      "htmlLength": 1788,
+      "memory": {
+        "used": 13463871,
+        "total": 16928943,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 35,
+      "chunkSize": 35,
+      "accLength": 1260,
+      "tsStart": 1556.699999999255,
+      "tsAfterAssign": 1557.3999999985099,
+      "tsAfterRAF1": 1559.8999999985099,
+      "tsAfterRAF2": 1567.2999999970198,
+      "renderTimeJs": 0.6999999992549419,
+      "renderTimePaint": 10.599999997764826,
+      "totalNodes": 134,
+      "renderNodes": 62,
+      "htmlLength": 1823,
+      "memory": {
+        "used": 13694760,
+        "total": 16939656,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 36,
+      "chunkSize": 35,
+      "accLength": 1295,
+      "tsStart": 1573.3999999985099,
+      "tsAfterAssign": 1574.2999999970198,
+      "tsAfterRAF1": 1575.699999999255,
+      "tsAfterRAF2": 1583.7999999970198,
+      "renderTimeJs": 0.8999999985098839,
+      "renderTimePaint": 10.399999998509884,
+      "totalNodes": 136,
+      "renderNodes": 64,
+      "htmlLength": 1869,
+      "memory": {
+        "used": 13694760,
+        "total": 16939656,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 37,
+      "chunkSize": 35,
+      "accLength": 1330,
+      "tsStart": 1589.699999999255,
+      "tsAfterAssign": 1594.0999999977648,
+      "tsAfterRAF1": 1594.7999999970198,
+      "tsAfterRAF2": 1600.5999999977648,
+      "renderTimeJs": 4.399999998509884,
+      "renderTimePaint": 10.899999998509884,
+      "totalNodes": 137,
+      "renderNodes": 65,
+      "htmlLength": 1945,
+      "memory": {
+        "used": 13694760,
+        "total": 16939656,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 38,
+      "chunkSize": 35,
+      "accLength": 1365,
+      "tsStart": 1606.3999999985099,
+      "tsAfterAssign": 1607.5999999977648,
+      "tsAfterRAF1": 1609.0999999977648,
+      "tsAfterRAF2": 1617.2999999970198,
+      "renderTimeJs": 1.199999999254942,
+      "renderTimePaint": 10.899999998509884,
+      "totalNodes": 138,
+      "renderNodes": 66,
+      "htmlLength": 1963,
+      "memory": {
+        "used": 13694760,
+        "total": 16939656,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 39,
+      "chunkSize": 35,
+      "accLength": 1400,
+      "tsStart": 1623.0999999977648,
+      "tsAfterAssign": 1624,
+      "tsAfterRAF1": 1625.5999999977648,
+      "tsAfterRAF2": 1634,
+      "renderTimeJs": 0.9000000022351742,
+      "renderTimePaint": 10.900000002235174,
+      "totalNodes": 139,
+      "renderNodes": 67,
+      "htmlLength": 2008,
+      "memory": {
+        "used": 14180102,
+        "total": 16955222,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 40,
+      "chunkSize": 35,
+      "accLength": 1435,
+      "tsStart": 1639.7999999970198,
+      "tsAfterAssign": 1640.8999999985099,
+      "tsAfterRAF1": 1642.2999999970198,
+      "tsAfterRAF2": 1650.5999999977648,
+      "renderTimeJs": 1.1000000014901161,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 140,
+      "renderNodes": 68,
+      "htmlLength": 2047,
+      "memory": {
+        "used": 14180102,
+        "total": 16955222,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 41,
+      "chunkSize": 35,
+      "accLength": 1470,
+      "tsStart": 1656.3999999985099,
+      "tsAfterAssign": 1657.0999999977648,
+      "tsAfterRAF1": 1658.8999999985099,
+      "tsAfterRAF2": 1667.199999999255,
+      "renderTimeJs": 0.6999999992549419,
+      "renderTimePaint": 10.800000000745058,
+      "totalNodes": 142,
+      "renderNodes": 70,
+      "htmlLength": 2114,
+      "memory": {
+        "used": 14180102,
+        "total": 16955222,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 42,
+      "chunkSize": 35,
+      "accLength": 1505,
+      "tsStart": 1673.199999999255,
+      "tsAfterAssign": 1673.699999999255,
+      "tsAfterRAF1": 1675.5999999977648,
+      "tsAfterRAF2": 1683.8999999985099,
+      "renderTimeJs": 0.5,
+      "renderTimePaint": 10.699999999254942,
+      "totalNodes": 142,
+      "renderNodes": 70,
+      "htmlLength": 2156,
+      "memory": {
+        "used": 14478166,
+        "total": 17229962,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 43,
+      "chunkSize": 35,
+      "accLength": 1540,
+      "tsStart": 1689.7999999970198,
+      "tsAfterAssign": 1690.5,
+      "tsAfterRAF1": 1692.2999999970198,
+      "tsAfterRAF2": 1700.3999999985099,
+      "renderTimeJs": 0.7000000029802322,
+      "renderTimePaint": 10.600000001490116,
+      "totalNodes": 143,
+      "renderNodes": 71,
+      "htmlLength": 2186,
+      "memory": {
+        "used": 14478166,
+        "total": 17229962,
+        "limit": 4294705152
+      }
+    },
+    {
+      "chunkIndex": 44,
+      "chunkSize": 26,
+      "accLength": 1566,
+      "tsStart": 1706.2999999970198,
+      "tsAfterAssign": 1707,
+      "tsAfterRAF1": 1708.8999999985099,
+      "tsAfterRAF2": 1717.2999999970198,
+      "renderTimeJs": 0.7000000029802322,
+      "renderTimePaint": 11,
+      "totalNodes": 144,
+      "renderNodes": 72,
+      "htmlLength": 2217,
+      "memory": {
+        "used": 14478166,
+        "total": 17229962,
+        "limit": 4294705152
+      }
+    }
+  ],
+  "aggregates": {
+    "avgPerChunk": 10.653333333051867,
+    "medianPerChunk": 10.800000000745058,
+    "p95PerChunk": 11.399999998509884,
+    "p99PerChunk": 11.699999999254942,
+    "maxNodes": 144,
+    "finalNodes": 144,
+    "finalHtmlLength": 2217
+  },
+  "summary": {
+    "totalMs": 744.5999999977648,
+    "totalRenderMs": 479.399999987334,
+    "chunks": 45
+  }
+}

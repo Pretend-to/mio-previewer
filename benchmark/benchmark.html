@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>mio-previewer benchmark</title>
+    <script type="module" src="/benchmark/bench.js"></script>
+    <style>
+      :root{ --muted:#666; --panel:#fafafa; --accent:#2563eb }
+      body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding: 1rem; color:#111 }
+      .controls { display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem }
+      select,input[type=number]{padding:0.25rem 0.4rem;border:1px solid #ddd;border-radius:4px}
+      button{background:var(--accent);color:white;border:none;padding:0.4rem 0.6rem;border-radius:6px;cursor:pointer}
+      button.secondary{background:#eee;color:#111;border:1px solid #ddd}
+      #render-preview{background:var(--panel);border-radius:6px;border:1px solid #e6e6e6;padding:0.75rem;box-shadow:0 1px 2px rgba(0,0,0,0.03)}
+      #render-preview strong{display:block;color:var(--muted);margin-bottom:0.5rem}
+      #render-content{background:white;padding:0.75rem;border-radius:4px;border:1px solid #f0f0f0}
+      #render-stats{font-size:12px;color:var(--muted);margin-top:0.5rem}
+    </style>
+  </head>
+  <body>
+      <h1>mio-previewer benchmark & live preview</h1>
+
+      <div class="controls">
+        <label for="fixtureSelect">Fixture:</label>
+        <select id="fixtureSelect"></select>
+        <button id="loadBtn">Load</button>
+        <label for="renderMode">Renderer:</label>
+        <select id="renderMode">
+          <option value="vhtml">markdown-it (v-html)</option>
+          <option value="mio">mio-previewer (MdRenderer)</option>
+        </select>
+        <label for="runType">Mode:</label>
+        <select id="runType">
+          <option value="full">full</option>
+          <option value="incremental">incremental (stream)</option>
+        </select>
+        <button id="startRender">Start</button>
+        <button id="clearBtn" class="secondary">Clear</button>
+        <label for="streamDelay">delay(ms/char):</label>
+        <input id="streamDelay" type="number" value="20" style="width:4rem" />
+        <label for="chunkSize">chunk size (chars):</label>
+        <input id="chunkSize" type="number" value="10" style="width:3rem" />
+        <label><input id="normalizeImages" type="checkbox" checked /> normalize images</label>
+        <span id="status" style="margin-left:1rem"></span>
+      </div>
+
+      <div style="display:block">
+        <!-- Restrict preview height and enable internal vertical scrolling to avoid page scroll -->
+        <div id="render-preview" style="border:1px solid #ddd;padding:0.5rem;max-height:70vh;height:70vh;overflow-y:auto;box-sizing:border-box;">
+          <strong>Rendered output (target renderer)</strong>
+          <div style="margin-top:0.5rem" id="render-content"></div>
+          <div style="font-size:12px;color:#444;margin-top:0.5rem" id="render-stats"></div>
+        </div>
+      </div>
+  </body>
+
+</html>
