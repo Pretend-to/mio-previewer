@@ -2,217 +2,484 @@
 
 [中文文档](./README.zh-CN.md) | English
 
-A small Vue 3 markdown previewer optimized for streaming updates. It
-converts Markdown -> HTML -> htmlparser2 AST and renders the AST to Vue
-VNode with a tiny recursive renderer. There's an optional module Worker
-(`public/parser.worker.js`) that can handle Markdown parsing off the main
+A Vue 3 markdown renderer optimized for streaming updates with powerful plugin system. Features real-time rendering, syntax highlighting, math formulas, diagrams, and more.
 
-This project is also configured to be published as an npm library (see
-`package.json` scripts). The library exposes a named export `MdRenderer`
-from the package root (import { MdRenderer } from 'mio-previewer').
-## Quick start
+✨ **Key Features:**
+- 🚀 Streaming-friendly real-time rendering
+- 🎨 Built-in syntax highlighting (Prism.js, 20+ languages)
+- 📐 Math formulas support (KaTeX)
+- 📊 Diagram rendering (Mermaid)
+- 🔌 Extensible plugin system
+- 📦 Tree-shakeable & lightweight
+- 🎯 TypeScript support
 
-Prerequisites: Node 18+ recommended, pnpm (or npm/yarn).
-
-Install dependencies:
-
-```bash
-pnpm install
-```
-
-Run dev server:
+## Installation
 
 ```bash
-pnpm dev
-```
-
-Open http://localhost:5173/ to view the live preview.
-
-Build for production:
-
-```bash
-pnpm build
-pnpm preview
-```
-
-Install the package (after publishing or using a local install):
-
-```bash
-# from npm (when published)
+npm install mio-previewer
+# or
 pnpm add mio-previewer
-
-# or install from a local folder
-pnpm add /path/to/mio-previewer
+# or
+yarn add mio-previewer
 ```
 
-Usage example (consumer project with Vue 3):
+## Quick Start
 
-```js
-import { createApp } from 'vue'
+### Basic Usage
+
+```vue
+<template>
+  <MdRenderer :md="markdown" />
+</template>
+
+<script setup>
+import { ref } from 'vue'
 import { MdRenderer } from 'mio-previewer'
-import 'github-markdown-css/github-markdown.css'
+import 'mio-previewer/dist/mio-previewer.css'
 
-const app = createApp({})
-app.component('MdRenderer', MdRenderer)
-app.mount('#app')
+const markdown = ref('# Hello World\n\nThis is **markdown**!')
+</script>
 ```
 
-Notes for bundlers and consumers
-- `vue` is marked as external in the library bundle. Add `vue@^3` to
-	your project's dependencies (or peerDependencies) when publishing.
-- Types are emitted to `dist/types` during build; the package `types`
-	field points to the generated declaration file.
+### Streaming Mode
 
-Publishing checklist
-- Ensure `package.json` has `name`, `version`, `description`, `repository`,
-	and `peerDependencies: { "vue": "^3" }` (recommended).
-- Run `pnpm run build` (this runs the lib build and emits types).
-- Publish with `pnpm publish --access public` (or use CI automation).
-## Project overview
+Perfect for AI chatbots or real-time content:
 
-- `src/MdRenderer.vue` — core component. Accepts props `md` (string),
-	`isStreaming` (boolean) and `useWorker` (boolean). Handles parsing,
-	streaming-friendly incremental updates, and manages a special cursor
-	component node while streaming.
-- `src/components/RecursiveRenderer.vue` — recursively renders the
-	htmlparser2 AST to Vue VNodes. Supports a `plugins` array where each
-	plugin is `{ test, render }`.
-- `src/components/BlinkingCursor.vue` — small visual cursor used during
-	streaming.
-- `public/parser.worker.js` — (optional) module Worker. When enabled
-	(`useWorker`), `MdRenderer` posts `{ markdownText }` and expects a
-	response `{ ast }` where `ast` matches `parseDocument(html).children`.
+```vue
+<template>
+  <MdRenderer 
+    :md="streamContent" 
+    :isStreaming="isStreaming" 
+  />
+</template>
 
-## Streaming behavior and cursor management
+<script setup>
+import { ref } from 'vue'
+import { MdRenderer } from 'mio-previewer'
+import 'mio-previewer/dist/mio-previewer.css'
 
-The `isStreaming` prop controls whether a blinking cursor is displayed at the end of the rendered content:
+const streamContent = ref('')
+const isStreaming = ref(true)
 
-- `isStreaming=false` — No cursor is shown. Use this for static content or when streaming has finished.
-- `isStreaming=true` — A blinking cursor is displayed at the end, indicating that content is actively streaming/updating.
+// Simulate streaming
+const text = '# Streaming Demo\n\nContent appears **gradually**...'
+let index = 0
 
-When `isStreaming` is `true`, a special AST node `{ type: 'component', name: 'cursor' }` is inserted at the end of the AST to render the `BlinkingCursor` component. The helper `manageCursor(ast, 'add'|'remove')` handles insertion/removal of this cursor node.
+const interval = setInterval(() => {
+  if (index < text.length) {
+    streamContent.value += text[index++]
+  } else {
+    isStreaming.value = false
+    clearInterval(interval)
+  }
+}, 50)
+</script>
+```
 
 ## Plugin System
 
-mio-previewer provides a powerful two-tier plugin system:
+### Using Built-in Plugins
 
-### 1. Markdown-it Plugins (Syntax Extension)
+#### Math Formulas (KaTeX)
 
-Extend Markdown syntax by using standard markdown-it plugins:
-
-```js
+```vue
+<script setup>
 import { MdRenderer } from 'mio-previewer'
-import markdownItSub from 'markdown-it-sub'
-import markdownItSup from 'markdown-it-sup'
+import { katexPlugin } from 'mio-previewer/plugins/markdown-it'
+import 'mio-previewer/dist/mio-previewer.css'
+
+const markdown = `
+# Math Example
+
+Inline: $E = mc^2$
+
+Block:
+$$
+\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
+$$
+`
 
 const markdownItPlugins = [
-  { plugin: markdownItSub },
-  { plugin: markdownItSup, options: { /* plugin options */ } }
+  { plugin: katexPlugin }
 ]
+</script>
 
-// Use in component
-<MdRenderer 
-  :md="text"
-  :markdownItPlugins="markdownItPlugins"
-  :markdownItOptions="{ html: true, linkify: true }"
-/>
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :markdownItPlugins="markdownItPlugins" 
+  />
+</template>
 ```
 
-### 2. Custom Plugins (Rendering Extension)
+#### Alert Boxes
 
-Create custom renderers for specific AST nodes:
+```vue
+<script setup>
+import { MdRenderer } from 'mio-previewer'
+import { AlertPlugin } from 'mio-previewer/plugins/markdown-it'
+import 'mio-previewer/dist/mio-previewer.css'
 
-```js
-import { AlertPlugin, EmojiPlugin } from 'mio-previewer'
+const markdown = `
+::: info
+This is an **info** alert with markdown support!
+:::
 
-// Built-in plugins
-const customPlugins = [AlertPlugin, EmojiPlugin]
+::: warning
+⚠️ Warning message
+:::
 
-// Or create your own
-const MyPlugin = {
-  name: 'my-plugin',
-  priority: 50,  // Higher priority executes first
-  test: (node) => node.type === 'tag' && node.name === 'custom',
+::: error
+❌ Error message
+:::
+
+::: success
+✅ Success message
+:::
+`
+
+const markdownItPlugins = [
+  { plugin: AlertPlugin }
+]
+</script>
+
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :markdownItPlugins="markdownItPlugins" 
+  />
+</template>
+```
+
+#### Syntax Highlighting
+
+```vue
+<script setup>
+import { MdRenderer } from 'mio-previewer'
+import { CodeBlockPlugin } from 'mio-previewer/plugins/custom'
+import 'mio-previewer/dist/mio-previewer.css'
+
+const markdown = `
+\`\`\`javascript
+function hello() {
+  console.log('Hello World!')
+}
+\`\`\`
+
+\`\`\`python
+def greet():
+    print("Hello from Python!")
+\`\`\`
+`
+
+const customPlugins = [CodeBlockPlugin]
+</script>
+
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :customPlugins="customPlugins" 
+  />
+</template>
+```
+
+#### Mermaid Diagrams
+
+```vue
+<script setup>
+import { MdRenderer } from 'mio-previewer'
+import { mermaidPlugin } from 'mio-previewer/plugins/custom'
+import 'mio-previewer/dist/mio-previewer.css'
+
+const markdown = `
+\`\`\`mermaid
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Continue]
+    B -->|No| D[Stop]
+\`\`\`
+`
+
+const customPlugins = [mermaidPlugin]
+</script>
+
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :customPlugins="customPlugins" 
+  />
+</template>
+```
+
+#### Emoji Support
+
+```vue
+<script setup>
+import { MdRenderer } from 'mio-previewer'
+import { EmojiPlugin } from 'mio-previewer/plugins/custom'
+import 'mio-previewer/dist/mio-previewer.css'
+
+const markdown = 'Hello :smile: Welcome! :tada: :rocket:'
+
+const customPlugins = [EmojiPlugin]
+</script>
+
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :customPlugins="customPlugins" 
+  />
+</template>
+```
+
+### Complete Example with All Plugins
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import { MdRenderer } from 'mio-previewer'
+import { AlertPlugin, katexPlugin } from 'mio-previewer/plugins/markdown-it'
+import { mermaidPlugin, CodeBlockPlugin, EmojiPlugin } from 'mio-previewer/plugins/custom'
+import 'mio-previewer/dist/mio-previewer.css'
+
+const markdown = ref(`# Complete Demo :rocket:
+
+## Alerts
+::: info
+This is **important** information!
+:::
+
+## Math
+Inline: $E = mc^2$
+
+Block: $$\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}$$
+
+## Code
+\`\`\`javascript
+console.log('Hello World!')
+\`\`\`
+
+## Diagram
+\`\`\`mermaid
+graph LR
+    A --> B --> C
+\`\`\`
+
+Great work! :thumbsup: :100:
+`)
+
+const customPlugins = [
+  mermaidPlugin,
+  CodeBlockPlugin,
+  EmojiPlugin
+]
+
+const markdownItPlugins = [
+  { plugin: AlertPlugin },
+  { plugin: katexPlugin }
+]
+</script>
+
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :customPlugins="customPlugins"
+    :markdownItPlugins="markdownItPlugins"
+  />
+</template>
+```
+
+### Creating Custom Plugins
+
+#### Custom Rendering Plugin
+
+```javascript
+const HighlightPlugin = {
+  name: 'highlight',
+  priority: 50,
+  test: (node) => {
+    return node.type === 'tag' && 
+           node.name === 'mark'
+  },
   render: (node, renderChildren, h) => {
-    return h('div', { class: 'my-custom' }, renderChildren())
+    return h('mark', {
+      style: {
+        backgroundColor: '#ffeb3b',
+        padding: '2px 4px',
+        borderRadius: '2px'
+      }
+    }, renderChildren())
   }
 }
 
-<MdRenderer :md="text" :customPlugins="[MyPlugin, ...customPlugins]" />
+// Use it
+const customPlugins = [HighlightPlugin]
 ```
 
-### Built-in Plugins
+#### Custom Markdown-it Plugin
 
-- **AlertPlugin**: Renders custom alert boxes with types (info, warning, error, success)
-- **EmojiPlugin**: Converts emoji codes like `:smile:` → 😊
-- **CodeBlockPlugin**: Prism syntax highlighting with copy & HTML preview buttons (20+ languages)
-- **katexPlugin**: Renders math formulas with KaTeX (supports `$...$`, `$$...$$`, `\(...\)`, `\[...\]` delimiters)
-- **mermaidPlugin**: Renders diagrams with Mermaid (flowcharts, sequence diagrams, state diagrams, class diagrams, etc.) with dark/light theme support
+```javascript
+function customContainerPlugin(md) {
+  md.use(require('markdown-it-container'), 'note', {
+    render: (tokens, idx) => {
+      if (tokens[idx].nesting === 1) {
+        return '<div class="note">\n'
+      } else {
+        return '</div>\n'
+      }
+    }
+  })
+}
 
-### Plugin Priority
+const markdownItPlugins = [
+  { plugin: customContainerPlugin }
+]
+```
 
-Plugins are executed in priority order (higher first). Built-in CursorPlugin has priority 100.
+## API Reference
 
-**Recommended ranges:**
-- 100+: System plugins
-- 50-99: High priority (containers, alerts)
-- 10-49: Medium priority (icons, badges)
-- 0-9: Low priority (text processing, emoji)
+### MdRenderer Props
 
-### Documentation
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `md` | `string` | `''` | Markdown content to render |
+| `isStreaming` | `boolean` | `false` | Show cursor during streaming |
+| `useWorker` | `boolean` | `false` | Use Web Worker for parsing |
+| `customPlugins` | `CustomPlugin[]` | `[]` | Custom rendering plugins |
+| `markdownItPlugins` | `MarkdownItPluginConfig[]` | `[]` | Markdown-it plugins |
+| `markdownItOptions` | `object` | `{}` | Markdown-it options |
 
-See [Plugin Guide](./docs/PLUGIN_GUIDE.md) for detailed documentation, examples, and best practices.
+### Plugin Types
 
-### Demo
+#### CustomPlugin
 
-Run the plugin demo:
+```typescript
+interface CustomPlugin {
+  name?: string
+  priority?: number  // Higher = earlier execution
+  test: (node: ASTNode) => boolean
+  render: (
+    node: ASTNode,
+    renderChildren: () => VNode[],
+    h: typeof import('vue').h
+  ) => VNode | string | null
+}
+```
+
+#### MarkdownItPluginConfig
+
+```typescript
+interface MarkdownItPluginConfig {
+  plugin: (md: MarkdownIt, options?: any) => void
+  options?: any
+}
+```
+
+## Built-in Plugins
+
+### Markdown-it Plugins (Syntax)
+
+| Plugin | Import Path | Description |
+|--------|-------------|-------------|
+| `AlertPlugin` | `mio-previewer/plugins/markdown-it` | Alert boxes (info, warning, error, success) |
+| `katexPlugin` | `mio-previewer/plugins/markdown-it` | Math formulas with KaTeX |
+
+### Custom Plugins (Rendering)
+
+| Plugin | Import Path | Description |
+|--------|-------------|-------------|
+| `mermaidPlugin` | `mio-previewer/plugins/custom` | Diagram rendering with Mermaid |
+| `CodeBlockPlugin` | `mio-previewer/plugins/custom` | Syntax highlighting with Prism |
+| `EmojiPlugin` | `mio-previewer/plugins/custom` | Emoji code replacement |
+
+## Advanced Usage
+
+### Markdown-it Options
+
+```vue
+<script setup>
+const markdownItOptions = {
+  html: true,        // Enable HTML tags
+  linkify: true,     // Auto-convert URLs
+  typographer: true, // Smart quotes, dashes
+  breaks: false      // Convert \n to <br>
+}
+</script>
+
+<template>
+  <MdRenderer 
+    :md="markdown" 
+    :markdownItOptions="markdownItOptions" 
+  />
+</template>
+```
+
+### Web Worker Mode
+
+For better performance with large documents:
+
+```vue
+<template>
+  <MdRenderer 
+    :md="largeMarkdown" 
+    :useWorker="true" 
+  />
+</template>
+```
+
+**Note:** Worker mode requires `public/parser.worker.js` to be accessible.
+
+## Development
+
 ```bash
+# Install dependencies
+pnpm install
+
+# Start dev server
 pnpm dev
-# Open http://localhost:5173/plugin-demo.html
+
+# Build library
+pnpm build
+
+# Run benchmark
+pnpm benchmark
 ```
 
-## Worker contract
+## Project Structure
 
-When `useWorker` is `true`, `MdRenderer` creates a module Worker with:
-
-```js
-worker = new Worker(new URL('/parser.worker.js', import.meta.url), { type: 'module' })
-worker.postMessage({ markdownText: newMd })
-// worker should respond with: postMessage({ ast })
+```
+mio-previewer/
+├── src/
+│   ├── MdRenderer.vue           # Main renderer component
+│   ├── components/
+│   │   ├── RecursiveRenderer.vue # AST to VNode renderer
+│   │   ├── BlinkingCursor.vue   # Streaming cursor
+│   │   └── CodeBlock.vue        # Code highlighting
+│   ├── plugins/
+│   │   ├── AlertPlugin.ts       # Alert boxes
+│   │   ├── katexPlugin.ts       # Math formulas
+│   │   ├── mermaidPlugin.ts     # Diagrams
+│   │   ├── CodeBlockPlugin.ts   # Syntax highlighting
+│   │   └── EmojiPlugin.ts       # Emoji support
+│   └── index.ts                 # Library entry
+├── public/
+│   └── parser.worker.js         # Optional Web Worker
+└── docs/                        # Documentation
 ```
 
-The `ast` must be the same shape as `parseDocument(html).children` so
-that `RecursiveRenderer` can consume it directly.
+## Browser Support
 
-## TypeScript migration notes
-
-This repo was migrated progressively to TypeScript. To keep the
-conversion low-risk, a temporary `src/types-shims.d.ts` provides minimal
-module declarations. Recommended next steps to tighten types:
-
-```bash
-pnpm add -D vue-tsc @types/htmlparser2 @types/markdown-it
-npx vue-tsc --noEmit
-```
-
-Then replace the shim declarations with real types from the installed
-packages.
-
-## Development tips
-
-- To debug AST output, add a `console.log(parseDocument(html).children)`
-	in `MdRenderer.vue` before assigning `ast` — this helps inspect node
-	shapes for plugin writing.
-- If you change streaming logic, ensure `manageCursor` is called to
-	preserve cursor visibility during incremental updates.
-
-## Files of interest
-
-- `src/MdRenderer.vue` — main parsing & streaming logic
-- `src/components/RecursiveRenderer.vue` — renderer & plugin system
-- `src/components/BlinkingCursor.vue` — streaming cursor
-- `public/parser.worker.js` — optional worker parsing contract
+- Chrome/Edge: Latest 2 versions
+- Firefox: Latest 2 versions  
+- Safari: Latest 2 versions
 
 ## License
 
 MIT
+
+## Links
+
+- [GitHub Repository](https://github.com/Pretend-to/mio-previewer)
+- [npm Package](https://www.npmjs.com/package/mio-previewer)
+- [Plugin Guide](./docs/PLUGIN_GUIDE.md)
+- [Changelog](./CHANGELOG.md)
