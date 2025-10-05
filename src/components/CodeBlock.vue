@@ -44,18 +44,20 @@
     ><code :class="`language-${language}`" v-html="highlightedCode"></code></pre>
     
     <!-- HTML 预览区域 -->
-    <div v-if="isPreviewOpen" class="iframe-wrapper">
+    <div v-if="isPreviewOpen" class="iframe-wrapper" :style="{ height: iframeHeight }">
       <iframe
+        ref="previewIframe"
         class="html-preview-iframe"
-        :srcdoc="code"
+        :srcdoc="enhancedHtmlCode"
         sandbox="allow-scripts allow-forms allow-popups allow-modals allow-same-origin"
+        @load="handleIframeLoad"
       ></iframe>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import Prism from 'prismjs';
 // Import Prism theme so CSS is included in the build
 import 'prismjs/themes/prism-tomorrow.css';
@@ -89,6 +91,11 @@ const props = defineProps<{
 
 const isCopied = ref(false);
 const isPreviewOpen = ref(false);
+const previewIframe = ref<HTMLIFrameElement | null>(null);
+const iframeHeight = ref('300px');
+
+// 生成唯一的 iframe ID
+const iframeId = `iframe-${Math.random().toString(36).substr(2, 9)}-${Date.now()}`;
 
 // 计算是否为 HTML 语言
 function isHtmlLang() {
@@ -97,12 +104,12 @@ function isHtmlLang() {
 }
 
 // 计算高亮后的代码
-function getHighlightedCode() {
+function getHighlightedCode(): string {
   const lang = props.language || 'plaintext';
   if (Prism.languages[lang]) {
     return Prism.highlight(props.code, Prism.languages[lang], lang);
   }
-  return Prism.util.encode(props.code);
+  return Prism.util.encode(props.code) as string;
 }
 
 const highlightedCode = ref('');
@@ -139,7 +146,90 @@ const handlePreview = () => {
 // 关闭预览
 const handleClosePreview = () => {
   isPreviewOpen.value = false;
+  iframeHeight.value = '300px'; // 重置高度
 };
+
+// 增强的 HTML 代码，注入高度自适应脚本
+const enhancedHtmlCode = computed(() => {
+  const heightScript = `
+    <script>
+      (function() {
+        const iframeId = '${iframeId}';
+        
+        function sendHeight() {
+          const height = Math.max(
+            document.documentElement.scrollHeight,
+            document.documentElement.offsetHeight,
+            document.body.scrollHeight,
+            document.body.offsetHeight
+          );
+          window.parent.postMessage({
+            type: 'iframe-height',
+            iframeId: iframeId,
+            height: height
+          }, '*');
+        }
+        
+        // 初始发送
+        if (document.readyState === 'complete') {
+          sendHeight();
+        } else {
+          window.addEventListener('load', sendHeight);
+        }
+        
+        // 监听内容变化
+        const observer = new ResizeObserver(sendHeight);
+        observer.observe(document.body);
+        
+        // 监听 DOM 变化
+        const mutationObserver = new MutationObserver(sendHeight);
+        mutationObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+        
+        // 定时更新（防止某些情况下监听失效）
+        setInterval(sendHeight, 1000);
+      })();
+    <\/script>
+  `;
+  
+  // 如果 HTML 中没有 </body>，在末尾添加脚本
+  if (props.code.toLowerCase().includes('</body>')) {
+    return props.code.replace('</body>', `${heightScript}</body>`);
+  } else {
+    return props.code + heightScript;
+  }
+});
+
+// 处理 iframe 加载
+const handleIframeLoad = () => {
+  // iframe 加载完成后，可以进行额外的初始化
+};
+
+// 监听来自 iframe 的消息
+const handleMessage = (event: MessageEvent) => {
+  // 只处理来自当前 iframe 的消息
+  if (event.data && 
+      event.data.type === 'iframe-height' && 
+      event.data.iframeId === iframeId) {
+    const height = event.data.height;
+    // 设置最小高度 100px，最大高度 800px
+    const clampedHeight = Math.max(100, Math.min(800, height));
+    iframeHeight.value = `${clampedHeight}px`;
+  }
+};
+
+// 组件挂载时添加消息监听
+onMounted(() => {
+  window.addEventListener('message', handleMessage);
+});
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  window.removeEventListener('message', handleMessage);
+});
 
 // SVG 图标
 const copySvg = `<svg width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M4 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2 0v10h6V2H6zm-1 2V2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-8zm-2 2H2V14a2 2 0 0 0 2 2h6v-2a2 2 0 0 0-2-2H4V4zm0 0v10a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4H4z"/></svg>`;
@@ -249,13 +339,14 @@ pre::-webkit-scrollbar-thumb:hover {
 
 .iframe-wrapper {
   width: 100%;
-  min-height: 200px;
-  height: 300px;
-  resize: vertical;
+  min-height: 100px;
+  max-height: 800px;
   overflow: hidden;
   display: block;
   position: relative;
   border: 1px solid #ddd;
+  background: #fff;
+  transition: height 0.2s ease-out;
 }
 
 .html-preview-iframe {

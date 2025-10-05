@@ -26,6 +26,15 @@ Build / dev commands
 - Build production: `pnpm build` or `npm run build`.
 - Preview build: `pnpm preview` or `npm run preview`.
 
+Release workflow
+1. Verify build: `pnpm build` - ensure no compilation errors
+2. Update version: Edit `package.json` version field (follow semver: major.minor.patch)
+3. Update `CHANGELOG.md`: Add new version entry with changes
+4. Commit changes: `git add . && git commit -m "chore: release v0.x.x"`
+5. Create git tag: `git tag v0.x.x` (must match package.json version with 'v' prefix)
+6. Push with tags: `git push origin main --tags`
+7. GitHub Actions will auto-trigger on tag push and publish to npm (see `.github/workflows/publish.yml`)
+
 Examples and implementation notes for agents
 - To add a new streaming feature, prefer updating `MdRenderer.vue` parsing logic and `manageCursor` handling. See `watch(() => props.md, ...)` to follow streaming-friendly update flow.
 - To add custom rendering (e.g., mermaid, custom components), implement a plugin and pass it to `RecursiveRenderer` via `:plugins="[MyPlugin]"`. Example test function: `node.type === 'component' && node.name === 'mycomp'` and render using `h(MyComp, node.attribs || {})`.

@@ -17,9 +17,9 @@ const props = defineProps<{
   isStreaming?: boolean
 }>()
 
-const diagramRef = ref(null)
-const error = ref(null)
-const currentTheme = ref('default')
+const diagramRef = ref<HTMLDivElement | null>(null)
+const error = ref<string | null>(null)
+const currentTheme = ref<'dark' | 'default'>('default')
 
 // 检测当前主题（优先级：.theme-dark/light class > prefers-color-scheme）
 const detectTheme = (): 'dark' | 'default' => {
