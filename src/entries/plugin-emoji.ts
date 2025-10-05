@@ -1,2 +1,2 @@
 // On-demand entry for the Emoji plugin
-export { EmojiPlugin } from '../plugins/EmojiPlugin'
+export { emojiPlugin } from '../plugins/custom/emojiPlugin'

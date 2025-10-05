@@ -14,9 +14,7 @@ import { ref, watch, onMounted, onUnmounted, type Ref } from 'vue';
 
 import RecursiveRenderer from './components/RecursiveRenderer.vue';
 
-import BlinkingCursor from './components/BlinkingCursor.vue';
-
-import type { CustomPlugin, MarkdownItPluginConfig } from './types';
+import type { CustomPluginConfig, MarkdownItPluginConfig } from './types';
 
 // === Props ===
 type Props = {
@@ -25,7 +23,7 @@ type Props = {
   useWorker?: boolean;
   markdownItPlugins?: MarkdownItPluginConfig[];
   markdownItOptions?: Record<string, any>;
-  customPlugins?: CustomPlugin[];
+  customPlugins?: CustomPluginConfig[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -89,20 +87,18 @@ function createMarkdownInstance() {
 
 let md = createMarkdownInstance();
 
-// 将所有自定义组件放入一个对象中，以便传递给渲染器
-const CursorPlugin: CustomPlugin = {
-  name: 'cursor',
-  priority: 100,
-  test: (node: any) => node.type === 'component' && node.name === 'cursor',
-  render: (node: any, renderChildren: any, h: any) => {
-    // 直接渲染 BlinkingCursor 组件
-    return h(BlinkingCursor, node.attribs || {});
-  }
-};
-
-// 合并内置插件和用户自定义插件，并按优先级排序
+// 合并用户自定义插件，并按优先级排序
 function getAllPlugins() {
-  const plugins = [CursorPlugin, ...(props.customPlugins || [])];
+  if (!props.customPlugins || props.customPlugins.length === 0) {
+    return [];
+  }
+  
+  // 实例化所有插件（调用工厂函数）
+  const plugins = props.customPlugins.map(config => 
+    config.plugin(config.options)
+  );
+  
+  // 按优先级排序
   return plugins.sort((a, b) => (b.priority || 0) - (a.priority || 0));
 }
 

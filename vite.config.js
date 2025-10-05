@@ -19,9 +19,8 @@ export default defineConfig({
       lib: {
         entry: {
           index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-          'entries/md': fileURLToPath(new URL('./src/entries/md.ts', import.meta.url)),
-          'plugins/custom': fileURLToPath(new URL('./src/entries/plugins/custom.ts', import.meta.url)),
-          'plugins/markdown-it': fileURLToPath(new URL('./src/entries/plugins/markdown-it.ts', import.meta.url)),
+          'plugins/custom': fileURLToPath(new URL('./src/plugins/custom/index.ts', import.meta.url)),
+          'plugins/markdown-it': fileURLToPath(new URL('./src/plugins/markdown-it/index.ts', import.meta.url)),
         },
       name: 'MioPreviewer',
       // build only ES and CJS to avoid problematic UMD output
@@ -29,10 +28,12 @@ export default defineConfig({
       fileName: (format, entryName) => {
         // keep original top-level filenames for the main index
         if (entryName === 'index') return `mio-previewer.${format}.js`;
-        // for others, preserve relative folders under dist/
-        const base = entryName.replace(/^entries\//, 'entries/').replace(/^plugins\//, 'plugins/');
-        const ext = format === 'es' ? 'es.js' : 'cjs.js';
-        return `${base}.${ext}`;
+        // for plugins, preserve folder structure
+        if (entryName.startsWith('plugins/')) {
+          const ext = format === 'es' ? 'es.js' : 'cjs.js';
+          return `${entryName}.${ext}`;
+        }
+        return `[name].${format}.js`;
       }
     },
     rollupOptions: {
@@ -41,6 +42,23 @@ export default defineConfig({
       output: {
         globals: {
           vue: 'Vue'
+        },
+        entryFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId || '';
+          // Handle main entry
+          if (facadeModuleId.includes('src/index.ts')) {
+            return chunkInfo.isEntry ? `mio-previewer.[format].js` : `[name].[format].js`;
+          }
+          // Handle plugins/custom
+          if (facadeModuleId.includes('src/plugins/custom/index.ts')) {
+            return `plugins/custom.[format].js`;
+          }
+          // Handle plugins/markdown-it
+          if (facadeModuleId.includes('src/plugins/markdown-it/index.ts')) {
+            return `plugins/markdown-it.[format].js`;
+          }
+          // Default fallback
+          return `[name].[format].js`;
         }
       }
     }

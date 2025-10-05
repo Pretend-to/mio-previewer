@@ -1,2 +1,2 @@
 // On-demand entry for the CodeBlock plugin
-export { CodeBlockPlugin } from '../plugins/CodeBlockPlugin'
+export { codeBlockPlugin } from '../plugins/custom/codeBlockPlugin'

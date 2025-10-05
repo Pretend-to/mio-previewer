@@ -1,7 +1,7 @@
 import markdownItContainer from 'markdown-it-container';
 
 /**
- * AlertPlugin - markdown-it 插件，支持 Alert 警告框
+ * alertPlugin - markdown-it 插件，支持 Alert 警告框
  * 
  * 支持 markdown 语法:
  * ::: info
@@ -13,12 +13,12 @@ import markdownItContainer from 'markdown-it-container';
  * 使用方式：直接放到 markdownItPlugins 里
  * 
  * @example
- * import { AlertPlugin } from './plugins/AlertPlugin'
+ * import { alertPlugin } from './plugins/alertPlugin'
  * 
- * <MdRenderer :markdownItPlugins="[{ plugin: AlertPlugin }]" />
+ * <MdRenderer :markdownItPlugins="[{ plugin: alertPlugin }]" />
  */
 
-export function AlertPlugin(md: any) {
+export function alertPlugin(md: any) {
   const types = ['info', 'warning', 'error', 'success'];
   const colors = {
     info: '#0ea5e9',

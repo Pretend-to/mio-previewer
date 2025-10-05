@@ -69,3 +69,8 @@
   margin: 0 !important; /* 移除多余的外边距 */
 }
 
+.mio-previewer {
+  /* 确保插件预览器内的内容不会溢出 */
+  overflow-x: auto;
+}
+

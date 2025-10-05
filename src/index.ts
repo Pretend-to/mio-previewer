@@ -5,17 +5,30 @@ import MdRenderer from './MdRenderer.vue'
 export type {
   ASTNode,
   CustomPlugin,
+  CustomPluginConfig,
   MarkdownItPluginConfig,
   MdRendererProps
 } from './types'
 
-// Export built-in plugins
-// Per-plugin subpath entries are available under `mio-previewer/plugin-*`.
-// We intentionally avoid a single 'plugins' aggregate export to encourage
-// explicit, on-demand imports which are friendlier for tree-shaking.
+// Export custom rendering plugins
+export { 
+  codeBlockPlugin,
+  emojiPlugin,
+  mermaidPlugin,
+  cursorPlugin
+} from './plugins/custom'
+export type { 
+  CodeBlockPluginOptions,
+  EmojiPluginOptions,
+  MermaidPluginOptions,
+  CursorPluginOptions 
+} from './plugins/custom'
 
-// Export helper functions
-export { createAlertContainer, createAllAlertContainers, createAlertPlugins } from './helpers'
+// Export markdown-it plugins
+export {
+  alertPlugin,
+  katexPlugin
+} from './plugins/markdown-it'
 
 // Provide both named and default export to be robust for dynamic imports
 export { MdRenderer }

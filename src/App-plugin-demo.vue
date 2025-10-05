@@ -15,6 +15,17 @@
           </span>
         </label>
       </div>
+      <div class="control-row">
+        <label>光标形状:</label>
+        <select v-model="cursorShape" @change="updateCursorPlugin">
+          <option value="square">方形 ▮</option>
+          <option value="line">竖线 |</option>
+        </select>
+      </div>
+      <div class="control-row">
+        <label>光标颜色:</label>
+        <input type="color" v-model="cursorColor" @change="updateCursorPlugin" />
+      </div>
       <div class="button-row">
         <button @click="startRendering">{{ enableStreaming ? '开始流式渲染' : '全量渲染' }}</button>
         <button @click="resetStreaming">重置</button>
@@ -35,19 +46,16 @@
 // @ts-nocheck - 禁用 TypeScript 检查以避免模板字符串中 $ 符号的误报错误
 import { ref } from 'vue'
 import MdRenderer from '/dist/mio-previewer.es.js'
-// import { AlertPlugin } from './plugins/AlertPlugin'
-// import { EmojiPlugin } from './plugins/EmojiPlugin'
-// import { CodeBlockPlugin } from './plugins/CodeBlockPlugin'
-// import { katexPlugin } from './plugins/katexPlugin'
-// import { mermaidPlugin } from './plugins/mermaidPlugin'
-import { AlertPlugin, katexPlugin } from '/dist/plugins/markdown-it.es.js'
-import { mermaidPlugin, CodeBlockPlugin, EmojiPlugin } from '/dist/plugins/custom.es.js'
+import { alertPlugin, katexPlugin } from '/dist/plugins/markdown-it.es.js'
+import { mermaidPlugin, codeBlockPlugin, emojiPlugin, cursorPlugin } from '/dist/plugins/custom.es.js'
 // 使用打包后样式（从 dist 引入）以在 demo 中测试发布包行为
 import '/dist/mio-previewer.css'
 
 const markdownStream = ref('')
 const isStreaming = ref(false)
 const enableStreaming = ref(true) // 控制是否启用流式输出
+const cursorShape = ref<'square' | 'line'>('square') // 光标形状
+const cursorColor = ref('#0066ff') // 光标颜色
 
 // 示例文本，包含自定义标记
 // @ts-ignore - TypeScript 误解析模板字符串中的 $ 符号
@@ -296,15 +304,25 @@ classDiagram
 `
 
 // 使用内置插件 (注意顺序：高优先级在前)
+// 新的插件系统支持配置 options
 const customPlugins = ref([
-  mermaidPlugin,    // priority: 80
-  CodeBlockPlugin,  // priority: 70
-  EmojiPlugin       // priority: 10
+  // 自定义光标样式（会覆盖默认的 cursorPlugin）
+  { 
+    plugin: cursorPlugin, 
+    options: { 
+      shape: cursorShape.value,
+      color: cursorColor.value,
+      blinkSpeed: 800 
+    } 
+  },
+  { plugin: mermaidPlugin },    // priority: 80
+  { plugin: codeBlockPlugin },  // priority: 70
+  { plugin: emojiPlugin }       // priority: 10
 ]);
 
 // 配置 markdown-it 插件
 const markdownItPlugins = ref([
-  { plugin: AlertPlugin },   // Alert 容器语法支持
+  { plugin: alertPlugin },   // Alert 容器语法支持
   { plugin: katexPlugin }    // KaTeX 数学公式支持
 ]);
 
@@ -347,6 +365,23 @@ function resetStreaming() {
   markdownStream.value = '';
   isStreaming.value = false;
 }
+
+// 更新光标插件配置
+function updateCursorPlugin() {
+  customPlugins.value = [
+    { 
+      plugin: cursorPlugin, 
+      options: { 
+        shape: cursorShape.value,
+        color: cursorColor.value,
+        blinkSpeed: 800 
+      } 
+    },
+    { plugin: mermaidPlugin },
+    { plugin: codeBlockPlugin },
+    { plugin: emojiPlugin }
+  ];
+}
 </script>
 
 <style scoped>
@@ -372,6 +407,50 @@ function resetStreaming() {
 
 .control-row {
   margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-row label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+  min-width: 80px;
+}
+
+.control-row select {
+  padding: 6px 12px;
+  font-size: 14px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.control-row select:hover {
+  border-color: #3b82f6;
+}
+
+.control-row select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.control-row input[type="color"] {
+  width: 60px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}
+
+.control-row input[type="color"]:hover {
+  border-color: #3b82f6;
 }
 
 .switch-label {

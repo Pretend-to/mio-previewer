@@ -60,7 +60,7 @@
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import Prism from 'prismjs';
 // Import Prism theme so CSS is included in the build
-import 'prismjs/themes/prism-tomorrow.css';
+// import 'prismjs/themes/prism-tomorrow.css'; // 注释掉,我们使用自定义样式
 
 // 导入常用语言支持
 import 'prismjs/components/prism-typescript';
@@ -353,5 +353,45 @@ pre::-webkit-scrollbar-thumb:hover {
   border: none;
   background: #fff;
   display: block;
+}
+</style>
+
+<!-- 全局样式：覆盖 GitHub CSS 和 Prism CSS -->
+<style>
+/* 使用高优先级选择器强制覆盖背景色 */
+.code-block-wrapper.code-block-wrapper pre {
+  background-color: #1e1e2e !important;
+  background: #1e1e2e !important;
+}
+
+.code-block-wrapper.code-block-wrapper code {
+  background: transparent !important;
+}
+
+/* 覆盖 Prism 主题的 language-* 类 */
+.code-block-wrapper pre[class*="language-"] {
+  background-color: #1e1e2e !important;
+  background: #1e1e2e !important;
+}
+
+.code-block-wrapper code[class*="language-"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* 强制覆盖所有可能的背景 */
+.code-block-wrapper pre,
+.code-block-wrapper pre code,
+.code-block-wrapper pre[class*="language-"],
+.code-block-wrapper code[class*="language-"] {
+  background-color: #1e1e2e !important;
+  background: #1e1e2e !important;
+}
+
+/* 覆盖 markdown-body 容器内的代码块 */
+.markdown-body .code-block-wrapper pre,
+.markdown-body .code-block-wrapper pre[class*="language-"] {
+  background-color: #1e1e2e !important;
+  background: #1e1e2e !important;
 }
 </style>

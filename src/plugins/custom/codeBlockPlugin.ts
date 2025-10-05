@@ -1,17 +1,57 @@
 import { h } from 'vue';
-import type { CustomPlugin, ASTNode } from '../types';
-import CodeBlock from '../components/CodeBlock.vue';
+import type { CustomPlugin, ASTNode } from '../../types';
+import CodeBlock from '../../components/CodeBlock.vue';
 
 /**
- * CodeBlockPlugin - 代码块渲染插件
+ * CodeBlock 插件配置选项
+ */
+export interface CodeBlockPluginOptions {
+  /**
+   * 优先级（默认 70）
+   */
+  priority?: number;
+  
+  /**
+   * 自定义语言别名映射
+   * @example { js: 'javascript', ts: 'typescript' }
+   */
+  languageAliases?: Record<string, string>;
+}
+
+/**
+ * codeBlockPlugin - 代码块渲染插件
  * 
  * 使用 Prism 进行语法高亮，并提供复制和 HTML 预览功能
  * 
- * 优先级: 70 (高于默认渲染)
+ * @param options - 插件配置选项
+ * @param options.priority - 优先级（默认 70）
+ * @param options.languageAliases - 语言别名映射
+ * @returns CustomPlugin
+ * 
+ * @example
+ * ```ts
+ * // 默认配置
+ * { plugin: codeBlockPlugin }
+ * 
+ * // 自定义配置
+ * { 
+ *   plugin: codeBlockPlugin, 
+ *   options: { 
+ *     priority: 80,
+ *     languageAliases: { js: 'javascript', ts: 'typescript' }
+ *   } 
+ * }
+ * ```
  */
-export const CodeBlockPlugin: CustomPlugin = {
-  name: 'codeblock',
-  priority: 70,
+export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin {
+  const {
+    priority = 70,
+    languageAliases = {}
+  } = options || {};
+  
+  return {
+    name: 'codeblock',
+    priority,
   test: (node: ASTNode) => {
     // 匹配 <pre> 标签且包含 <code> 子节点
     if (node.type !== 'tag' || node.name !== 'pre') {
@@ -38,7 +78,12 @@ export const CodeBlockPlugin: CustomPlugin = {
     // 提取语言信息
     const className = codeNode.attribs?.class || '';
     const languageMatch = className.match(/language-(\w+)/);
-    const language = languageMatch ? languageMatch[1] : 'plaintext';
+    let language = languageMatch ? languageMatch[1] : 'plaintext';
+    
+    // 应用语言别名映射
+    if (languageAliases[language]) {
+      language = languageAliases[language];
+    }
     
     // 提取代码内容
     const extractText = (n: ASTNode): string => {
@@ -59,4 +104,7 @@ export const CodeBlockPlugin: CustomPlugin = {
       language
     });
   }
-};
+  };
+}
+
+export default codeBlockPlugin;

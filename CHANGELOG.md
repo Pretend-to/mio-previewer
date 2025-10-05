@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.7 - 2025-10-05
+
+### Features
+- **Cursor Plugin: Circle Shape**: Added `'circle'` option to cursor plugin
+  - New shape option joins existing `'square'` and `'line'` shapes
+  - Circle cursor size: 8px × 8px with 50% border-radius
+  - Perfect for modern, minimalist designs (especially with black color)
+
+### Improvements
+- **Cursor Animation**: Improved blink animation from abrupt visibility toggle to smooth opacity fade
+  - Before: Used `step-end` animation causing cursor to suddenly appear/disappear
+  - After: Smooth opacity transition (1 → 0.2 → 1) using `ease-in-out` over 1.2s
+  - Better visual experience with more natural, eye-friendly animation
+- **Simplified Cursor API**: Removed unused `blinkSpeed` option from CursorPluginOptions
+  - Standardized animation speed for consistency across all cursor shapes
+
+### Example Usage
+```typescript
+// Circle cursor with black color (recommended)
+{ plugin: cursorPlugin, options: { shape: 'circle', color: '#000' } }
+
+// Circle cursor with custom color
+{ plugin: cursorPlugin, options: { shape: 'circle', color: '#0066ff' } }
+```
+
 ## 0.1.6 - 2025-10-05
 
 ### Improvements

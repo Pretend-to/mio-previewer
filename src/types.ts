@@ -44,6 +44,29 @@ export type CustomPlugin = {
 };
 
 /**
+ * Custom 插件配置（支持 options）
+ * 
+ * 使用方式：
+ * ```ts
+ * customPlugins: [
+ *   { plugin: codeBlockPlugin },                    // 无配置
+ *   { plugin: cursorPlugin, options: { shape: 'line' } }  // 带配置
+ * ]
+ * ```
+ */
+export type CustomPluginConfig = {
+  /**
+   * 插件工厂函数（接收可选配置，返回 CustomPlugin）
+   */
+  plugin: (options?: any) => CustomPlugin;
+
+  /**
+   * 插件选项（可选）
+   */
+  options?: any;
+};
+
+/**
  * Markdown-it 插件配置
  */
 export type MarkdownItPluginConfig = {
@@ -88,7 +111,7 @@ export type MdRendererProps = {
   markdownItOptions?: Record<string, any>;
 
   /**
-   * Custom 渲染插件
+   * Custom 渲染插件配置
    */
-  customPlugins?: CustomPlugin[];
+  customPlugins?: CustomPluginConfig[];
 };
