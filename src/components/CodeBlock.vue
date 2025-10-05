@@ -215,8 +215,8 @@ const handleMessage = (event: MessageEvent) => {
       event.data.type === 'iframe-height' && 
       event.data.iframeId === iframeId) {
     const height = event.data.height;
-    // 设置最小高度 100px，最大高度 800px
-    const clampedHeight = Math.max(100, Math.min(800, height));
+    // 设置最小高度 100px，最大高度 1000px
+    const clampedHeight = Math.max(100, Math.min(1000, height));
     iframeHeight.value = `${clampedHeight}px`;
   }
 };
@@ -339,14 +339,12 @@ pre::-webkit-scrollbar-thumb:hover {
 
 .iframe-wrapper {
   width: 100%;
-  min-height: 100px;
-  max-height: 800px;
   overflow: hidden;
   display: block;
   position: relative;
   border: 1px solid #ddd;
   background: #fff;
-  transition: height 0.2s ease-out;
+  transition: height 0.1s ease-out;
 }
 
 .html-preview-iframe {
