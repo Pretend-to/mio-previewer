@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.8 - 2025-10-05
+
+### Chore
+- **Temporary Worker Disable**: Temporarily disabled worker-based parsing by default in `MdRenderer` via `TEMP_DISABLE_WORKER = true`.
+  - This is a reversible, short-term change intended to simplify debugging and environments where workers are problematic.
+  - To re-enable worker parsing set `TEMP_DISABLE_WORKER = false` in `src/MdRenderer.vue` or remove the temporary guard.
+
+### Notes
+- This release contains only behavioral changes (no public API changes) and is safe to upgrade to. The worker code remains in place for easy reversion.
+
 ## 0.1.7 - 2025-10-05
 
 ### Features
