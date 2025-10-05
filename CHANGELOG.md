@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.5 - 2025-10-05
+
+### Features
+- **HTML Preview Auto-Height**: CodeBlock component now auto-adjusts iframe height for HTML previews
+  - Uses postMessage API to communicate height between iframe and parent component
+  - Supports multiple MdRenderer instances with unique iframe IDs to prevent message conflicts
+  - Height constraints: min 100px, max 800px with smooth transitions
+  - Monitors content changes via ResizeObserver, MutationObserver, and periodic polling
+
+### Improvements
+- **TypeScript Type Safety**: Removed obsolete `types-shims.d.ts` to use official Vue 3 types
+  - Fixed type annotations in `CodeBlock.vue` (added return types, proper ref types)
+  - Fixed type annotations in `MermaidDiagram.vue` (proper ref generics)
+  - Better IDE support and type checking
+
+### Documentation
+- Added release workflow documentation to `.github/copilot-instructions.md`
+  - Clear 7-step release process for AI agents and contributors
+  - Includes version update, changelog, git tagging, and automated npm publishing
+
 ## 0.1.4 - 2025-10-05
 
 ### Breaking Changes
