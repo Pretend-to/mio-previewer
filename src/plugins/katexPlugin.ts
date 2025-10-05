@@ -1,6 +1,6 @@
 /**
  * Enhanced KaTeX plugin for markdown-it
- * 
+ *
  * Supports multiple math delimiters (in priority order):
  * - Block math: $$...$$, \[...\]
  * - Inline math: \(...\), $...$
@@ -23,10 +23,10 @@ export function katexPlugin(md: any): void {
 function simpleKatexPlugin(md: any): void {
   // 所有支持的定界符，按优先级排序（长的在前）
   const allDelimiters: Delimiter[] = [
-    { open: '$$', close: '$$', display: true },
-    { open: '\\[', close: '\\]', display: true },
-    { open: '\\(', close: '\\)', display: false },
-    { open: '$', close: '$', display: false },
+    { open: "$$", close: "$$", display: true },
+    { open: "\\[", close: "\\]", display: true },
+    { open: "\\(", close: "\\)", display: false },
+    { open: "$", close: "$", display: false },
   ];
 
   // 统一的数学公式解析规则
@@ -44,7 +44,7 @@ function simpleKatexPlugin(md: any): void {
         // 检查反斜杠转义
         let pos = match - 1;
         let backslashes = 0;
-        while (pos >= 0 && src[pos] === '\\') {
+        while (pos >= 0 && src[pos] === "\\") {
           backslashes++;
           pos--;
         }
@@ -89,6 +89,11 @@ function simpleKatexPlugin(md: any): void {
       const html = katex.renderToString(token.content, {
         displayMode: display,
         throwOnError: false,
+        // Only output MathML markup (remove the HTML output). This keeps the
+        // MathML representation and prevents the HTML portion   // appended alongside it.
+        output: "mathml",
+        // Do not trust input to avoid inserting raw text nodes
+        trust: false,
       });
 
       if (display) {
@@ -97,18 +102,27 @@ function simpleKatexPlugin(md: any): void {
       return html;
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);
-      const encodedContent = md.utils ? md.utils.escapeHtml(token.content) : token.content;
-      const encodedError = md.utils ? md.utils.escapeHtml(errorMessage) : errorMessage;
+      const encodedContent = md.utils
+        ? md.utils.escapeHtml(token.content)
+        : token.content;
+      const encodedError = md.utils
+        ? md.utils.escapeHtml(errorMessage)
+        : errorMessage;
       return `<span class="katex-error" title="${encodedError}">${encodedContent}</span>`;
     }
   };
 
   // 注册规则 - 在 escape 之前
-  md.inline.ruler.before('escape', 'math', mathRule as any);
+  md.inline.ruler.before("escape", "math", mathRule as any);
   md.renderer.rules["math"] = mathRenderer as any;
 
   // 匹配块级公式的规则（markdown-it block rule 签名）
-  const mathBlockRule = (state: any, startLine: number, endLine: number, silent: boolean): boolean => {
+  const mathBlockRule = (
+    state: any,
+    startLine: number,
+    endLine: number,
+    silent: boolean
+  ): boolean => {
     for (const delim of allDelimiters) {
       if (!delim.display) continue; // 只处理块级定界符
 
@@ -117,7 +131,8 @@ function simpleKatexPlugin(md: any): void {
 
       // 检查行首是否为打开定界符
       if (pos + delim.open.length > max) continue;
-      if (state.src.slice(pos, pos + delim.open.length) !== delim.open) continue;
+      if (state.src.slice(pos, pos + delim.open.length) !== delim.open)
+        continue;
 
       pos += delim.open.length;
       const firstLine = state.src.slice(pos, max);
@@ -126,7 +141,7 @@ function simpleKatexPlugin(md: any): void {
       if (firstLine.trim().endsWith(delim.close)) {
         const content = firstLine.trim().slice(0, -delim.close.length);
         if (!silent) {
-          const token: any = state.push('math', 'math', 0);
+          const token: any = state.push("math", "math", 0);
           token.block = true;
           token.content = content;
           token.markup = delim.open;
@@ -161,17 +176,22 @@ function simpleKatexPlugin(md: any): void {
       // 保存并设置解析状态（符合 markdown-it 要求）
       const oldParent = state.parentType;
       const oldLineMax = state.lineMax;
-      state.parentType = 'math';
+      state.parentType = "math";
 
       // 收集内容
-      let content = '';
+      let content = "";
       for (let i = startLine + 1; i < nextLine; i++) {
-        const lineContent = state.getLines(i, i + 1, state.tShift[startLine], false);
+        const lineContent = state.getLines(
+          i,
+          i + 1,
+          state.tShift[startLine],
+          false
+        );
         content += lineContent;
       }
 
       if (!silent) {
-        const token: any = state.push('math', 'math', 0);
+        const token: any = state.push("math", "math", 0);
         token.block = true;
         token.content = content.trim();
         token.markup = delim.open;
@@ -189,6 +209,5 @@ function simpleKatexPlugin(md: any): void {
   };
 
   // 注册 block 规则，优先级在 fence 之前
-  md.block.ruler.before('fence', 'math_block', mathBlockRule as any);
+  md.block.ruler.before("fence", "math_block", mathBlockRule as any);
 }
-

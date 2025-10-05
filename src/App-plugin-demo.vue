@@ -34,17 +34,16 @@
 <script setup lang="ts">
 // @ts-nocheck - 禁用 TypeScript 检查以避免模板字符串中 $ 符号的误报错误
 import { ref } from 'vue'
-import MdRenderer from './MdRenderer.vue'
-import { AlertPlugin } from './plugins/AlertPlugin'
-import { EmojiPlugin } from './plugins/EmojiPlugin'
-import { CodeBlockPlugin } from './plugins/CodeBlockPlugin'
-import { katexPlugin } from './plugins/katexPlugin'
-import { mermaidPlugin } from './plugins/mermaidPlugin'
-import { createAllAlertContainers } from './helpers'
-// @ts-ignore - markdown-it-container types issue
-import markdownItContainer from 'markdown-it-container'
-// 导入 Prism 和 KaTeX 样式
-import './styles/plugin-styles.css'
+import MdRenderer from '/dist/mio-previewer.es.js'
+// import { AlertPlugin } from './plugins/AlertPlugin'
+// import { EmojiPlugin } from './plugins/EmojiPlugin'
+// import { CodeBlockPlugin } from './plugins/CodeBlockPlugin'
+// import { katexPlugin } from './plugins/katexPlugin'
+// import { mermaidPlugin } from './plugins/mermaidPlugin'
+import { AlertPlugin, katexPlugin } from '/dist/plugins/markdown-it.es.js'
+import { mermaidPlugin, CodeBlockPlugin, EmojiPlugin } from '/dist/plugins/custom.es.js'
+// 使用打包后样式（从 dist 引入）以在 demo 中测试发布包行为
+import '/dist/mio-previewer.css'
 
 const markdownStream = ref('')
 const isStreaming = ref(false)
@@ -300,17 +299,13 @@ classDiagram
 const customPlugins = ref([
   mermaidPlugin,    // priority: 80
   CodeBlockPlugin,  // priority: 70
-  AlertPlugin,      // priority: 50
   EmojiPlugin       // priority: 10
 ]);
 
-// 配置 markdown-it-container 来支持自定义容器语法
-// ::: type
-// 内容
-// :::
+// 配置 markdown-it 插件
 const markdownItPlugins = ref([
-  ...createAllAlertContainers(markdownItContainer),
-  { plugin: katexPlugin }  // 添加 KaTeX 数学公式支持
+  { plugin: AlertPlugin },   // Alert 容器语法支持
+  { plugin: katexPlugin }    // KaTeX 数学公式支持
 ]);
 
 let intervalId: number | null = null;

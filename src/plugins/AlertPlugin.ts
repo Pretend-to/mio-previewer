@@ -1,48 +1,44 @@
-import { h } from 'vue';
-import type { CustomPlugin } from '../types';
+import markdownItContainer from 'markdown-it-container';
 
 /**
- * AlertPlugin - 自定义警告框渲染插件
+ * AlertPlugin - markdown-it 插件，支持 Alert 警告框
  * 
- * 配合 markdown-it-container 使用，支持以下 markdown 语法:
- * 
+ * 支持 markdown 语法:
  * ::: info
  * 这是 info 类型的警告框，支持 **Markdown** 语法
  * :::
  * 
- * 或者使用 HTML 标签（但内部 Markdown 不会被解析）:
- * <div class="alert" data-type="info">纯文本内容</div>
- * 
  * 支持的类型: info, warning, error, success
+ * 
+ * 使用方式：直接放到 markdownItPlugins 里
+ * 
+ * @example
+ * import { AlertPlugin } from './plugins/AlertPlugin'
+ * 
+ * <MdRenderer :markdownItPlugins="[{ plugin: AlertPlugin }]" />
  */
-export const AlertPlugin: CustomPlugin = {
-  name: 'alert',
-  priority: 50,
-  test: (node) => {
-    return !!(node.type === 'tag' && 
-              node.name === 'div' && 
-              node.attribs?.class?.includes('alert'));
-  },
-  render: (node, renderChildren, h) => {
-    const type = node.attribs?.['data-type'] || 'info';
-    const colors = {
-      info: '#0ea5e9',
-      warning: '#f59e0b',
-      error: '#ef4444',
-      success: '#10b981'
-    };
-    const color = colors[type as keyof typeof colors] || colors.info;
-    
-    return h('div', {
-      class: `custom-alert alert-${type}`,
-      style: {
-        padding: '12px 16px',
-        borderLeft: `4px solid ${color}`,
-        backgroundColor: `${color}15`,
-        margin: '8px 0',
-        borderRadius: '4px',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
+
+export function AlertPlugin(md: any) {
+  const types = ['info', 'warning', 'error', 'success'];
+  const colors = {
+    info: '#0ea5e9',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    success: '#10b981'
+  };
+  
+  types.forEach(type => {
+    md.use(markdownItContainer, type, {
+      render: (tokens: any[], idx: number) => {
+        const color = colors[type as keyof typeof colors];
+        if (tokens[idx].nesting === 1) {
+          // 开始标签
+          return `<div class="custom-alert alert-${type}" style="padding: 12px 16px; border-left: 4px solid ${color}; background-color: ${color}15; margin: 8px 0; border-radius: 4px; font-family: system-ui, -apple-system, sans-serif;">\n`;
+        } else {
+          // 结束标签
+          return '</div>\n';
+        }
       }
-    }, renderChildren());
-  }
-};
+    });
+  });
+}

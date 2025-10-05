@@ -15,7 +15,7 @@ export type {
 // explicit, on-demand imports which are friendlier for tree-shaking.
 
 // Export helper functions
-export { createAlertContainer, createAllAlertContainers } from './helpers'
+export { createAlertContainer, createAllAlertContainers, createAlertPlugins } from './helpers'
 
 // Provide both named and default export to be robust for dynamic imports
 export { MdRenderer }

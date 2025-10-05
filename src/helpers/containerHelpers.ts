@@ -5,6 +5,7 @@
  */
 
 import type { MarkdownItPluginConfig } from '../types';
+import { AlertPlugin } from '../plugins/AlertPlugin';
 
 /**
  * 创建一个 Alert 容器配置
@@ -70,4 +71,17 @@ export function createAllAlertContainers(plugin: any): MarkdownItPluginConfig[] 
     createAlertContainer('error', plugin),
     createAlertContainer('success', plugin)
   ];
+}
+
+/**
+ * 便捷函数：同时返回自定义渲染插件（用于 RecursiveRenderer 的 customPlugins）
+ * 以及对应的 markdown-it-container 配置数组（用于 markdown-it 插件数组）
+ *
+ * 这样可以在 demo 中通过一个调用同时获得两类插件，使用更直观。
+ */
+export function createAlertPlugins(plugin: any) {
+  return {
+    customPlugins: [AlertPlugin],
+    markdownItPlugins: createAllAlertContainers(plugin)
+  };
 }

@@ -57,6 +57,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import Prism from 'prismjs';
+// Import Prism theme so CSS is included in the build
+import 'prismjs/themes/prism-tomorrow.css';
 
 // 导入常用语言支持
 import 'prismjs/components/prism-typescript';
@@ -221,6 +223,7 @@ code {
   font-family: 'JetBrains Mono', 'Fira Code', Consolas, Menlo, Monaco, monospace;
   font-size: 0.92em;
   line-height: 1.6;
+  color: #ddd;
 }
 
 pre {
