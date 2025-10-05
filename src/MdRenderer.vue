@@ -116,6 +116,10 @@ watch([() => props.markdownItPlugins, () => props.markdownItOptions], () => {
 
 // === State ===
 const ast: Ref<any[]> = ref([]);
+// TEMPORARY: disable worker usage globally. Set to `false` to re-enable worker handling.
+// This short-circuits creating/posting/terminating the parser worker while keeping
+// the original worker code in place as commented references for easy reversion.
+const TEMP_DISABLE_WORKER = true;
 let worker: Worker | null = null;
 
 // === 工具函数 (基本不变) ===
@@ -184,7 +188,8 @@ const parseMarkdown = (markdownText: string) => {
 
 // === 初始化 Worker (如果 useWorker 为 true) ===
 onMounted(() => {
-  if (props.useWorker && typeof window !== 'undefined') {
+  // If worker usage is temporarily disabled, always parse on the main thread.
+  if (!TEMP_DISABLE_WORKER && props.useWorker && typeof window !== 'undefined') {
     worker = new Worker(new URL('/parser.worker.js', import.meta.url), {
       type: 'module'
     });
@@ -197,7 +202,7 @@ onMounted(() => {
       }
     };
   } else {
-    // 如果不使用 Worker，则进行初始解析
+    // 如果不使用 Worker，则进行初始解析（默认路径）
     ast.value = parseMarkdown(props.md);
     if (props.isStreaming) {
       manageCursor(ast.value, 'add');
@@ -207,7 +212,8 @@ onMounted(() => {
 
 // 组件卸载时终止 worker
 onUnmounted(() => {
-  if (worker) {
+  // Only terminate if workers are actually used (and not temporarily disabled)
+  if (!TEMP_DISABLE_WORKER && worker) {
     worker.terminate();
   }
 });
@@ -221,9 +227,9 @@ watch(
 
     // --- 非流式模式 ---
     // 始终全量解析
-    if (!props.isStreaming) {
+      if (!props.isStreaming) {
       manageCursor(ast.value, 'remove');
-      if (props.useWorker && worker) {
+      if (!TEMP_DISABLE_WORKER && props.useWorker && worker) {
         try { if (typeof window !== 'undefined') (window as any).__mio_last_html__ = md.render(newMd); } catch(e){}
         worker.postMessage({ markdownText: newMd });
       } else {
@@ -251,7 +257,7 @@ watch(
       lastNode.data += newTextChunk;
     } else {
       // 5. 慢速路径：如果不行（例如新块含Markdown语法），则重新解析整个字符串
-      if (props.useWorker && worker) {
+      if (!TEMP_DISABLE_WORKER && props.useWorker && worker) {
         try { if (typeof window !== 'undefined') (window as any).__mio_last_html__ = md.render(newMd); } catch(e){}
         worker.postMessage({ markdownText: newMd });
       } else {
