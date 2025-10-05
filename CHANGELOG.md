@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.3 - 2025-10-05
+
+- Reworked package exports: main renderer available as default import `mio-previewer` and
+	unified plugin entry points under `mio-previewer/plugins/custom` and
+	`mio-previewer/plugins/markdown-it` for easier named imports.
+- Added `mio-previewer` root CSS class to the renderer for simpler external styling.
+- Updated package.json exports and types for the new subpath entries.
+
 ## 0.1.2 - 2025-01-05
 
 - Apply GitHub markdown styles by default in MdRenderer component
