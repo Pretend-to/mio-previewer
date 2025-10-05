@@ -16,17 +16,13 @@ export default defineConfig({
     },
   },
   build: {
-    lib: {
-      entry: {
-        index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-        'entries/md': fileURLToPath(new URL('./src/entries/md.ts', import.meta.url)),
-        'entries/plugin-alert': fileURLToPath(new URL('./src/entries/plugin-alert.ts', import.meta.url)),
-        'entries/plugin-emoji': fileURLToPath(new URL('./src/entries/plugin-emoji.ts', import.meta.url)),
-        'entries/plugin-codeblock': fileURLToPath(new URL('./src/entries/plugin-codeblock.ts', import.meta.url)),
-        'entries/plugin-katex': fileURLToPath(new URL('./src/entries/plugin-katex.ts', import.meta.url)),
-        'entries/plugin-mermaid': fileURLToPath(new URL('./src/entries/plugin-mermaid.ts', import.meta.url)),
-  // 'plugins/index' removed: prefer per-plugin subpath entries for on-demand imports
-      },
+      lib: {
+        entry: {
+          index: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
+          'entries/md': fileURLToPath(new URL('./src/entries/md.ts', import.meta.url)),
+          'plugins/custom': fileURLToPath(new URL('./src/entries/plugins/custom.ts', import.meta.url)),
+          'plugins/markdown-it': fileURLToPath(new URL('./src/entries/plugins/markdown-it.ts', import.meta.url)),
+        },
       name: 'MioPreviewer',
       // build only ES and CJS to avoid problematic UMD output
       formats: ['es', 'cjs'],

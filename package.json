@@ -62,36 +62,21 @@
       "import": "./dist/entries/md.es.js",
       "require": "./dist/entries/md.cjs.js"
     },
-    "./plugin-alert": {
-      "import": "./dist/entries/plugin-alert.es.js",
-      "require": "./dist/entries/plugin-alert.cjs.js"
+    "./plugins/custom": {
+      "import": "./dist/plugins/custom.es.js",
+      "require": "./dist/plugins/custom.cjs.js"
     },
-    "./plugin-emoji": {
-      "import": "./dist/entries/plugin-emoji.es.js",
-      "require": "./dist/entries/plugin-emoji.cjs.js"
+    "./plugins/markdown-it": {
+      "import": "./dist/plugins/markdown-it.es.js",
+      "require": "./dist/plugins/markdown-it.cjs.js"
     },
-    "./plugin-codeblock": {
-      "import": "./dist/entries/plugin-codeblock.es.js",
-      "require": "./dist/entries/plugin-codeblock.cjs.js"
-    },
-    "./plugin-katex": {
-      "import": "./dist/entries/plugin-katex.es.js",
-      "require": "./dist/entries/plugin-katex.cjs.js"
-    },
-    "./plugin-mermaid": {
-      "import": "./dist/entries/plugin-mermaid.es.js",
-      "require": "./dist/entries/plugin-mermaid.cjs.js"
-    },
+    "./style.css": "./dist/mio-previewer.css",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "plugin-alert": ["dist/types/src/entries/plugin-alert.d.ts"],
-      "plugin-emoji": ["dist/types/src/entries/plugin-emoji.d.ts"],
-      "plugin-codeblock": ["dist/types/src/entries/plugin-codeblock.d.ts"],
-      "plugin-katex": ["dist/types/src/entries/plugin-katex.d.ts"],
-      "plugin-mermaid": ["dist/types/src/entries/plugin-mermaid.d.ts"],
-      
+      "plugins/custom": ["dist/types/src/entries/plugins/custom.d.ts"],
+      "plugins/markdown-it": ["dist/types/src/entries/plugins/markdown-it.d.ts"],
       "*": ["dist/types/src/*"]
     }
   },
