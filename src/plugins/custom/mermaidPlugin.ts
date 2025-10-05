@@ -1,6 +1,20 @@
 /**
  * Mermaid Plugin for RecursiveRenderer
- * Detects code blocks with language="mermaid" and renders them as interactive diagrams
+ * Detects code blocks with language="mermaid" and renders them a      
+      // 传递配置的主题和流式状态
+      const props: any = { 
+        code, 
+        isStreaming: context?.isStreaming || false
+      };
+      
+      if (theme) {
+        props.theme = theme;
+      }
+      
+      return h(MermaidDiagram, props)
+    }
+  }
+}ms
  */
 
 import { h } from 'vue'
@@ -96,7 +110,7 @@ export function mermaidPlugin(options?: MermaidPluginOptions): CustomPlugin {
       return false
     },
 
-    render: (node: ASTNode, _renderChildren: any, _h: any, isStreaming?: boolean) => {
+    render: (node: ASTNode, _renderChildren: any, _h: any, context?: any) => {
       // Find the code child and extract content
       const codeChild = node.children?.find(
         (child: ASTNode) => child.type === 'tag' && child.name === 'code'
@@ -108,10 +122,10 @@ export function mermaidPlugin(options?: MermaidPluginOptions): CustomPlugin {
 
       const code = getCodeContent(codeChild)
       
-      // 传递配置的主题
+      // 传递配置的主题和流式状态
       const props: any = { 
         code, 
-        isStreaming: isStreaming || false
+        isStreaming: context?.isStreaming || false
       };
       
       if (theme) {

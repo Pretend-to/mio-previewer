@@ -76,7 +76,7 @@ export function emojiPlugin(options?: EmojiPluginOptions): CustomPlugin {
     test: (node) => {
       return node.type === 'text' && /:\w+:/g.test(node.data || '');
     },
-    render: (node, _renderChildren, _h) => {
+    render: (node, _renderChildren, _h, _context) => {
       const text = node.data || '';
       
       let result = text;

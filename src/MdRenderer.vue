@@ -1,7 +1,9 @@
 <!-- MdRenderer.vue (可选 Worker 版本) -->
 <template>
   <div class="mio-previewer markdown-body">
-    <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :isStreaming="isStreaming" />
+    <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :context="renderContext" />
+    <!-- 隐藏的容器用于 Viewer.js 管理图片 -->
+    <div ref="imageViewerContainer" style="display: none;"></div>
   </div>
 </template>
 
@@ -10,11 +12,12 @@
 import MarkdownIt from 'markdown-it';
 import { parseDocument } from 'htmlparser2';
 
-import { ref, watch, onMounted, onUnmounted, type Ref } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed, type Ref } from 'vue';
 
 import RecursiveRenderer from './components/RecursiveRenderer.vue';
+import { useImageViewerManager } from './composables/useImageViewerManager';
 
-import type { CustomPluginConfig, MarkdownItPluginConfig } from './types';
+import type { CustomPluginConfig, MarkdownItPluginConfig, RenderContext, ASTNode } from './types';
 
 // === Props ===
 type Props = {
@@ -116,13 +119,67 @@ watch([() => props.markdownItPlugins, () => props.markdownItOptions], () => {
 
 // === State ===
 const ast: Ref<any[]> = ref([]);
+
+// 获取 imageViewer 相关的 viewerOptions（从 customPlugins 中提取）
+const imageViewerOptions = computed(() => {
+  const imageViewerConfig = props.customPlugins?.find(
+    config => config.plugin.name === 'imageViewerPlugin' || 
+              (config.plugin.toString && config.plugin.toString().includes('imageViewer'))
+  );
+  return imageViewerConfig?.options?.viewerOptions || {};
+});
+
+// 初始化图片查看器管理器
+const imageViewerContainer = ref<HTMLElement | null>(null);
+const imageViewerManager = useImageViewerManager(imageViewerOptions.value);
+
+// 设置容器引用
+watch(imageViewerContainer, (container) => {
+  if (container) {
+    imageViewerManager.containerRef.value = container;
+  }
+}, { immediate: true });
+
+// 渲染上下文（传递给插件的共享状态）
+const renderContext = computed<RenderContext>(() => ({
+  images: collectImages(ast.value),
+  isStreaming: props.isStreaming
+}));
+
 // TEMPORARY: disable worker usage globally. Set to `false` to re-enable worker handling.
 // This short-circuits creating/posting/terminating the parser worker while keeping
 // the original worker code in place as commented references for easy reversion.
 const TEMP_DISABLE_WORKER = true;
 let worker: Worker | null = null;
 
-// === 工具函数 (基本不变) ===
+// === 工具函数 ===
+
+/**
+ * 收集 AST 中的所有图片节点
+ */
+function collectImages(nodes: ASTNode[]): RenderContext['images'] {
+  const images: NonNullable<RenderContext['images']> = [];
+  
+  function traverse(node: ASTNode) {
+    // 检查是否是图片标签
+    if (node.type === 'tag' && node.name === 'img' && node.attribs?.src) {
+      images.push({
+        src: node.attribs.src,
+        alt: node.attribs.alt,
+        title: node.attribs.title
+      });
+    }
+    
+    // 递归遍历子节点
+    if (node.children) {
+      node.children.forEach(traverse);
+    }
+  }
+  
+  nodes.forEach(traverse);
+  return images;
+}
+
 function findLastTextNode(nodes: any): any | null {
   if (!nodes?.length) return null;
   let last = nodes[nodes.length - 1];
@@ -210,12 +267,15 @@ onMounted(() => {
   }
 });
 
-// 组件卸载时终止 worker
+// 组件卸载时终止 worker 和清理图片管理器
 onUnmounted(() => {
   // Only terminate if workers are actually used (and not temporarily disabled)
   if (!TEMP_DISABLE_WORKER && worker) {
     worker.terminate();
   }
+  
+  // 清理图片查看器管理器
+  imageViewerManager.cleanup();
 });
 
 // === 核心逻辑 (已重构) ===

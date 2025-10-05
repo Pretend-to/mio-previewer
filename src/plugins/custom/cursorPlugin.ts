@@ -55,7 +55,7 @@ export function cursorPlugin(options: CursorPluginOptions = {}): CustomPlugin {
     name: 'cursor',
     priority,
     test: (node: any) => node.type === 'component' && node.name === 'cursor',
-    render: (node: any) => {
+    render: (node: any, _renderChildren: any, _h: any, _context?: any) => {
       // 合并 node.attribs 和 options
       const props = {
         ...node.attribs,

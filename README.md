@@ -391,6 +391,7 @@ interface MarkdownItPluginConfig {
 | `mermaidPlugin` | `mio-previewer/plugins/custom` | Diagram rendering with Mermaid |
 | `CodeBlockPlugin` | `mio-previewer/plugins/custom` | Syntax highlighting with Prism |
 | `EmojiPlugin` | `mio-previewer/plugins/custom` | Emoji code replacement |
+| `imageViewerPlugin` | `mio-previewer/plugins/custom` | Image preview with zoom & gestures ([docs](./docs/IMAGE_VIEWER_PLUGIN.md)) |
 
 ## Advanced Usage
 

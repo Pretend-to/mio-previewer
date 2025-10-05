@@ -12,6 +12,30 @@ export type ASTNode = {
 };
 
 /**
+ * 渲染上下文（传递给插件的共享状态）
+ */
+export type RenderContext = {
+  /**
+   * 图片列表（用于图片预览等功能）
+   */
+  images?: Array<{
+    src: string;
+    alt?: string;
+    title?: string;
+  }>;
+
+  /**
+   * 是否处于流式渲染模式
+   */
+  isStreaming?: boolean;
+
+  /**
+   * 其他自定义状态
+   */
+  [key: string]: any;
+};
+
+/**
  * Custom 插件接口
  */
 export type CustomPlugin = {
@@ -35,11 +59,13 @@ export type CustomPlugin = {
    * @param node 当前 AST 节点
    * @param renderChildren 渲染子节点的函数
    * @param h Vue 的 h 函数
+   * @param context 渲染上下文（包含共享状态）
    */
   render: (
     node: ASTNode,
     renderChildren: () => (VNode | string | null)[],
-    h: typeof import('vue').h
+    h: typeof import('vue').h,
+    context?: RenderContext
   ) => VNode | string | null;
 };
 

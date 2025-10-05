@@ -65,7 +65,7 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
     
     return !!hasCodeChild;
   },
-  render: (node: ASTNode, _renderChildren: any, _h: any) => {
+  render: (node: ASTNode, _renderChildren: any, _h: any, _context?: any) => {
     // 找到 code 节点
     const codeNode = node.children?.find(
       (child: ASTNode) => child.type === 'tag' && child.name === 'code'

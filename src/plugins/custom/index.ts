@@ -12,3 +12,6 @@ export type { MermaidPluginOptions } from './mermaidPlugin';
 
 export { cursorPlugin } from './cursorPlugin';
 export type { CursorPluginOptions } from './cursorPlugin';
+
+export { imageViewerPlugin } from './imageViewerPlugin';
+export type { ImageViewerPluginOptions } from './imageViewerPlugin';

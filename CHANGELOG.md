@@ -1,5 +1,134 @@
 # Changelog
 
+## 0.2.0 - 2025-10-05
+
+### ✨ New Features
+
+#### **Image Viewer Plugin** 🖼️
+A powerful image preview plugin with full mobile support:
+- **Click to Preview**: Click any image in markdown to open lightbox viewer
+- **Gallery Navigation**: Browse through all images with keyboard (←/→) or buttons
+- **Mobile Gestures**: Pinch-to-zoom, drag, and swipe on mobile devices
+- **Rich Controls**: Zoom, rotate, flip, reset, and fullscreen support
+- **Streaming Support**: Automatically tracks new images in streaming mode
+- **Zero Configuration**: Works out-of-the-box with sensible defaults
+
+**Usage**:
+```typescript
+import { imageViewerPlugin } from 'mio-previewer/plugins';
+
+const customPlugins = [
+  { plugin: imageViewerPlugin }  // That's it!
+];
+```
+
+**Default Features** (no config needed):
+- ✅ Full toolbar (zoom, rotate, flip, reset, navigation)
+- ✅ Thumbnail navigation bar
+- ✅ Image titles from alt/title attributes
+- ✅ Keyboard shortcuts
+- ✅ Fullscreen mode
+- ❌ Auto-play (off by default)
+
+**Powered by**: [viewerjs](https://github.com/fengyuanchen/viewerjs)
+
+### 🏗️ Architecture Improvements
+
+#### **Plugin System Enhancement**
+- **Context Passing**: All custom plugins now receive a `RenderContext` parameter
+  - Share state between plugins and renderer
+  - Access image list, streaming status, and custom data
+  - Type-safe with TypeScript definitions
+
+```typescript
+export type RenderContext = {
+  images?: Array<{ src: string; alt?: string; title?: string }>;
+  isStreaming?: boolean;
+  [key: string]: any;
+};
+```
+
+#### **MdRenderer Enhancements**
+- **Image Collection**: Automatically collects all images from AST
+- **Image Manager**: Global `useImageViewerManager` composable for unified image handling
+- **Provider Pattern**: Uses Vue's provide/inject for clean component communication
+
+### 🔧 Technical Changes
+
+#### **New Components**
+- `ImageViewer.vue`: Individual image component with viewer integration
+- `useImageViewerManager.ts`: Composable for managing viewer instances
+
+#### **Updated Plugin Signatures**
+All existing plugins updated to support context parameter:
+- `cursorPlugin` - Adapted to new signature
+- `codeBlockPlugin` - Adapted to new signature
+- `mermaidPlugin` - Adapted to new signature (uses `context.isStreaming`)
+- `emojiPlugin` - Adapted to new signature
+
+#### **RecursiveRenderer**
+- Added `context` prop
+- Passes context to all plugin render functions
+
+### 📦 Dependencies
+- **Added**: `viewerjs@^1.11.7` - Image viewer library
+
+### 📚 Documentation
+- **New**: `docs/IMAGE_VIEWER_PLUGIN.md` - Complete usage guide
+- **New**: `docs/IMAGE_VIEWER_IMPLEMENTATION.md` - Implementation details
+- **Updated**: README.md with imageViewerPlugin reference
+
+### 🎨 Demo
+- **New**: `image-viewer-demo.html` - Interactive demo page
+- **New**: `App-image-viewer-demo.vue` - Demo component with streaming
+
+### 🐛 Bug Fixes
+- Fixed Vue lifecycle hook errors in render functions
+  - Previously tried to use `onMounted`/`onUnmounted` directly in render
+  - Now uses proper component-based architecture
+
+### 💡 Design Decisions
+
+**Why Global Manager?**
+- Each image had independent Viewer instance → couldn't navigate between images
+- Solution: Single manager collects all images → enables gallery navigation
+
+**Why Component Instead of Render Function?**
+- Vue lifecycle hooks only work in component setup
+- Plugins return component instances instead of raw VNodes
+- Cleaner separation of concerns
+
+### 🚀 Migration Guide
+
+**From 0.1.x to 0.2.0**:
+
+No breaking changes! Existing plugins continue to work. The new `context` parameter is optional.
+
+**To use the new image viewer**:
+```typescript
+import { imageViewerPlugin } from 'mio-previewer/plugins';
+
+const customPlugins = [
+  { plugin: imageViewerPlugin }
+];
+```
+
+**To create context-aware plugins**:
+```typescript
+export function myPlugin(): CustomPlugin {
+  return {
+    name: 'myPlugin',
+    test: (node) => /* ... */,
+    render: (node, renderChildren, h, context) => {
+      // Access context.images, context.isStreaming, etc.
+      return h(/* ... */);
+    }
+  };
+}
+```
+
+---
+
 ## 0.1.8 - 2025-10-05
 
 ### Chore

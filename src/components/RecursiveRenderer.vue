@@ -1,9 +1,10 @@
 <script lang="ts">
 import { h, defineComponent, type VNode } from 'vue'
+import type { RenderContext } from '../types'
 
 type Plugin = {
   test: (node: any) => boolean;
-  render: (node: any, renderChildren: () => any[], h: any, isStreaming?: boolean) => VNode | string | null;
+  render: (node: any, renderChildren: () => any[], h: any, context?: RenderContext) => VNode | string | null;
 }
 
 export default defineComponent({
@@ -17,19 +18,19 @@ export default defineComponent({
       type: Array as () => Plugin[],
       default: () => ([])
     },
-    isStreaming: {
-      type: Boolean,
-      default: false
+    context: {
+      type: Object as () => RenderContext,
+      default: () => ({})
     }
   },
-  setup(props: { nodes: any[]; plugins?: any[]; isStreaming?: boolean }) {
+  setup(props: { nodes: any[]; plugins?: any[]; context?: RenderContext }) {
     function renderNode(node: any): VNode | string | null {
       // 1. 优先检查插件
       const plugins = props.plugins || []
       for (const plugin of plugins) {
         if (plugin.test && plugin.render && plugin.test(node)) {
           const renderChildren = () => node.children ? node.children.map(renderNode) : [];
-          return plugin.render(node, renderChildren, h as any, props.isStreaming);
+          return plugin.render(node, renderChildren, h as any, props.context);
         }
       }
 
