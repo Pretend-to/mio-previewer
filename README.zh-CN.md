@@ -33,7 +33,32 @@ yarn add mio-previewer
 </template>
 
 <script setup>
-import { ref } from 'vue'
+impor## 浏览器支持
+
+- Chrome/Edge: 最新 2 个版本
+- Firefox: 最新 2 个版本  
+- Safari: 最新 2 个版本
+
+## 文档
+
+📚 **[完整文档 →](./docs/README.md)**
+
+### 快速链接
+- [插件系统指南](./docs/PLUGINS.md) - 完整的插件系统文档
+- [自定义代码块样式](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md) - 代码块主题定制
+- [KaTeX 配置](./docs/KATEX_DELIMITERS.md) - 数学公式设置
+- [更新日志](./CHANGELOG.md) - 版本历史
+
+## 许可证
+
+MIT
+
+## 链接
+
+- [GitHub 仓库](https://github.com/Pretend-to/mio-previewer)
+- [npm 包](https://www.npmjs.com/package/mio-previewer)
+- [文档中心](./docs/README.md)
+vue'
 import { MdRenderer } from 'mio-previewer'
 import 'mio-previewer/dist/mio-previewer.css'
 

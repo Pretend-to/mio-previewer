@@ -473,6 +473,16 @@ mio-previewer/
 - Firefox: Latest 2 versions  
 - Safari: Latest 2 versions
 
+## Documentation
+
+📚 **[Complete Documentation →](./docs/README.md)**
+
+### Quick Links
+- [Plugin System Guide](./docs/PLUGINS.md) - Complete plugin system documentation
+- [Customize Code Block Styles](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md) - Code block theming
+- [KaTeX Configuration](./docs/KATEX_DELIMITERS.md) - Math formula setup
+- [Changelog](./CHANGELOG.md) - Version history
+
 ## License
 
 MIT
@@ -481,5 +491,5 @@ MIT
 
 - [GitHub Repository](https://github.com/Pretend-to/mio-previewer)
 - [npm Package](https://www.npmjs.com/package/mio-previewer)
-- [Plugin Guide](./docs/PLUGIN_GUIDE.md)
-- [Changelog](./CHANGELOG.md)
+- [Documentation Center](./docs/README.md)
+
