@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.6 - 2025-10-05
+
+### Improvements
+- **CodeBlock iframe preview**: Increased max height from 800px to 1000px for better content display
+- **Animation performance**: Reduced transition time from 0.2s to 0.1s for snappier iframe height adjustments
+- **MdRenderer flexibility**: Removed opinionated container styles (width, padding)
+  - Users now have full control over layout through parent components
+  - Only github-markdown-css is imported by default
+
+### Refactoring
+- Removed redundant CSS constraints in CodeBlock component
+- Simplified MdRenderer styles for better composability
+
 ## 0.1.5 - 2025-10-05
 
 ### Features
