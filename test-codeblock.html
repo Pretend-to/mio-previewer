@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeBlock 测试</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main-plugin-demo.ts"></script>
+  
+  <style>
+    body {
+      margin: 20px;
+      font-family: sans-serif;
+    }
+    
+    h1 {
+      color: #333;
+    }
+    
+    .test-info {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+  </style>
+  
+  <div class="test-info">
+    <h1>CodeBlock 功能测试</h1>
+    <ul>
+      <li>✅ Prism 代码高亮应该正常显示</li>
+      <li>✅ 点击复制按钮应该显示 tooltip "已复制"</li>
+      <li>✅ HTML 代码块应该有发布按钮（绿色）</li>
+      <li>✅ 点击发布按钮应该显示 tooltip "正在发布..." → "已发布成功"</li>
+      <li>✅ 点击全屏后，iframe 应该占满剩余空间</li>
+    </ul>
+  </div>
+</body>
+</html>

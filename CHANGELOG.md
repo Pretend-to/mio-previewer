@@ -1,5 +1,48 @@
 # Changelog
 
+## 0.2.1 - 2025-10-06
+
+### ✨ New Features
+
+#### **CodeBlock Plugin Enhancements**
+- **HTML Publish Support**: Added `publishUrl` option to enable HTML code publishing
+  - Send HTML code to a custom endpoint
+  - Optional `onPublished` callback for custom handling
+  - Auto-copy URL to clipboard when no callback provided
+- **Fullscreen Mode**: New fullscreen button for all code blocks
+  - Press ESC to exit fullscreen
+  - iframe preview adapts to fullscreen height
+- **Tooltip Notifications**: Interactive tooltips for button actions
+  - Copy confirmation
+  - Publish status updates
+  - Uses Vue Teleport to avoid overflow clipping
+
+**Usage**:
+```typescript
+import { codeBlockPlugin } from 'mio-previewer/plugins';
+
+const customPlugins = [
+  { 
+    plugin: codeBlockPlugin,
+    options: {
+      publishUrl: 'https://api.example.com/publish',
+      onPublished: (url) => console.log('Published:', url)
+    }
+  }
+];
+```
+
+### 🐛 Bug Fixes
+- **Prism Syntax Highlighting**: Re-enabled Prism theme CSS for proper code highlighting
+- **Fullscreen iframe**: Fixed iframe height calculation in fullscreen mode
+- **Tooltip Positioning**: Fixed tooltip not showing due to overflow hidden clipping
+- **Event Target Reference**: Fixed async event.currentTarget becoming null
+
+### 🔄 Breaking Changes
+- Renamed `updateUrl` to `publishUrl` in CodeBlockPlugin options (more semantic)
+
+---
+
 ## 0.2.0 - 2025-10-05
 
 ### ✨ New Features

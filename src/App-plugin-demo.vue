@@ -45,11 +45,16 @@
 <script setup lang="ts">
 // @ts-nocheck - 禁用 TypeScript 检查以避免模板字符串中 $ 符号的误报错误
 import { ref } from 'vue'
-import MdRenderer from '/dist/mio-previewer.es.js'
-import { alertPlugin, katexPlugin } from '/dist/plugins/markdown-it.es.js'
-import { mermaidPlugin, codeBlockPlugin, emojiPlugin, cursorPlugin } from '/dist/plugins/custom.es.js'
-// 使用打包后样式（从 dist 引入）以在 demo 中测试发布包行为
-import '/dist/mio-previewer.css'
+/* 从编译后的包中导入 */
+// import MdRenderer from '/dist/mio-previewer.es.js'
+// import { alertPlugin, katexPlugin } from '/dist/plugins/markdown-it.es.js'
+// import { mermaidPlugin, codeBlockPlugin, emojiPlugin, cursorPlugin } from '/dist/plugins/custom.es.js'
+// import '/dist/mio-previewer.css'
+
+/* 从源码中导入 - 仅用于开发环境 */
+import MdRenderer from './MdRenderer.vue'
+import { alertPlugin, katexPlugin } from './plugins/markdown-it'
+import { mermaidPlugin, codeBlockPlugin, emojiPlugin, cursorPlugin } from './plugins/custom'
 
 const markdownStream = ref('')
 const isStreaming = ref(false)
@@ -316,7 +321,15 @@ const customPlugins = ref([
     } 
   },
   { plugin: mermaidPlugin },    // priority: 80
-  { plugin: codeBlockPlugin },  // priority: 70
+  { 
+    plugin: codeBlockPlugin,  // priority: 70
+    options: {
+      publishUrl: 'https://httpbin.org/post', // 测试用的发布接口
+      onPublished: (url: string) => {
+        console.log('HTML 已发布到:', url);
+      }
+    }
+  },
   { plugin: emojiPlugin }       // priority: 10
 ]);
 

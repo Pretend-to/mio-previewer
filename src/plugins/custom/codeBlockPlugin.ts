@@ -16,6 +16,19 @@ export interface CodeBlockPluginOptions {
    * @example { js: 'javascript', ts: 'typescript' }
    */
   languageAliases?: Record<string, string>;
+  
+  /**
+   * HTML 发布接口 URL
+   * @example 'https://api.example.com/publish'
+   */
+  publishUrl?: string;
+  
+  /**
+   * 发布成功后的回调函数
+   * @param url - 发布后返回的 URL
+   * @example (url) => console.log('Published:', url)
+   */
+  onPublished?: (url: string) => void;
 }
 
 /**
@@ -46,7 +59,9 @@ export interface CodeBlockPluginOptions {
 export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin {
   const {
     priority = 70,
-    languageAliases = {}
+    languageAliases = {},
+    publishUrl,
+    onPublished
   } = options || {};
   
   return {
@@ -101,7 +116,9 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
     // 渲染 CodeBlock 组件 (使用顶层导入的 h)
     return h(CodeBlock, {
       code,
-      language
+      language,
+      publishUrl,
+      onPublished
     });
   }
   };
