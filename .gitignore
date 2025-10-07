@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Benchmark results (generated)
+benchmark/results/
+benchmark/results/*.json
+benchmark/results/*.png
+benchmark/results/*.csv
