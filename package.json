@@ -13,6 +13,7 @@
     "build": "pnpm run build:lib && pnpm run build:types",
     "preview": "vite preview",
     "benchmark": "node benchmark/runner.cjs",
+    "benchmark:high-freq": "node benchmark/run-high-freq.js",
     "prepare": "pnpm run build"
   },
   "dependencies": {
