@@ -2,7 +2,7 @@ import { createApp, h } from 'vue'
 
 // dynamic import to ensure Vite processes the SFC and avoids runtime-template issues
 ;(async () => {
-	const mod = await import('./entries/BenchmarkHighFreq.vue')
+	const mod = await import('./components/BenchmarkHighFreq.vue')
 	const Comp = mod.default || mod
 	const app: any = createApp(Comp)
 	app.mount('#app')
