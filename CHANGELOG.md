@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.2.3 - 2025-10-09
+
+### 🚀 Performance Improvements
+
+#### **Mermaid Diagram Lossless Zoom** 🔍
+- **Vector-based Scaling**: Reimplemented zoom using SVG `viewBox` manipulation instead of CSS transforms
+  - Maintains perfect clarity at all zoom levels (no pixelation or blurring)
+  - SVG vector graphics remain sharp from 10% to 500% zoom
+- **Mouse-centered Zoom**: Fixed zoom center point calculation
+  - Zoom now precisely centers on mouse cursor position
+  - Accurate coordinate system transformation chain (screen → SVG element → relative position → SVG coordinates)
+  - Maintains zoom point stability during scale changes
+- **Initial Height Limit**: Added 600px max-height constraint for initial diagram display
+  - Prevents excessively tall diagrams from overwhelming the viewport
+  - Maintains full diagram quality while controlling initial presentation
+
+**Technical Details**:
+```typescript
+// Zoom is now lossless by manipulating viewBox instead of CSS scale
+// Example: viewBox="x y width height" dynamically adjusted
+// - Smaller viewBox dimensions = larger display (zoom in)
+// - Precise pan offset calculations maintain mouse position accuracy
+```
+
+---
+
 ## 0.2.2 - 2025-10-09
 
 ### ✨ New Features

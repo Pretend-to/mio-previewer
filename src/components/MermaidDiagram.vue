@@ -15,7 +15,7 @@
           <path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/>
         </svg>
       </button>
-      <span class="zoom-indicator">{{ Math.round(scale * 100) }}%</span>
+      <span class="zoom-indicator">{{ Math.round(zoom * 100) }}%</span>
     </div>
     <div 
       ref="containerRef" 
@@ -30,7 +30,6 @@
       <div 
         ref="diagramRef" 
         class="mermaid-diagram-content"
-        :style="{ transform: `translate(${translateX}px, ${translateY}px) scale(${scale})` }"
       ></div>
     </div>
     <div v-if="error && !isStreaming" class="mermaid-error">
@@ -54,16 +53,20 @@ const containerRef = ref<HTMLDivElement | null>(null)
 const error = ref<string | null>(null)
 const currentTheme = ref<'dark' | 'default'>('default')
 
-// 缩放和拖动状态
-const scale = ref(1)
-const translateX = ref(0)
-const translateY = ref(0)
+// SVG 缩放和平移状态
+const zoom = ref(1)
+const panX = ref(0)
+const panY = ref(0)
 const isDragging = ref(false)
 const dragStartX = ref(0)
 const dragStartY = ref(0)
-const dragStartTranslateX = ref(0)
-const dragStartTranslateY = ref(0)
+const dragStartPanX = ref(0)
+const dragStartPanY = ref(0)
 const isFullscreen = ref(false)
+
+// SVG 原始尺寸信息
+const svgElement = ref<SVGSVGElement | null>(null)
+const originalViewBox = ref<{ x: number; y: number; width: number; height: number } | null>(null)
 
 // 检测当前主题（优先级：.theme-dark/light class > prefers-color-scheme）
 const detectTheme = (): 'dark' | 'default' => {
@@ -125,11 +128,90 @@ const initMermaid = (theme: 'dark' | 'default') => {
   })
 }
 
-// 滚轮缩放处理
+// 更新 SVG 的 viewBox 来实现无损缩放（更简单的算法）
+const updateSVGTransform = () => {
+  if (!svgElement.value || !originalViewBox.value) return
+
+  const vb = originalViewBox.value
+  
+  // 计算缩放后的 viewBox 尺寸（缩小 viewBox = 放大显示）
+  const newWidth = vb.width / zoom.value
+  const newHeight = vb.height / zoom.value
+  
+  // 计算 viewBox 的起始位置，加入平移偏移
+  // panX 和 panY 是屏幕像素，需要转换到 SVG 坐标系
+  const centerOffsetX = (vb.width - newWidth) / 2
+  const centerOffsetY = (vb.height - newHeight) / 2
+  
+  const newX = vb.x + centerOffsetX - (panX.value / zoom.value)
+  const newY = vb.y + centerOffsetY - (panY.value / zoom.value)
+  
+  svgElement.value.setAttribute(
+    'viewBox',
+    `${newX} ${newY} ${newWidth} ${newHeight}`
+  )
+}
+
+// 滚轮缩放处理（以鼠标位置为中心缩放）
 const handleWheel = (e: WheelEvent) => {
+  if (!svgElement.value || !containerRef.value || !originalViewBox.value) return
+  
   const delta = e.deltaY > 0 ? 0.9 : 1.1
-  const newScale = Math.min(Math.max(0.1, scale.value * delta), 5)
-  scale.value = newScale
+  const oldZoom = zoom.value
+  const newZoom = Math.min(Math.max(0.1, zoom.value * delta), 5)
+  
+  if (oldZoom === newZoom) return // 达到缩放极限
+  
+  // 获取鼠标在容器中的位置
+  const rect = containerRef.value.getBoundingClientRect()
+  const mouseX = e.clientX - rect.left
+  const mouseY = e.clientY - rect.top
+  
+  // 获取 SVG 元素的边界
+  const svgRect = svgElement.value.getBoundingClientRect()
+  const svgLeft = svgRect.left - rect.left
+  const svgTop = svgRect.top - rect.top
+  
+  // 鼠标在 SVG 元素中的位置（像素坐标）
+  const svgMouseX = mouseX - svgLeft
+  const svgMouseY = mouseY - svgTop
+  
+  // 计算当前的 viewBox
+  const vb = originalViewBox.value
+  const currentWidth = vb.width / oldZoom
+  const currentHeight = vb.height / oldZoom
+  
+  // 鼠标在当前 viewBox 中的相对位置 (0-1)
+  const relX = svgMouseX / svgRect.width
+  const relY = svgMouseY / svgRect.height
+  
+  // 鼠标在 SVG 坐标系中的位置（考虑当前的 pan）
+  const centerOffsetX = (vb.width - currentWidth) / 2
+  const centerOffsetY = (vb.height - currentHeight) / 2
+  const currentViewBoxX = vb.x + centerOffsetX - (panX.value / oldZoom)
+  const currentViewBoxY = vb.y + centerOffsetY - (panY.value / oldZoom)
+  
+  // 鼠标指向的 SVG 坐标点
+  const svgPointX = currentViewBoxX + relX * currentWidth
+  const svgPointY = currentViewBoxY + relY * currentHeight
+  
+  // 计算新的 viewBox 尺寸
+  const newWidth = vb.width / newZoom
+  const newHeight = vb.height / newZoom
+  
+  // 计算新的 viewBox 起始位置，使鼠标指向的点保持在相同的屏幕位置
+  const newViewBoxX = svgPointX - relX * newWidth
+  const newViewBoxY = svgPointY - relY * newHeight
+  
+  // 反推出新的 pan 值
+  const newCenterOffsetX = (vb.width - newWidth) / 2
+  const newCenterOffsetY = (vb.height - newHeight) / 2
+  
+  panX.value = (vb.x + newCenterOffsetX - newViewBoxX) * newZoom
+  panY.value = (vb.y + newCenterOffsetY - newViewBoxY) * newZoom
+  
+  zoom.value = newZoom
+  updateSVGTransform()
 }
 
 // 鼠标拖动处理
@@ -137,8 +219,8 @@ const handleMouseDown = (e: MouseEvent) => {
   isDragging.value = true
   dragStartX.value = e.clientX
   dragStartY.value = e.clientY
-  dragStartTranslateX.value = translateX.value
-  dragStartTranslateY.value = translateY.value
+  dragStartPanX.value = panX.value
+  dragStartPanY.value = panY.value
   if (containerRef.value) {
     containerRef.value.style.cursor = 'grabbing'
   }
@@ -149,8 +231,9 @@ const handleMouseMove = (e: MouseEvent) => {
   
   const deltaX = e.clientX - dragStartX.value
   const deltaY = e.clientY - dragStartY.value
-  translateX.value = dragStartTranslateX.value + deltaX
-  translateY.value = dragStartTranslateY.value + deltaY
+  panX.value = dragStartPanX.value + deltaX
+  panY.value = dragStartPanY.value + deltaY
+  updateSVGTransform()
 }
 
 const handleMouseUp = () => {
@@ -171,9 +254,10 @@ const handleMouseLeave = () => {
 
 // 重置缩放
 const resetZoom = () => {
-  scale.value = 1
-  translateX.value = 0
-  translateY.value = 0
+  zoom.value = 1
+  panX.value = 0
+  panY.value = 0
+  updateSVGTransform()
 }
 
 // 全屏切换
@@ -232,6 +316,35 @@ const renderDiagram = async () => {
     const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`
     const { svg } = await mermaid.render(id, props.code)
     diagramRef.value.innerHTML = svg
+    
+    // 获取渲染的 SVG 元素
+    svgElement.value = diagramRef.value.querySelector('svg')
+    
+    if (svgElement.value) {
+      // 保存原始 viewBox
+      const viewBoxAttr = svgElement.value.getAttribute('viewBox')
+      if (viewBoxAttr) {
+        const [x, y, width, height] = viewBoxAttr.split(' ').map(Number)
+        originalViewBox.value = { x, y, width, height }
+      } else {
+        // 如果没有 viewBox，从 width/height 创建
+        const width = parseFloat(svgElement.value.getAttribute('width') || '800')
+        const height = parseFloat(svgElement.value.getAttribute('height') || '600')
+        originalViewBox.value = { x: 0, y: 0, width, height }
+        svgElement.value.setAttribute('viewBox', `0 0 ${width} ${height}`)
+      }
+      
+      // 确保 SVG 可以响应式缩放，但限制初始最大高度
+      svgElement.value.removeAttribute('width')
+      svgElement.value.removeAttribute('height')
+      svgElement.value.style.width = '100%'
+      svgElement.value.style.height = 'auto'
+      svgElement.value.style.maxWidth = '100%'
+      svgElement.value.style.maxHeight = '600px' // 限制初始最大高度
+      
+      // 应用当前的变换状态
+      updateSVGTransform()
+    }
   } catch (err: any) {
     // 只在非流式模式下显示错误
     // 流式模式下代码可能还未完整，忽略渲染错误
@@ -390,14 +503,12 @@ watch(() => props.code, () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  transform-origin: center center;
-  transition: transform 0.1s ease-out;
-  will-change: transform;
+  width: 100%;
+  height: 100%;
 }
 
 .mermaid-diagram-content :deep(svg) {
-  max-width: none;
-  height: auto;
+  display: block;
 }
 
 .mermaid-error {
