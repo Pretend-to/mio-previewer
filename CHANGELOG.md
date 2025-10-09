@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.2.2 - 2025-10-09
+
+### ✨ New Features
+
+#### **Mermaid Diagram Interactive Features** 🎨
+- **Zoom Control**: Mouse wheel zoom with scale limits (0.1x - 5x)
+- **Pan & Drag**: Click and drag to move diagram around
+- **Reset Zoom**: Button to reset zoom and position to initial state
+- **Fullscreen Mode**: Fullscreen preview with dedicated button
+- **Zoom Indicator**: Real-time display of current zoom percentage
+- **Improved Centering**: Fixed initial diagram positioning to be properly centered
+
+**Usage**:
+```typescript
+// Mermaid diagrams now support:
+// - Mouse wheel to zoom in/out
+// - Click and drag to pan
+// - Click ⊕ button to reset zoom
+// - Click ⛶ button for fullscreen
+// - ESC key to exit fullscreen
+```
+
+### 🐛 Bug Fixes
+- **Mermaid Centering**: Fixed initial diagram alignment from left-aligned to centered
+
+---
+
 ## 0.2.1 - 2025-10-06
 
 ### ✨ New Features
