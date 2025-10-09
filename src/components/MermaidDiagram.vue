@@ -291,12 +291,24 @@ const toggleFullscreen = () => {
 
 // 监听全屏状态变化
 const handleFullscreenChange = () => {
-  isFullscreen.value = !!(
+  const newFullscreenState = !!(
     document.fullscreenElement ||
     (document as any).webkitFullscreenElement ||
     (document as any).mozFullScreenElement ||
     (document as any).msFullscreenElement
   )
+  isFullscreen.value = newFullscreenState
+  
+  // 更新 SVG 样式以适应全屏/非全屏状态
+  if (svgElement.value) {
+    if (newFullscreenState) {
+      // 全屏模式：限制到视口高度
+      svgElement.value.style.maxHeight = '100vh'
+    } else {
+      // 普通模式：恢复高度限制
+      svgElement.value.style.maxHeight = '600px'
+    }
+  }
 }
 
 const renderDiagram = async () => {
@@ -338,7 +350,7 @@ const renderDiagram = async () => {
       svgElement.value.removeAttribute('width')
       svgElement.value.removeAttribute('height')
       svgElement.value.style.width = '100%'
-      svgElement.value.style.height = 'auto'
+      svgElement.value.style.height = '100%'
       svgElement.value.style.maxWidth = '100%'
       svgElement.value.style.maxHeight = '600px' // 限制初始最大高度
       

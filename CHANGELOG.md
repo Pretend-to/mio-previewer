@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.4 - 2025-10-09
+
+### 🐛 Bug Fixes
+
+#### **Mermaid Diagram Fullscreen Height Fix**
+- **Fixed**: SVG max-height constraint now properly adjusted in fullscreen mode
+- **Fullscreen**: Max-height set to `100vh` (full viewport height)
+- **Normal mode**: Max-height limited to `600px` to prevent excessive display
+- **Impact**: Fullscreen diagrams can now utilize full viewport height while maintaining reasonable constraints
+
+---
+
 ## 0.2.3 - 2025-10-09
 
 ### 🚀 Performance Improvements
