@@ -1,6 +1,6 @@
 <!-- MdRenderer.vue (可选 Worker 版本) -->
 <template>
-  <div class="mio-previewer markdown-body">
+  <div :class="['mio-previewer', props.theme === 'github' ? 'markdown-body' : '']">
     <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :context="renderContext" />
     <!-- 隐藏的容器用于 Viewer.js 管理图片 -->
     <div ref="imageViewerContainer" style="display: none;"></div>
@@ -14,6 +14,9 @@ import { parseDocument } from 'htmlparser2';
 
 import { ref, watch, onMounted, onUnmounted, computed, type Ref } from 'vue';
 
+// Include GitHub markdown CSS in the package; component will apply it only when theme === 'github'
+import 'github-markdown-css/github-markdown.css';
+
 import RecursiveRenderer from './components/RecursiveRenderer.vue';
 import { useImageViewerManager } from './composables/useImageViewerManager';
 
@@ -24,6 +27,8 @@ type Props = {
   md: string;
   isStreaming?: boolean;
   useWorker?: boolean;
+  /** Optional theme: when set to 'github' the GitHub markdown CSS will be loaded */
+  theme?: 'github' | string;
   markdownItPlugins?: MarkdownItPluginConfig[];
   markdownItOptions?: Record<string, any>;
   customPlugins?: CustomPluginConfig[];
@@ -32,6 +37,7 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   isStreaming: false,
   useWorker: false,
+  theme: undefined,
   markdownItPlugins: () => [],
   markdownItOptions: () => ({}),
   customPlugins: () => []
@@ -349,6 +355,5 @@ watch(
 </script>
 
 <style>
-/* Import GitHub markdown styles by default */
-@import 'github-markdown-css/github-markdown.css';
+/* Styles should be loaded on-demand via the `theme` prop to avoid bundling when unused */
 </style>

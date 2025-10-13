@@ -211,6 +211,27 @@ const customPlugins = [mermaidPlugin]
 </template>
 ```
 
+## Styles / CSS
+
+To keep the library bundle small and compatible with restricted network environments, this project does not auto-load third-party CSS for plugins.
+
+The package includes the GitHub markdown CSS and the `MdRenderer` component exposes a `theme` prop to enable it:
+
+- theme: 'github' — apply GitHub markdown styles (bundled)
+- theme: undefined / other — no global markdown CSS applied
+
+For other plugin styles (KaTeX, Mermaid, Prism), we intentionally do NOT auto-load them. If your app uses those plugins, import the CSS in your application's entry file (for example `main.js` / `main.ts`):
+
+```js
+// example (app's main.js)
+import 'katex/dist/katex.min.css'                // if you use the KaTeX plugin
+import 'mermaid/dist/mermaid.min.css'            // if you use the Mermaid plugin
+import 'prismjs/themes/prism.css'                // if you use the CodeBlock/Prism plugin
+```
+
+This keeps the library flexible and avoids network/CDN reliance in restricted environments.
+
+
 #### Emoji Support
 
 ```vue

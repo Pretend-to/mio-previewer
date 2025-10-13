@@ -1,6 +1,7 @@
 import { h } from 'vue';
 import type { CustomPlugin, ASTNode } from '../../types';
 import CodeBlock from '../../components/CodeBlock.vue';
+import { loadCss } from '../../utils/loadCss';
 
 /**
  * CodeBlock 插件配置选项
@@ -29,6 +30,8 @@ export interface CodeBlockPluginOptions {
    * @example (url) => console.log('Published:', url)
    */
   onPublished?: (url: string) => void;
+  /** Optional CSS URL to load for Prism (consumers can provide local file path) */
+  cssUrl?: string;
 }
 
 /**
@@ -62,11 +65,22 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
     languageAliases = {},
     publishUrl,
     onPublished
+    , cssUrl
   } = options || {};
+  // If a cssUrl is provided by the consumer, load it via loadCss utility.
+  if (cssUrl && typeof window !== 'undefined') {
+    loadCss(cssUrl);
+  }
+  // NOTE: We intentionally do NOT load Prism CSS here by default to keep the package
+  // bundle lean and avoid relying on network/CDN in restricted environments.
+  // If you want Prism styles, import them in your application's entry
+  // (for example, in main.js or main.ts):
+  //   import 'prismjs/themes/prism.css'
   
   return {
     name: 'codeblock',
     priority,
+    // (Prism CSS already imported on-demand above when in browser)
   test: (node: ASTNode) => {
     // 匹配 <pre> 标签且包含 <code> 子节点
     if (node.type !== 'tag' || node.name !== 'pre') {

@@ -20,6 +20,7 @@
 import { h } from 'vue'
 import type { CustomPlugin, ASTNode } from '../../types'
 import MermaidDiagram from '../../components/MermaidDiagram.vue'
+import { loadCss } from '../../utils/loadCss'
 
 /**
  * Mermaid 插件配置选项
@@ -34,6 +35,8 @@ export interface MermaidPluginOptions {
    * Mermaid 主题配置
    */
   theme?: 'default' | 'dark' | 'forest' | 'neutral';
+  /** Optional CSS URL to load for Mermaid (consumers can provide local file path) */
+  cssUrl?: string;
 }
 
 /**
@@ -90,8 +93,18 @@ function getCodeContent(node: ASTNode): string {
 export function mermaidPlugin(options?: MermaidPluginOptions): CustomPlugin {
   const {
     priority = 80,
-    theme
+    theme,
+    cssUrl
   } = options || {};
+  // If consumer provided a cssUrl, load it via loadCss util
+  if (cssUrl && typeof window !== 'undefined') {
+    loadCss(cssUrl);
+  }
+  // NOTE: We intentionally do NOT load Mermaid CSS here to keep the package
+  // bundle lean and avoid relying on network/CDN in restricted environments.
+  // If you want Mermaid styles, import them in your application's entry
+  // (for example, in main.js or main.ts):
+  //   import 'mermaid/dist/mermaid.min.css'
   
   return {
     name: 'mermaid',

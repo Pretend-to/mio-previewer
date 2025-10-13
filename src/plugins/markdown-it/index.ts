@@ -2,4 +2,5 @@
 // 这些插件扩展 markdown-it 的解析能力
 
 export { alertPlugin } from './alertPlugin';
-export { katexPlugin } from './katexPlugin';
+export { katexPlugin, createKatexPlugin } from './katexPlugin';
+export type { KatexPluginOptions } from './katexPlugin';

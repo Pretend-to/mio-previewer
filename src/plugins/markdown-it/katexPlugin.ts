@@ -8,6 +8,12 @@
 
 import katex from "katex";
 import type MarkdownIt from "markdown-it";
+import { loadCss } from '../../utils/loadCss';
+
+export interface KatexPluginOptions {
+  /** Optional CSS URL to load for KaTeX (consumers can provide local file path) */
+  cssUrl?: string;
+}
 
 interface Delimiter {
   open: string;
@@ -16,7 +22,23 @@ interface Delimiter {
 }
 
 export function katexPlugin(md: any): void {
+  // NOTE: We intentionally do NOT load KaTeX CSS here to keep the package
+  // bundle lean and avoid relying on network/CDN in restricted environments.
+  // If you want KaTeX styles, import them in your application's entry
+  // (for example, in main.js or main.ts):
+  //   import 'katex/dist/katex.min.css'
   return simpleKatexPlugin(md as any) as any;
+}
+
+// Factory that accepts options (e.g., cssUrl) and returns a markdown-it plugin
+export function createKatexPlugin(options?: KatexPluginOptions) {
+  const { cssUrl } = options || {};
+  return (md: any) => {
+    if (cssUrl && typeof window !== 'undefined') {
+      loadCss(cssUrl);
+    }
+    return simpleKatexPlugin(md as any) as any;
+  };
 }
 
 // Reuse implementation
