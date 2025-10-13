@@ -346,13 +346,13 @@ const renderDiagram = async () => {
         svgElement.value.setAttribute('viewBox', `0 0 ${width} ${height}`)
       }
       
-      // 确保 SVG 可以响应式缩放，但限制初始最大高度
-      svgElement.value.removeAttribute('width')
-      svgElement.value.removeAttribute('height')
-      svgElement.value.style.width = '100%'
-      svgElement.value.style.height = '100%'
-      svgElement.value.style.maxWidth = '100%'
-      svgElement.value.style.maxHeight = '600px' // 限制初始最大高度
+  // 确保 SVG 可以响应式缩放，但限制初始最大高度（高度使用 auto，以便容器随内容高度收缩）
+  svgElement.value.removeAttribute('width')
+  svgElement.value.removeAttribute('height')
+  svgElement.value.style.width = '100%'
+  svgElement.value.style.height = 'auto'
+  svgElement.value.style.maxWidth = '100%'
+  svgElement.value.style.maxHeight = '600px' // 限制初始最大高度
       
       // 应用当前的变换状态
       updateSVGTransform()
@@ -514,13 +514,22 @@ watch(() => props.code, () => {
 .mermaid-diagram-content {
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* 在普通模式下让内容从顶部开始，避免下面出现空白 */
+  align-items: flex-start;
   width: 100%;
+}
+
+.mermaid-diagram.is-fullscreen .mermaid-diagram-content {
+  /* 全屏时居中显示 */
+  align-items: center;
   height: 100%;
 }
 
 .mermaid-diagram-content :deep(svg) {
   display: block;
+  /* 普通模式下高度自动适配；全屏模式通过 handleFullscreenChange 设置 maxHeight=100vh */
+  height: auto;
+  max-width: 100%;
 }
 
 .mermaid-error {

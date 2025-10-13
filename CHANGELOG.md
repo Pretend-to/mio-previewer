@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.5 - 2025-10-13
+
+### ✨ Release
+
+#### **Quick Notes**
+- Bumped package version to `0.2.5`.
+- See placeholder below for changes — update with actual release notes before publishing.
+
+---
+
 ## 0.2.4 - 2025-10-09
 
 ### 🐛 Bug Fixes
