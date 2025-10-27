@@ -297,6 +297,12 @@ const handleFullscreenChange = () => {
     (document as any).mozFullScreenElement ||
     (document as any).msFullscreenElement
   )
+  
+  // 如果从全屏状态退出到普通状态，重置缩放
+  if (isFullscreen.value && !newFullscreenState) {
+    resetZoom()
+  }
+  
   isFullscreen.value = newFullscreenState
   
   // 更新 SVG 样式以适应全屏/非全屏状态
@@ -350,7 +356,7 @@ const renderDiagram = async () => {
   svgElement.value.removeAttribute('width')
   svgElement.value.removeAttribute('height')
   svgElement.value.style.width = '100%'
-  svgElement.value.style.height = 'auto'
+  svgElement.value.style.height = '100%'
   svgElement.value.style.maxWidth = '100%'
   svgElement.value.style.maxHeight = '600px' // 限制初始最大高度
       
@@ -486,7 +492,6 @@ watch(() => props.code, () => {
 .mermaid-diagram {
   position: relative;
   overflow: hidden;
-  min-height: 200px;
   padding: 1em;
   cursor: grab;
   user-select: none;

@@ -12,6 +12,11 @@ export type ASTNode = {
 };
 
 /**
+ * 主题类型（用于控制是否应用 github-markdown-css）
+ */
+export type Theme = 'github' | string;
+
+/**
  * 渲染上下文（传递给插件的共享状态）
  */
 export type RenderContext = {
@@ -140,4 +145,8 @@ export type MdRendererProps = {
    * Custom 渲染插件配置
    */
   customPlugins?: CustomPluginConfig[];
+  /**
+   * UI 主题。传入 'github' 时会启用 github-markdown-css 样式
+   */
+  theme?: Theme;
 };
