@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.6 - 2025-10-27
+
+### ✨ Enhancement
+
+#### **Mermaid Component Improvements**
+- **Exit Fullscreen Reset**: Added automatic zoom reset when exiting fullscreen mode in MermaidDiagram component
+  - When users exit fullscreen, the diagram now automatically resets to default zoom (100%) and pan position
+  - Provides better user experience by showing the complete diagram after fullscreen exit
+  - Eliminates the need to manually reset zoom after exiting fullscreen
+
+### 🔧 Internal
+
+#### **Code Quality**
+- Enhanced fullscreen state management in `MermaidDiagram.vue`
+- Improved user interaction flow for diagram zoom controls
+
+---
+
 ## 0.2.5 - 2025-10-13
 
 ### ✨ Release
