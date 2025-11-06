@@ -43,7 +43,7 @@
   },
   "main": "dist/mio-previewer.cjs.js",
   "module": "dist/mio-previewer.es.js",
-  "types": "dist/types/src/index.d.ts",
+  "types": "dist/types/index.d.ts",
   "peerDependencies": {
     "vue": "^3"
   },
@@ -61,17 +61,17 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/types/src/index.d.ts",
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/mio-previewer.es.js",
       "require": "./dist/mio-previewer.cjs.js"
     },
     "./plugins/custom": {
-      "types": "./dist/types/src/plugins/custom/index.d.ts",
+      "types": "./dist/types/plugins/custom/index.d.ts",
       "import": "./dist/plugins/custom.es.js",
       "require": "./dist/plugins/custom.cjs.js"
     },
     "./plugins/markdown-it": {
-      "types": "./dist/types/src/plugins/markdown-it/index.d.ts",
+      "types": "./dist/types/plugins/markdown-it/index.d.ts",
       "import": "./dist/plugins/markdown-it.es.js",
       "require": "./dist/plugins/markdown-it.cjs.js"
     },
@@ -81,13 +81,13 @@
   "typesVersions": {
     "*": {
       "plugins/custom": [
-        "dist/types/src/plugins/custom/index.d.ts"
+        "dist/types/plugins/custom/index.d.ts"
       ],
       "plugins/markdown-it": [
-        "dist/types/src/plugins/markdown-it/index.d.ts"
+        "dist/types/plugins/markdown-it/index.d.ts"
       ],
       "*": [
-        "dist/types/src/*"
+        "dist/types/*"
       ]
     }
   },
