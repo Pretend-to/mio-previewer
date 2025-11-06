@@ -28,6 +28,16 @@
 
 ---
 
+## 0.2.7 - 2025-11-06
+
+### ✨ Patch
+
+- Release: publish small fixes and packaging/type improvements
+  - Fix: package `types`/exports path corrected so TypeScript consumers can find declarations
+  - Internal: bump version to 0.2.7
+
+---
+
 ## 0.2.4 - 2025-10-09
 
 ### 🐛 Bug Fixes
