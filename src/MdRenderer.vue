@@ -353,7 +353,3 @@ watch(
 // no additional fallback helpers here
 
 </script>
-
-<style>
-/* Styles should be loaded on-demand via the `theme` prop to avoid bundling when unused */
-</style>
