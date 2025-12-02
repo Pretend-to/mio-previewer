@@ -232,7 +232,9 @@ const showTooltip = (message: string, button: HTMLButtonElement | null, duration
 const handleCopy = async (event: MouseEvent) => {
   const button = event.currentTarget as HTMLButtonElement; // 在异步前保存引用
   try {
-    await navigator.clipboard.writeText(props.code);
+    // 将 U+00A0 (non-breaking space) 替换为正常空格 (U+0020)
+    const cleanedCode = props.code.replace(/\u00A0/g, ' ');
+    await navigator.clipboard.writeText(cleanedCode);
     isCopied.value = true;
     showTooltip('已复制', button);
     setTimeout(() => {
