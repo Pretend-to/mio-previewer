@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.71 - 2025-12-02
+
+### 🐛 Bug Fixes
+
+#### **Code Block Copy Enhancement**
+- **Fixed**: Code block copy now properly handles non-breaking spaces (U+00A0)
+  - Automatically replaces U+00A0 characters with regular spaces (U+0020) when copying
+  - Ensures copied code can be pasted and used correctly
+  - Prevents issues with code execution due to invisible character differences
+
+---
+
 ## 0.2.6 - 2025-10-27
 
 ### ✨ Enhancement
