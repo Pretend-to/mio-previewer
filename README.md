@@ -1,17 +1,13 @@
 # mio-previewer
 
-[中文文档](./README.zh-CN.md) | English
+A Vue 3 markdown rendering engine engineered for **AI streaming responses**. It transforms standard Markdown output into reactive Vue VNodes, enabling smooth, incremental DOM updates without the performance penalties of `v-html`.
 
-A Vue 3 markdown renderer optimized for streaming updates with powerful plugin system. Features real-time rendering, syntax highlighting, math formulas, diagrams, and more.
+✨ **Core Value Proposition:**
 
-✨ **Key Features:**
-- 🚀 Streaming-friendly real-time rendering
-- 🎨 Built-in syntax highlighting (Prism.js, 20+ languages)
-- 📐 Math formulas support (KaTeX)
-- 📊 Diagram rendering (Mermaid)
-- 🔌 Extensible plugin system
-- 📦 Tree-shakeable & lightweight
-- 🎯 TypeScript support
+- ⚡️ **VNode-Based Incremental Rendering**: Bypasses the "destroy & recreate" cycle of `v-html`. By converting AST to VNodes, we leverage Vue's diffing algorithm to update only the changed text nodes during streaming.
+- 🧩 **Component-Level Interception**: Intercepts Markdown tokens (like code blocks or math) and renders them as fully interactive Vue components, not just static HTML.
+- 🌊 **Stream-Optimized**: Features like smart cursor tracking and anti-jitter logic ensure a buttery-smooth reading experience while the AI is "typing".
+- 🛡 **Security First**: AST-based transformation naturally prevents XSS attacks compared to raw HTML injection.
 
 ## Installation
 
@@ -33,11 +29,11 @@ yarn add mio-previewer
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { MdRenderer } from 'mio-previewer'
-import 'mio-previewer/dist/mio-previewer.css'
+import { ref } from "vue";
+import { MdRenderer } from "mio-previewer";
+import "mio-previewer/dist/mio-previewer.css";
 
-const markdown = ref('# Hello World\n\nThis is **markdown**!')
+const markdown = ref("# Hello World\n\nThis is **markdown**!");
 </script>
 ```
 
@@ -47,32 +43,29 @@ Perfect for AI chatbots or real-time content:
 
 ```vue
 <template>
-  <MdRenderer 
-    :md="streamContent" 
-    :isStreaming="isStreaming" 
-  />
+  <MdRenderer :md="streamContent" :isStreaming="isStreaming" />
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { MdRenderer } from 'mio-previewer'
-import 'mio-previewer/dist/mio-previewer.css'
+import { ref } from "vue";
+import { MdRenderer } from "mio-previewer";
+import "mio-previewer/dist/mio-previewer.css";
 
-const streamContent = ref('')
-const isStreaming = ref(true)
+const streamContent = ref("");
+const isStreaming = ref(true);
 
 // Simulate streaming
-const text = '# Streaming Demo\n\nContent appears **gradually**...'
-let index = 0
+const text = "# Streaming Demo\n\nContent appears **gradually**...";
+let index = 0;
 
 const interval = setInterval(() => {
   if (index < text.length) {
-    streamContent.value += text[index++]
+    streamContent.value += text[index++];
   } else {
-    isStreaming.value = false
-    clearInterval(interval)
+    isStreaming.value = false;
+    clearInterval(interval);
   }
-}, 50)
+}, 50);
 </script>
 ```
 
@@ -84,9 +77,9 @@ const interval = setInterval(() => {
 
 ```vue
 <script setup>
-import { MdRenderer } from 'mio-previewer'
-import { katexPlugin } from 'mio-previewer/plugins/markdown-it'
-import 'mio-previewer/dist/mio-previewer.css'
+import { MdRenderer } from "mio-previewer";
+import { katexPlugin } from "mio-previewer/plugins/markdown-it";
+import "mio-previewer/dist/mio-previewer.css";
 
 const markdown = `
 # Math Example
@@ -97,18 +90,13 @@ Block:
 $$
 \\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
 $$
-`
+`;
 
-const markdownItPlugins = [
-  { plugin: katexPlugin }
-]
+const markdownItPlugins = [{ plugin: katexPlugin }];
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
-    :markdownItPlugins="markdownItPlugins" 
-  />
+  <MdRenderer :md="markdown" :markdownItPlugins="markdownItPlugins" />
 </template>
 ```
 
@@ -116,9 +104,9 @@ const markdownItPlugins = [
 
 ```vue
 <script setup>
-import { MdRenderer } from 'mio-previewer'
-import { AlertPlugin } from 'mio-previewer/plugins/markdown-it'
-import 'mio-previewer/dist/mio-previewer.css'
+import { MdRenderer } from "mio-previewer";
+import { AlertPlugin } from "mio-previewer/plugins/markdown-it";
+import "mio-previewer/dist/mio-previewer.css";
 
 const markdown = `
 ::: info
@@ -136,18 +124,13 @@ This is an **info** alert with markdown support!
 ::: success
 ✅ Success message
 :::
-`
+`;
 
-const markdownItPlugins = [
-  { plugin: AlertPlugin }
-]
+const markdownItPlugins = [{ plugin: AlertPlugin }];
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
-    :markdownItPlugins="markdownItPlugins" 
-  />
+  <MdRenderer :md="markdown" :markdownItPlugins="markdownItPlugins" />
 </template>
 ```
 
@@ -155,9 +138,9 @@ const markdownItPlugins = [
 
 ```vue
 <script setup>
-import { MdRenderer } from 'mio-previewer'
-import { CodeBlockPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import { MdRenderer } from "mio-previewer";
+import { CodeBlockPlugin } from "mio-previewer/plugins/custom";
+import "mio-previewer/dist/mio-previewer.css";
 
 const markdown = `
 \`\`\`javascript
@@ -170,16 +153,13 @@ function hello() {
 def greet():
     print("Hello from Python!")
 \`\`\`
-`
+`;
 
-const customPlugins = [CodeBlockPlugin]
+const customPlugins = [CodeBlockPlugin];
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
-    :customPlugins="customPlugins" 
-  />
+  <MdRenderer :md="markdown" :customPlugins="customPlugins" />
 </template>
 ```
 
@@ -187,9 +167,9 @@ const customPlugins = [CodeBlockPlugin]
 
 ```vue
 <script setup>
-import { MdRenderer } from 'mio-previewer'
-import { mermaidPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import { MdRenderer } from "mio-previewer";
+import { mermaidPlugin } from "mio-previewer/plugins/custom";
+import "mio-previewer/dist/mio-previewer.css";
 
 const markdown = `
 \`\`\`mermaid
@@ -198,16 +178,13 @@ graph TD
     B -->|Yes| C[Continue]
     B -->|No| D[Stop]
 \`\`\`
-`
+`;
 
-const customPlugins = [mermaidPlugin]
+const customPlugins = [mermaidPlugin];
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
-    :customPlugins="customPlugins" 
-  />
+  <MdRenderer :md="markdown" :customPlugins="customPlugins" />
 </template>
 ```
 
@@ -224,32 +201,28 @@ For other plugin styles (KaTeX, Mermaid, Prism), we intentionally do NOT auto-lo
 
 ```js
 // example (app's main.js)
-import 'katex/dist/katex.min.css'                // if you use the KaTeX plugin
-import 'mermaid/dist/mermaid.min.css'            // if you use the Mermaid plugin
-import 'prismjs/themes/prism.css'                // if you use the CodeBlock/Prism plugin
+import "katex/dist/katex.min.css"; // if you use the KaTeX plugin
+import "mermaid/dist/mermaid.min.css"; // if you use the Mermaid plugin
+import "prismjs/themes/prism.css"; // if you use the CodeBlock/Prism plugin
 ```
 
 This keeps the library flexible and avoids network/CDN reliance in restricted environments.
-
 
 #### Emoji Support
 
 ```vue
 <script setup>
-import { MdRenderer } from 'mio-previewer'
-import { EmojiPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import { MdRenderer } from "mio-previewer";
+import { EmojiPlugin } from "mio-previewer/plugins/custom";
+import "mio-previewer/dist/mio-previewer.css";
 
-const markdown = 'Hello :smile: Welcome! :tada: :rocket:'
+const markdown = "Hello :smile: Welcome! :tada: :rocket:";
 
-const customPlugins = [EmojiPlugin]
+const customPlugins = [EmojiPlugin];
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
-    :customPlugins="customPlugins" 
-  />
+  <MdRenderer :md="markdown" :customPlugins="customPlugins" />
 </template>
 ```
 
@@ -257,11 +230,15 @@ const customPlugins = [EmojiPlugin]
 
 ```vue
 <script setup>
-import { ref } from 'vue'
-import { MdRenderer } from 'mio-previewer'
-import { AlertPlugin, katexPlugin } from 'mio-previewer/plugins/markdown-it'
-import { mermaidPlugin, CodeBlockPlugin, EmojiPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import { ref } from "vue";
+import { MdRenderer } from "mio-previewer";
+import { AlertPlugin, katexPlugin } from "mio-previewer/plugins/markdown-it";
+import {
+  mermaidPlugin,
+  CodeBlockPlugin,
+  EmojiPlugin,
+} from "mio-previewer/plugins/custom";
+import "mio-previewer/dist/mio-previewer.css";
 
 const markdown = ref(`# Complete Demo :rocket:
 
@@ -287,23 +264,16 @@ graph LR
 \`\`\`
 
 Great work! :thumbsup: :100:
-`)
+`);
 
-const customPlugins = [
-  mermaidPlugin,
-  CodeBlockPlugin,
-  EmojiPlugin
-]
+const customPlugins = [mermaidPlugin, CodeBlockPlugin, EmojiPlugin];
 
-const markdownItPlugins = [
-  { plugin: AlertPlugin },
-  { plugin: katexPlugin }
-]
+const markdownItPlugins = [{ plugin: AlertPlugin }, { plugin: katexPlugin }];
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
+  <MdRenderer
+    :md="markdown"
     :customPlugins="customPlugins"
     :markdownItPlugins="markdownItPlugins"
   />
@@ -316,59 +286,60 @@ const markdownItPlugins = [
 
 ```javascript
 const HighlightPlugin = {
-  name: 'highlight',
+  name: "highlight",
   priority: 50,
   test: (node) => {
-    return node.type === 'tag' && 
-           node.name === 'mark'
+    return node.type === "tag" && node.name === "mark";
   },
   render: (node, renderChildren, h) => {
-    return h('mark', {
-      style: {
-        backgroundColor: '#ffeb3b',
-        padding: '2px 4px',
-        borderRadius: '2px'
-      }
-    }, renderChildren())
-  }
-}
+    return h(
+      "mark",
+      {
+        style: {
+          backgroundColor: "#ffeb3b",
+          padding: "2px 4px",
+          borderRadius: "2px",
+        },
+      },
+      renderChildren(),
+    );
+  },
+};
 
 // Use it
-const customPlugins = [HighlightPlugin]
+const customPlugins = [HighlightPlugin];
 ```
 
 #### Custom Markdown-it Plugin
 
 ```javascript
 function customContainerPlugin(md) {
-  md.use(require('markdown-it-container'), 'note', {
+  md.use(require("markdown-it-container"), "note", {
     render: (tokens, idx) => {
       if (tokens[idx].nesting === 1) {
-        return '<div class="note">\n'
+        return '<div class="note">\n';
       } else {
-        return '</div>\n'
+        return "</div>\n";
       }
-    }
-  })
+    },
+  });
 }
 
-const markdownItPlugins = [
-  { plugin: customContainerPlugin }
-]
+const markdownItPlugins = [{ plugin: customContainerPlugin }];
 ```
 
 ## API Reference
 
 ### MdRenderer Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `md` | `string` | `''` | Markdown content to render |
-| `isStreaming` | `boolean` | `false` | Show cursor during streaming |
-| `useWorker` | `boolean` | `false` | Use Web Worker for parsing |
-| `customPlugins` | `CustomPlugin[]` | `[]` | Custom rendering plugins |
-| `markdownItPlugins` | `MarkdownItPluginConfig[]` | `[]` | Markdown-it plugins |
-| `markdownItOptions` | `object` | `{}` | Markdown-it options |
+| Prop                | Type                       | Default | Description                  |
+| ------------------- | -------------------------- | ------- | ---------------------------- |
+| `md`                | `string`                   | `''`    | Markdown content to render   |
+| `isStreaming`       | `boolean`                  | `false` | Show cursor during streaming |
+| `useWorker`         | `boolean`                  | `false` | Use Web Worker for parsing   |
+| `customPlugins`     | `CustomPlugin[]`           | `[]`    | Custom rendering plugins     |
+| `markdownItPlugins` | `MarkdownItPluginConfig[]` | `[]`    | Markdown-it plugins          |
+| `markdownItOptions` | `object`                   | `{}`    | Markdown-it options          |
 
 ### Plugin Types
 
@@ -376,14 +347,14 @@ const markdownItPlugins = [
 
 ```typescript
 interface CustomPlugin {
-  name?: string
-  priority?: number  // Higher = earlier execution
-  test: (node: ASTNode) => boolean
+  name?: string;
+  priority?: number; // Higher = earlier execution
+  test: (node: ASTNode) => boolean;
   render: (
     node: ASTNode,
     renderChildren: () => VNode[],
-    h: typeof import('vue').h
-  ) => VNode | string | null
+    h: typeof import("vue").h,
+  ) => VNode | string | null;
 }
 ```
 
@@ -391,8 +362,8 @@ interface CustomPlugin {
 
 ```typescript
 interface MarkdownItPluginConfig {
-  plugin: (md: MarkdownIt, options?: any) => void
-  options?: any
+  plugin: (md: MarkdownIt, options?: any) => void;
+  options?: any;
 }
 ```
 
@@ -400,18 +371,18 @@ interface MarkdownItPluginConfig {
 
 ### Markdown-it Plugins (Syntax)
 
-| Plugin | Import Path | Description |
-|--------|-------------|-------------|
+| Plugin        | Import Path                         | Description                                 |
+| ------------- | ----------------------------------- | ------------------------------------------- |
 | `AlertPlugin` | `mio-previewer/plugins/markdown-it` | Alert boxes (info, warning, error, success) |
-| `katexPlugin` | `mio-previewer/plugins/markdown-it` | Math formulas with KaTeX |
+| `katexPlugin` | `mio-previewer/plugins/markdown-it` | Math formulas with KaTeX                    |
 
 ### Custom Plugins (Rendering)
 
-| Plugin | Import Path | Description |
-|--------|-------------|-------------|
-| `mermaidPlugin` | `mio-previewer/plugins/custom` | Diagram rendering with Mermaid |
-| `CodeBlockPlugin` | `mio-previewer/plugins/custom` | Syntax highlighting with Prism |
-| `EmojiPlugin` | `mio-previewer/plugins/custom` | Emoji code replacement |
+| Plugin              | Import Path                    | Description                                                                |
+| ------------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| `mermaidPlugin`     | `mio-previewer/plugins/custom` | Diagram rendering with Mermaid                                             |
+| `CodeBlockPlugin`   | `mio-previewer/plugins/custom` | Syntax highlighting with Prism                                             |
+| `EmojiPlugin`       | `mio-previewer/plugins/custom` | Emoji code replacement                                                     |
 | `imageViewerPlugin` | `mio-previewer/plugins/custom` | Image preview with zoom & gestures ([docs](./docs/IMAGE_VIEWER_PLUGIN.md)) |
 
 ## Advanced Usage
@@ -421,18 +392,15 @@ interface MarkdownItPluginConfig {
 ```vue
 <script setup>
 const markdownItOptions = {
-  html: true,        // Enable HTML tags
-  linkify: true,     // Auto-convert URLs
+  html: true, // Enable HTML tags
+  linkify: true, // Auto-convert URLs
   typographer: true, // Smart quotes, dashes
-  breaks: false      // Convert \n to <br>
-}
+  breaks: false, // Convert \n to <br>
+};
 </script>
 
 <template>
-  <MdRenderer 
-    :md="markdown" 
-    :markdownItOptions="markdownItOptions" 
-  />
+  <MdRenderer :md="markdown" :markdownItOptions="markdownItOptions" />
 </template>
 ```
 
@@ -442,10 +410,7 @@ For better performance with large documents:
 
 ```vue
 <template>
-  <MdRenderer 
-    :md="largeMarkdown" 
-    :useWorker="true" 
-  />
+  <MdRenderer :md="largeMarkdown" :useWorker="true" />
 </template>
 ```
 
@@ -492,7 +457,7 @@ mio-previewer/
 ## Browser Support
 
 - Chrome/Edge: Latest 2 versions
-- Firefox: Latest 2 versions  
+- Firefox: Latest 2 versions
 - Safari: Latest 2 versions
 
 ## Documentation
@@ -500,6 +465,7 @@ mio-previewer/
 📚 **[Complete Documentation →](./docs/README.md)**
 
 ### Quick Links
+
 - [Plugin System Guide](./docs/PLUGINS.md) - Complete plugin system documentation
 - [Customize Code Block Styles](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md) - Code block theming
 - [KaTeX Configuration](./docs/KATEX_DELIMITERS.md) - Math formula setup
@@ -514,4 +480,3 @@ MIT
 - [GitHub Repository](https://github.com/Pretend-to/mio-previewer)
 - [npm Package](https://www.npmjs.com/package/mio-previewer)
 - [Documentation Center](./docs/README.md)
-
