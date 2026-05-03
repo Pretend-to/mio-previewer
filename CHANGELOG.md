@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.72 - 2026-05-04
+
+### 🐛 Bug Fixes
+
+#### **CORS Image Handling**
+- **Fixed**: Added automatic `crossorigin="anonymous"` injection for external images in `ImageViewer` component
+  - Automatically detects external URLs and applies the required CORS attribute
+  - Ensures images can be captured by canvas-based screenshot tools without "tainting" the canvas
+  - Improves reliability of chat export features when using cross-origin assets (like R2/S3)
+
+---
+
 ## 0.2.71 - 2025-12-02
 
 ### 🐛 Bug Fixes

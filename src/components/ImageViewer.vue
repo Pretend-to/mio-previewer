@@ -7,6 +7,7 @@
     :data-original="src"
     :data-index="index"
     class="mio-image-viewer"
+    :crossorigin="isExternal ? 'anonymous' : undefined"
     :style="imageStyle"
     @click="handleClick"
   />
@@ -49,6 +50,11 @@ const actualIndex = computed(() => {
     return index !== -1 ? index : 0;
   }
   return 0;
+});
+
+// 识别是否为外部跨域图片
+const isExternal = computed(() => {
+  return props.src.startsWith('http') && !props.src.includes(window.location.host);
 });
 
 onMounted(() => {
