@@ -466,6 +466,7 @@ mio-previewer/
 
 ### Quick Links
 
+- [Built-in Plugins Config Guide](./PLUGINS.zh-CN.md) - Configuration schema for all built-in plugins
 - [Plugin System Guide](./docs/PLUGINS.md) - Complete plugin system documentation
 - [Customize Code Block Styles](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md) - Code block theming
 - [KaTeX Configuration](./docs/KATEX_DELIMITERS.md) - Math formula setup

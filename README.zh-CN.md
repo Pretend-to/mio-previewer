@@ -42,7 +42,8 @@ impor## 浏览器支持
 📚 **[完整文档 →](./docs/README.md)**
 
 ### 快速链接
-- [插件系统指南](./docs/PLUGINS.md) - 完整的插件系统文档
+- [内置插件配置指南](./PLUGINS.zh-CN.md) - 所有内置插件的配置 Schema
+- [插件系统指南](./docs/PLUGINS.md) - 完整的插件系统开发文档
 - [自定义代码块样式](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md) - 代码块主题定制
 - [KaTeX 配置](./docs/KATEX_DELIMITERS.md) - 数学公式设置
 - [更新日志](./CHANGELOG.md) - 版本历史
