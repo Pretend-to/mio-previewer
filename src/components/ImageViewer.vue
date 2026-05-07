@@ -7,7 +7,7 @@
     :data-original="src"
     :data-index="index"
     class="mio-image-viewer"
-    :crossorigin="isExternal ? 'anonymous' : undefined"
+    :crossorigin="shouldUseCORS ? 'anonymous' : undefined"
     :style="imageStyle"
     @click="handleClick"
   />
@@ -22,13 +22,15 @@ interface Props {
   alt?: string;
   title?: string;
   index?: number;
+  crossOrigin?: boolean;
   context?: RenderContext;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   alt: '',
   title: '',
-  index: 0
+  index: 0,
+  crossOrigin: false
 });
 
 const imgRef = ref<HTMLImageElement | null>(null);
@@ -52,8 +54,10 @@ const actualIndex = computed(() => {
   return 0;
 });
 
-// 识别是否为外部跨域图片
-const isExternal = computed(() => {
+// 识别是否需要跨域属性
+const shouldUseCORS = computed(() => {
+  if (!props.crossOrigin) return false;
+  // 如果开启了跨域，且是外部图片，则返回 true
   return props.src.startsWith('http') && !props.src.includes(window.location.host);
 });
 

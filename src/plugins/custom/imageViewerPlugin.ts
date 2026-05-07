@@ -17,6 +17,12 @@ export interface ImageViewerPluginOptions {
    * @see https://github.com/fengyuanchen/viewerjs#options
    */
   viewerOptions?: any;
+
+  /**
+   * 是否开启跨域支持（默认 false）
+   * 如果开启，外部图片将添加 crossorigin="anonymous" 属性
+   */
+  crossOrigin?: boolean;
 }
 
 /**
@@ -36,6 +42,7 @@ export interface ImageViewerPluginOptions {
  * @param options - 插件配置选项
  * @param options.priority - 优先级（默认 50）
  * @param options.viewerOptions - Viewer.js 配置选项
+ * @param options.crossOrigin - 是否开启跨域支持（默认 false）
  * @returns CustomPlugin
  * 
  * @example
@@ -53,7 +60,8 @@ export interface ImageViewerPluginOptions {
  *       title: true,
  *       button: true,
  *       loop: false
- *     }
+ *     },
+ *     crossOrigin: true
  *   } 
  * }
  * ```
@@ -61,7 +69,8 @@ export interface ImageViewerPluginOptions {
 export function imageViewerPlugin(options?: ImageViewerPluginOptions): CustomPlugin {
   const {
     priority = 50,
-    viewerOptions = {}
+    viewerOptions = {},
+    crossOrigin = false
   } = options || {};
 
   return {
@@ -91,6 +100,7 @@ export function imageViewerPlugin(options?: ImageViewerPluginOptions): CustomPlu
         title: node.attribs?.title || '',
         index: currentIndex,
         viewerOptions,
+        crossOrigin,
         context
       });
     }
