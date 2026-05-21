@@ -42,23 +42,6 @@ export default defineConfig({
       output: {
         globals: {
           vue: 'Vue'
-        },
-        entryFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId || '';
-          // Handle main entry
-          if (facadeModuleId.includes('src/index.ts')) {
-            return chunkInfo.isEntry ? `mio-previewer.[format].js` : `[name].[format].js`;
-          }
-          // Handle plugins/custom
-          if (facadeModuleId.includes('src/plugins/custom/index.ts')) {
-            return `plugins/custom.[format].js`;
-          }
-          // Handle plugins/markdown-it
-          if (facadeModuleId.includes('src/plugins/markdown-it/index.ts')) {
-            return `plugins/markdown-it.[format].js`;
-          }
-          // Default fallback
-          return `[name].[format].js`;
         }
       }
     }
