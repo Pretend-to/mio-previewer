@@ -26,7 +26,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
-        run: pnpm install --frozen-lockfile --prod=false
+        run: pnpm install --frozen-lockfile --prod=false --ignore-scripts
 
       - name: Build
         run: pnpm run build
@@ -34,4 +34,4 @@ jobs:
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm publish --access public --no-git-checks
+        run: pnpm publish --access public --no-git-checks --ignore-scripts

@@ -1,6 +1,6 @@
 {
   "name": "mio-previewer",
-  "version": "0.2.75",
+  "version": "0.2.76",
   "private": false,
   "type": "module",
   "engines": {
@@ -37,7 +37,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "puppeteer": "^20.7.4",
     "typescript": "^5.9.3",
-    "vite": "^7.1.7",
+    "vite": "^8.0.0",
     "vite-plugin-vue-devtools": "^8.0.2",
     "vue-tsc": "^1.1.0"
   },
