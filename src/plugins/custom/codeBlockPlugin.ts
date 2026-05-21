@@ -32,6 +32,16 @@ export interface CodeBlockPluginOptions {
   onPublished?: (url: string) => void;
   /** Optional CSS URL to load for Prism (consumers can provide local file path) */
   cssUrl?: string;
+
+  /**
+   * 是否开启代码块自动折叠，默认开启 (true)
+   */
+  enableCollapse?: boolean;
+
+  /**
+   * 折叠触发的最高高度（像素），默认 300
+   */
+  collapseMaxHeight?: number;
 }
 
 /**
@@ -64,8 +74,10 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
     priority = 70,
     languageAliases = {},
     publishUrl,
-    onPublished
-    , cssUrl
+    onPublished,
+    cssUrl,
+    enableCollapse = true,
+    collapseMaxHeight = 300
   } = options || {};
   // If a cssUrl is provided by the consumer, load it via loadCss utility.
   if (cssUrl && typeof window !== 'undefined') {
@@ -127,12 +139,14 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
     
     const code = extractText(codeNode);
     
-    // 渲染 CodeBlock 组件 (使用顶层导入的 h)
+    // 渲染 CodeBlock 组件 (使用顶层导入 of h)
     return h(CodeBlock, {
       code,
       language,
       publishUrl,
-      onPublished
+      onPublished,
+      enableCollapse,
+      collapseMaxHeight
     });
   }
   };

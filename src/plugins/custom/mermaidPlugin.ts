@@ -37,6 +37,10 @@ export interface MermaidPluginOptions {
   theme?: 'default' | 'dark' | 'forest' | 'neutral';
   /** Optional CSS URL to load for Mermaid (consumers can provide local file path) */
   cssUrl?: string;
+  /**
+   * 渲染错误发生时的回调函数
+   */
+  onError?: (error: Error | string, code: string) => void;
 }
 
 /**
@@ -94,7 +98,8 @@ export function mermaidPlugin(options?: MermaidPluginOptions): CustomPlugin {
   const {
     priority = 80,
     theme,
-    cssUrl
+    cssUrl,
+    onError
   } = options || {};
   // If consumer provided a cssUrl, load it via loadCss util
   if (cssUrl && typeof window !== 'undefined') {
@@ -143,6 +148,10 @@ export function mermaidPlugin(options?: MermaidPluginOptions): CustomPlugin {
       
       if (theme) {
         props.theme = theme;
+      }
+
+      if (onError) {
+        props.onError = onError;
       }
       
       return h(MermaidDiagram, props)

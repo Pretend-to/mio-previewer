@@ -1,42 +1,47 @@
 <template>
-  <div class="mermaid-diagram-wrapper">
-    <div class="mermaid-controls">
-      <button @click="resetZoom" class="control-btn" title="重置缩放">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 3a5 5 0 1 0 0 10A5 5 0 0 0 8 3zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/>
-          <path d="M8 4.5a.5.5 0 0 1 .5.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2A.5.5 0 0 1 8 4.5z"/>
-        </svg>
-      </button>
-      <button @click="toggleFullscreen" class="control-btn" title="全屏预览">
-        <svg v-if="!isFullscreen" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
-        </svg>
-        <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/>
-        </svg>
-      </button>
-      <span class="zoom-indicator">{{ Math.round(zoom * 100) }}%</span>
-    </div>
+  <Teleport to="body" :disabled="!isFullscreen">
     <div 
-      ref="containerRef" 
-      class="mermaid-diagram"
-      :class="{ 'is-fullscreen': isFullscreen, 'is-dragging': isDragging }"
-      @wheel.prevent="handleWheel"
-      @mousedown="handleMouseDown"
-      @mousemove="handleMouseMove"
-      @mouseup="handleMouseUp"
-      @mouseleave="handleMouseLeave"
+      class="mermaid-diagram-wrapper"
+      :class="{ 'fullscreen': isFullscreen }"
     >
+      <div class="mermaid-controls">
+        <button @click="resetZoom" class="control-btn" title="重置缩放">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 3a5 5 0 1 0 0 10A5 5 0 0 0 8 3zM1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8z"/>
+            <path d="M8 4.5a.5.5 0 0 1 .5.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2A.5.5 0 0 1 8 4.5z"/>
+          </svg>
+        </button>
+        <button @click="toggleFullscreen" class="control-btn" :title="isFullscreen ? '退出全屏' : '全屏预览'">
+          <svg v-if="!isFullscreen" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/>
+          </svg>
+        </button>
+        <span class="zoom-indicator">{{ Math.round(zoom * 100) }}%</span>
+      </div>
       <div 
-        ref="diagramRef" 
-        class="mermaid-diagram-content"
-      ></div>
+        ref="containerRef" 
+        class="mermaid-diagram"
+        :class="{ 'is-dragging': isDragging }"
+        @wheel.prevent="handleWheel"
+        @mousedown="handleMouseDown"
+        @mousemove="handleMouseMove"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseLeave"
+      >
+        <div 
+          ref="diagramRef" 
+          class="mermaid-diagram-content"
+        ></div>
+      </div>
+      <div v-if="error && !isStreaming" class="mermaid-error">
+        <strong>Mermaid 渲染错误:</strong>
+        <pre>{{ error }}</pre>
+      </div>
     </div>
-    <div v-if="error && !isStreaming" class="mermaid-error">
-      <strong>Mermaid 渲染错误:</strong>
-      <pre>{{ error }}</pre>
-    </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -46,6 +51,7 @@ import mermaid from 'mermaid'
 const props = defineProps<{
   code: string
   isStreaming?: boolean
+  onError?: (error: Error | string, code: string) => void
 }>()
 
 const diagramRef = ref<HTMLDivElement | null>(null)
@@ -262,60 +268,33 @@ const resetZoom = () => {
 
 // 全屏切换
 const toggleFullscreen = () => {
-  if (!containerRef.value) return
-  
-  if (!isFullscreen.value) {
-    // 进入全屏
-    if (containerRef.value.requestFullscreen) {
-      containerRef.value.requestFullscreen()
-    } else if ((containerRef.value as any).webkitRequestFullscreen) {
-      (containerRef.value as any).webkitRequestFullscreen()
-    } else if ((containerRef.value as any).mozRequestFullScreen) {
-      (containerRef.value as any).mozRequestFullScreen()
-    } else if ((containerRef.value as any).msRequestFullscreen) {
-      (containerRef.value as any).msRequestFullscreen()
-    }
-  } else {
-    // 退出全屏
-    if (document.exitFullscreen) {
-      document.exitFullscreen()
-    } else if ((document as any).webkitExitFullscreen) {
-      (document as any).webkitExitFullscreen()
-    } else if ((document as any).mozCancelFullScreen) {
-      (document as any).mozCancelFullScreen()
-    } else if ((document as any).msExitFullscreen) {
-      (document as any).msExitFullscreen()
-    }
+  isFullscreen.value = !isFullscreen.value
+}
+
+// 监听 ESC 键退出全屏
+const handleEscKey = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && isFullscreen.value) {
+    toggleFullscreen()
   }
 }
 
-// 监听全屏状态变化
-const handleFullscreenChange = () => {
-  const newFullscreenState = !!(
-    document.fullscreenElement ||
-    (document as any).webkitFullscreenElement ||
-    (document as any).mozFullScreenElement ||
-    (document as any).msFullscreenElement
-  )
-  
-  // 如果从全屏状态退出到普通状态，重置缩放
-  if (isFullscreen.value && !newFullscreenState) {
-    resetZoom()
+// 监听全屏状态变化，更新 body 滚动与 SVG 最大高度
+watch(isFullscreen, (newVal) => {
+  if (newVal) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+    resetZoom() // 如果从全屏状态退出到普通状态，重置缩放
   }
   
-  isFullscreen.value = newFullscreenState
-  
-  // 更新 SVG 样式以适应全屏/非全屏状态
   if (svgElement.value) {
-    if (newFullscreenState) {
-      // 全屏模式：限制到视口高度
+    if (newVal) {
       svgElement.value.style.maxHeight = '100vh'
     } else {
-      // 普通模式：恢复高度限制
       svgElement.value.style.maxHeight = '600px'
     }
   }
-}
+})
 
 const renderDiagram = async () => {
   if (!diagramRef.value || !props.code) return
@@ -364,11 +343,21 @@ const renderDiagram = async () => {
       updateSVGTransform()
     }
   } catch (err: any) {
+    const errMsg = err?.message || String(err)
     // 只在非流式模式下显示错误
     // 流式模式下代码可能还未完整，忽略渲染错误
     if (!props.isStreaming) {
-      error.value = err?.message || String(err)
+      error.value = errMsg
       console.error('Mermaid render error:', err)
+      
+      // 触发回调
+      if (props.onError) {
+        try {
+          props.onError(err, props.code)
+        } catch (cbErr) {
+          console.error('Error calling onError callback:', cbErr)
+        }
+      }
     }
     // 流式模式下静默失败，不显示错误
     console.log('Mermaid render skipped in streaming mode.')
@@ -412,11 +401,8 @@ onMounted(() => {
   // 保存 observer 以便清理
   ;(diagramRef.value as any).__observer = observer
   
-  // 监听全屏状态变化
-  document.addEventListener('fullscreenchange', handleFullscreenChange)
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
-  document.addEventListener('mozfullscreenchange', handleFullscreenChange)
-  document.addEventListener('msfullscreenchange', handleFullscreenChange)
+  // 监听 ESC 键
+  window.addEventListener('keydown', handleEscKey)
 })
 
 onUnmounted(() => {
@@ -428,14 +414,12 @@ onUnmounted(() => {
     ;(diagramRef.value as any).__observer.disconnect()
   }
   
-  // 清理全屏监听器
-  document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
-  document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
-  document.removeEventListener('msfullscreenchange', handleFullscreenChange)
+  // 清理键盘监听器与样式
+  window.removeEventListener('keydown', handleEscKey)
+  document.body.style.overflow = ''
 })
 
-watch(() => props.code, () => {
+watch(() => [props.code, props.isStreaming], () => {
   renderDiagram()
 })
 </script>
@@ -501,19 +485,36 @@ watch(() => props.code, () => {
   cursor: grabbing;
 }
 
-.mermaid-diagram.is-fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 9999;
-  background: var(--mermaid-bg, #f9f9f9);
-  margin: 0;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mermaid-diagram-wrapper.fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: var(--mermaid-bg, #f9f9f9) !important;
+  border: none !important;
+}
+
+.mermaid-diagram-wrapper.fullscreen .mermaid-controls {
+  position: fixed !important;
+  top: 16px !important;
+  right: 16px !important;
+  z-index: 10000 !important;
+}
+
+.mermaid-diagram-wrapper.fullscreen .mermaid-diagram {
+  flex: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
 .mermaid-diagram-content {
@@ -524,15 +525,15 @@ watch(() => props.code, () => {
   width: 100%;
 }
 
-.mermaid-diagram.is-fullscreen .mermaid-diagram-content {
+.mermaid-diagram-wrapper.fullscreen .mermaid-diagram-content {
   /* 全屏时居中显示 */
-  align-items: center;
-  height: 100%;
+  align-items: center !important;
+  height: 100% !important;
 }
 
 .mermaid-diagram-content :deep(svg) {
   display: block;
-  /* 普通模式下高度自动适配；全屏模式通过 handleFullscreenChange 设置 maxHeight=100vh */
+  /* 普通模式下高度自动适配；全屏模式下高度自适应 */
   height: auto;
   max-width: 100%;
 }
@@ -554,8 +555,8 @@ watch(() => props.code, () => {
 
 /* 暗色主题支持 */
 :global(.theme-dark) .mermaid-controls,
-:global(.theme-dark) .mermaid-diagram.is-fullscreen {
-  background: rgba(30, 30, 30, 0.95);
+:global(.theme-dark) .mermaid-diagram-wrapper.fullscreen {
+  background: rgba(30, 30, 30, 0.95) !important;
 }
 
 :global(.theme-dark) .control-btn {
@@ -573,8 +574,8 @@ watch(() => props.code, () => {
 
 @media (prefers-color-scheme: dark) {
   .mermaid-controls,
-  .mermaid-diagram.is-fullscreen {
-    background: rgba(30, 30, 30, 0.95);
+  .mermaid-diagram-wrapper.fullscreen {
+    background: rgba(30, 30, 30, 0.95) !important;
   }
   
   .control-btn {

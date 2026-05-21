@@ -1,9 +1,12 @@
 <template>
-  <div 
-    class="code-block-wrapper" 
-    :class="{ 'fullscreen': isFullscreen }"
-    :data-lang="language"
-  >
+  <Teleport to="body" :disabled="!isFullscreen">
+    <div :class="{ 'markdown-body': isFullscreen }">
+      <div 
+        ref="wrapperRef"
+        class="code-block-wrapper" 
+        :class="{ 'fullscreen': isFullscreen }"
+        :data-lang="language"
+      >
     <!-- Tooltip 提示 - 使用 Teleport 渲染到 body -->
     <Teleport to="body">
       <div 
@@ -51,6 +54,16 @@
           v-html="publishSvg"
         ></button>
         
+        <!-- 折叠/展开按钮 -->
+        <button
+          v-if="enableCollapse && shouldShowCollapseButton && !isFullscreen"
+          class="collapse-toggle-button"
+          type="button"
+          :title="isCollapsed ? '展开代码' : '折叠代码'"
+          @click="toggleCollapse"
+          v-html="isCollapsed ? expandSvg : collapseSvg"
+        ></button>
+        
         <!-- 全屏按钮 -->
         <button
           v-if="!isFullscreen"
@@ -84,10 +97,27 @@
     </div>
     
     <!-- 代码区域 -->
-    <pre
+    <div
       v-show="!isPreviewOpen"
-      :class="`language-${language}`"
-    ><code :class="`language-${language}`" v-html="highlightedCode"></code></pre>
+      class="pre-container"
+    >
+      <pre
+        ref="preRef"
+        :class="[`language-${language}`, { 'is-collapsed': enableCollapse && isCollapsed && shouldShowCollapseButton && !isFullscreen }]"
+        :style="preStyle"
+        @scroll="handleScroll"
+      ><code :class="`language-${language}`" v-html="highlightedCode"></code></pre>
+      
+      <!-- 符合主题的向下展开提示栏 -->
+      <div 
+        v-if="enableCollapse && shouldShowCollapseButton && isCollapsed && !isFullscreen" 
+        class="collapse-expand-bar"
+        @click="toggleCollapse"
+      >
+        <span class="expand-prompt-text">展开全部代码</span>
+        <span class="expand-prompt-icon" v-html="expandSvg"></span>
+      </div>
+    </div>
     
     <!-- HTML 预览区域 -->
     <div v-if="isPreviewOpen" class="iframe-wrapper" :style="{ height: iframeHeight }">
@@ -99,7 +129,9 @@
         @load="handleIframeLoad"
       ></iframe>
     </div>
-  </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -130,12 +162,20 @@ import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
 
-const props = defineProps<{
-  code: string;
-  language: string;
-  publishUrl?: string;
-  onPublished?: (url: string) => void;
-}>();
+const props = withDefaults(
+  defineProps<{
+    code: string;
+    language: string;
+    publishUrl?: string;
+    onPublished?: (url: string) => void;
+    enableCollapse?: boolean;
+    collapseMaxHeight?: number;
+  }>(),
+  {
+    enableCollapse: true,
+    collapseMaxHeight: 300,
+  }
+);
 
 const isCopied = ref(false);
 const isPreviewOpen = ref(false);
@@ -144,6 +184,13 @@ const iframeHeight = ref('300px');
 const isPublishing = ref(false);
 const isPublished = ref(false);
 const isFullscreen = ref(false);
+const wrapperRef = ref<HTMLDivElement | null>(null);
+
+// Collapse state
+const isCollapsed = ref(true);
+const shouldShowCollapseButton = ref(false);
+const isScrollAtBottom = ref(false);
+const preRef = ref<HTMLPreElement | null>(null);
 
 // Tooltip 消息
 const tooltipMessage = ref('');
@@ -183,10 +230,61 @@ const updateHighlight = () => {
   highlightedCode.value = getHighlightedCode();
 };
 
+const checkHeight = () => {
+  if (!props.enableCollapse) {
+    shouldShowCollapseButton.value = false;
+    return;
+  }
+  if (preRef.value) {
+    shouldShowCollapseButton.value = preRef.value.scrollHeight > props.collapseMaxHeight;
+  }
+};
+
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value;
+  if (preRef.value) {
+    preRef.value.scrollTop = 0;
+    isScrollAtBottom.value = false;
+  }
+};
+
+const preStyle = computed(() => {
+  if (props.enableCollapse && isCollapsed.value && shouldShowCollapseButton.value && !isFullscreen.value) {
+    return {
+      maxHeight: `${props.collapseMaxHeight}px`,
+      overflowY: 'auto' as const
+    };
+  }
+  return {};
+});
+
+const handleScroll = () => {
+  if (preRef.value) {
+    const { scrollTop, scrollHeight, clientHeight } = preRef.value;
+    isScrollAtBottom.value = scrollHeight - scrollTop <= clientHeight + 15;
+  }
+};
+
 // 初始化和监听 props 变化
 updateHighlight();
 watch(() => [props.code, props.language], () => {
+  let wasAtBottom = true;
+  if (preRef.value) {
+    const { scrollTop, scrollHeight, clientHeight } = preRef.value;
+    wasAtBottom = scrollHeight <= clientHeight || (scrollHeight - scrollTop <= clientHeight + 30);
+  }
+  
   updateHighlight();
+  
+  setTimeout(() => {
+    checkHeight();
+    if (preRef.value) {
+      if (wasAtBottom) {
+        preRef.value.scrollTop = preRef.value.scrollHeight;
+      }
+      handleScroll();
+    }
+  }, 50);
 });
 
 // 打开预览
@@ -389,10 +487,24 @@ const handleEscKey = (e: KeyboardEvent) => {
   }
 };
 
+let resizeObserver: ResizeObserver | null = null;
+
 // 组件挂载时添加监听
 onMounted(() => {
   window.addEventListener('message', handleMessage);
   window.addEventListener('keydown', handleEscKey);
+  
+  setTimeout(() => {
+    checkHeight();
+    handleScroll();
+  }, 50);
+  
+  if (typeof ResizeObserver !== 'undefined' && preRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      checkHeight();
+    });
+    resizeObserver.observe(preRef.value);
+  }
 });
 
 // 组件卸载时移除监听
@@ -400,6 +512,9 @@ onUnmounted(() => {
   window.removeEventListener('message', handleMessage);
   window.removeEventListener('keydown', handleEscKey);
   document.body.style.overflow = ''; // 确保清理
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+  }
 });
 
 // SVG 图标
@@ -414,6 +529,9 @@ const publishSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill="
 const fullscreenSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>`;
 
 const exitFullscreenSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>`;
+
+const expandSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>`;
+const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg>`;
 </script>
 
 <style scoped>
@@ -554,19 +672,8 @@ pre {
   background: #1e1e2e;
 }
 
-pre::-webkit-scrollbar {
-  height: 8px;
-  background: transparent;
-}
 
-pre::-webkit-scrollbar-thumb {
-  background-color: rgba(136, 136, 136, 0.6);
-  border-radius: 4px;
-}
 
-pre::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(136, 136, 136, 0.9);
-}
 
 .iframe-wrapper {
   width: 100%;
@@ -593,13 +700,14 @@ pre::-webkit-scrollbar-thumb:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100vw !important;
+  height: 100vh !important;
   z-index: 9999;
-  margin: 0;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #262733 !important;
 }
 
 .code-block-wrapper.fullscreen .code-block-header {
@@ -621,14 +729,96 @@ pre::-webkit-scrollbar-thumb:hover {
 .code-block-wrapper.fullscreen .html-preview-iframe {
   height: 100%;
 }
+
+/* Auto-collapse styles */
+.pre-container {
+  position: relative;
+  width: 100%;
+}
+
+.collapse-expand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #2d2f3a;
+  padding: 8px 12px;
+  border-top: 1px solid #23242d;
+  cursor: pointer;
+  color: #8fa3c1;
+  font-size: 12px;
+  font-weight: 500;
+  user-select: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.collapse-expand-bar:hover {
+  background: #353746;
+  color: #fff;
+}
+
+.collapse-expand-bar :deep(svg) {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.collapse-expand-bar:hover :deep(svg) {
+  transform: translateY(2px);
+}
+
+.collapse-toggle-button {
+  color: #8fa3c1;
+}
+
+/* Fullscreen mode overrides */
+.code-block-wrapper.fullscreen .pre-container {
+  max-height: none !important;
+  overflow: visible !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.code-block-wrapper.fullscreen pre {
+  max-height: none !important;
+  flex: 1;
+}
 </style>
 
 <!-- 全局样式：覆盖 GitHub CSS 和 Prism CSS -->
 <style>
+/* 自定义滚动条样式，使用高优先级选择器以覆盖 github-markdown-css 等外部样式 */
+.code-block-wrapper pre::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  background: transparent !important;
+}
+
+.code-block-wrapper pre::-webkit-scrollbar-track {
+  background: #1e1e2e !important;
+  border-radius: 0 !important;
+}
+
+.code-block-wrapper pre::-webkit-scrollbar-thumb {
+  background-color: rgba(136, 136, 136, 0.3) !important;
+  border-radius: 4px !important;
+  border: 2px solid #1e1e2e !important;
+}
+
+.code-block-wrapper pre::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(136, 136, 136, 0.6) !important;
+}
+
+.code-block-wrapper pre::-webkit-scrollbar-corner {
+  background: #1e1e2e !important;
+}
+
 /* 使用高优先级选择器强制覆盖背景色 */
 .code-block-wrapper.code-block-wrapper pre {
   background-color: #1e1e2e !important;
   background: #1e1e2e !important;
+  margin: 0 !important;
 }
 
 .code-block-wrapper.code-block-wrapper code {
