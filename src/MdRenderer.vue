@@ -186,11 +186,34 @@ function collectImages(nodes: ASTNode[]): RenderContext['images'] {
   return images;
 }
 
-function findLastTextNode(nodes: any): any | null {
-  if (!nodes?.length) return null;
-  let last = nodes[nodes.length - 1];
-  if (last.type === 'text') return last;
-  if (last.type === 'tag') return findLastTextNode(last.children);
+interface TextNodeContext {
+  node: any;
+  inPre: boolean;
+}
+
+function findLastTextNodeWithContext(nodes: any[], inPre = false): TextNodeContext | null {
+  if (!nodes || nodes.length === 0) return null;
+
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const node = nodes[i];
+
+    if (node.type === 'text') {
+      // Ignore root-level or outside-pre whitespace-only text nodes
+      if (!inPre && (!node.data || node.data.trim() === '')) {
+        continue;
+      }
+      return { node, inPre };
+    }
+
+    if (node.type === 'tag') {
+      const currentInPre = inPre || (node.name === 'pre');
+      const result = findLastTextNodeWithContext(node.children, currentInPre);
+      if (result) {
+        return result;
+      }
+    }
+  }
+
   return null;
 }
 
@@ -312,15 +335,25 @@ watch(
     // 2. 移除旧光标，准备更新
     manageCursor(ast.value, 'remove');
 
-    const lastNode = findLastTextNode(ast.value);
+    const lastTextResult = findLastTextNodeWithContext(ast.value);
+    const lastNode = lastTextResult?.node || null;
+    const inPre = lastTextResult?.inPre || false;
+    const backtickCount = (newMd.match(/```/g) || []).length;
+    const tildeCount = (newMd.match(/~~~/g) || []).length;
+    const isInsideCodeBlock = (backtickCount % 2 === 1) || (tildeCount % 2 === 1);
+
     // 3. 优化：检查新文本块是否为不含Markdown特殊语法的“纯文本”
-    // const isSimpleTextChunk = !/[`*#\[\]|!~]/.test(newTextChunk);
-    // TODO: 以后再尝试快速路径，目前先假设所有流式更新都需要重新解析
-    const isSimpleTextChunk = false;
+    // 如果最后的节点在 pre 里，但是 markdown 语法显示代码块已经关闭，则不能使用快速路径，必须走慢速路径以生成新的块标签
+    // 此外，要求 AST 内部状态与当前的 markdown 开关状态一致（inPre === isInsideCodeBlock），并排除 '/'
+    const isSimpleTextChunk = !!lastNode && 
+                              (inPre === isInsideCodeBlock) &&
+                              !/[#*_`\[\]\(\)\<\>\!\~\|\\\n\r\-\+\.\$\&\:\=\;\?\{\}\@\/]/.test(newTextChunk);
 
     if (lastNode && isSimpleTextChunk) {
       // 4. 快速路径：如果可以，直接追加到最后一个文本节点
       lastNode.data += newTextChunk;
+      // 强制触发 Vue 响应式更新以保证递归渲染器感知变动
+      ast.value = [...ast.value];
     } else {
       // 5. 慢速路径：如果不行（例如新块含Markdown语法），则重新解析整个字符串
       if (!TEMP_DISABLE_WORKER && props.useWorker && worker) {
