@@ -1,6 +1,7 @@
 <script lang="ts">
 import { h, defineComponent, type VNode } from 'vue'
 import type { RenderContext } from '../types'
+import { shouldAddCors } from '../utils/cors'
 
 type Plugin = {
   test: (node: any) => boolean;
@@ -38,9 +39,18 @@ export default defineComponent({
 
       // 2. 渲染标准的 HTML 标签
       if (node.type === 'tag' || node.type === 'script' || node.type === 'style') {
+        let attribs = node.attribs || {};
+        if (node.name === 'img' && attribs.src) {
+          if (shouldAddCors(attribs.src, props.context?.autoCors)) {
+            attribs = {
+              ...attribs,
+              crossorigin: 'anonymous'
+            };
+          }
+        }
         return h(
           node.name,
-          node.attribs || {},
+          attribs,
           node.children ? node.children.map(renderNode) : []
         );
       }

@@ -32,6 +32,7 @@ type Props = {
   markdownItPlugins?: MarkdownItPluginConfig[];
   markdownItOptions?: Record<string, any>;
   customPlugins?: CustomPluginConfig[];
+  autoCors?: boolean | string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,7 +41,8 @@ const props = withDefaults(defineProps<Props>(), {
   theme: undefined,
   markdownItPlugins: () => [],
   markdownItOptions: () => ({}),
-  customPlugins: () => []
+  customPlugins: () => [],
+  autoCors: undefined
 });
 
 // 初始化 markdown-it 实例（支持动态配置）
@@ -149,7 +151,8 @@ watch(imageViewerContainer, (container) => {
 // 渲染上下文（传递给插件的共享状态）
 const renderContext = computed<RenderContext>(() => ({
   images: collectImages(ast.value),
-  isStreaming: props.isStreaming
+  isStreaming: props.isStreaming,
+  autoCors: props.autoCors
 }));
 
 // TEMPORARY: disable worker usage globally. Set to `false` to re-enable worker handling.

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.79 - 2026-06-03
+
+### ✨ Enhancements
+
+#### **Dynamic CORS Image Handling**
+- **Added**: Introduced `autoCors` property (supporting boolean or string[] domain lists) to automatically add `crossorigin="anonymous"` attribute to images matching the host patterns.
+- **Support**: Checked both custom plugins (`ImageViewer`) and fallback HTML `<img>` tag renderers.
+
+### 🐛 Bug Fixes
+
+#### **Stale Image Load Detection**
+- Registered onload listeners synchronously to avoid missing cache/quick load events.
+- Added delayed check (`50ms`) for `complete` status to bypass stale image states in cloned nodes.
+
+---
+
 ## 0.2.72 - 2026-05-04
 
 ### 🐛 Bug Fixes

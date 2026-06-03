@@ -16,6 +16,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, inject, computed } from 'vue';
 import type { RenderContext } from '../types';
+import { shouldAddCors } from '../utils/cors';
 
 interface Props {
   src: string;
@@ -56,9 +57,11 @@ const actualIndex = computed(() => {
 
 // 识别是否需要跨域属性
 const shouldUseCORS = computed(() => {
-  if (!props.crossOrigin) return false;
-  // 如果开启了跨域，且是外部图片，则返回 true
-  return props.src.startsWith('http') && !props.src.includes(window.location.host);
+  if (props.crossOrigin) {
+    // 如果开启了跨域，且是外部图片，则返回 true
+    return props.src.startsWith('http') && !props.src.includes(window.location.host);
+  }
+  return shouldAddCors(props.src, props.context?.autoCors);
 });
 
 onMounted(() => {

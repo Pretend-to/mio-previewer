@@ -35,6 +35,11 @@ export type RenderContext = {
   isStreaming?: boolean;
 
   /**
+   * 是否自动处理跨域图片
+   */
+  autoCors?: boolean | string[];
+
+  /**
    * 其他自定义状态
    */
   [key: string]: any;
@@ -149,4 +154,9 @@ export type MdRendererProps = {
    * UI 主题。传入 'github' 时会启用 github-markdown-css 样式
    */
   theme?: Theme;
+
+  /**
+   * 是否自动处理跨域图片，或者指定的域名列表
+   */
+  autoCors?: boolean | string[];
 };
