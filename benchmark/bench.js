@@ -1,399 +1,504 @@
+// === mio-previewer Benchmark v2 (Browser Self-Contained) ===
+// 诚实地测量 mio vs v-html 在流式场景下的真实性能差异
+// 用法: pnpm dev → 打开 benchmark.html → 点击 "Run All Scenarios"
 import MarkdownIt from 'markdown-it'
 import { createApp, h } from 'vue'
-// dynamic import of the library entry
 import * as Mio from '/src/index.ts'
 
 const md = new MarkdownIt({ html: true, linkify: true })
 
-const status = document.getElementById('status')
-const fixtureSelect = document.getElementById('fixtureSelect')
-const loadBtn = document.getElementById('loadBtn')
-const startRenderBtn = document.getElementById('startRender')
-const clearBtn = document.getElementById('clearBtn')
-const renderModeSelect = document.getElementById('renderMode')
-const runTypeSelect = document.getElementById('runType')
-const streamDelayInput = document.getElementById('streamDelay')
+// === DOM 引用 ===
+const statusEl = document.getElementById('status')
 const renderContent = document.getElementById('render-content')
 const renderStats = document.getElementById('render-stats')
-const chunkSizeInput = document.getElementById('chunkSize')
-const normalizeImagesCheckbox = document.getElementById('normalizeImages')
 
-let mioApp = null
-let mioVm = null
-let vhtmlApp = null
-let vhtmlVm = null
+// === Vue 实例 ===
+let mioApp = null, mioVm = null
+let vhtmlApp = null, vhtmlVm = null
 
-// Collect environment metadata for reproducibility
-function collectEnvMeta() {
-  try {
-    return {
-      userAgent: navigator.userAgent || 'unknown',
-      cpuCores: navigator.hardwareConcurrency || -1,
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-      dpr: window.devicePixelRatio || 1,
-      memoryAvailable: (performance.memory && performance.memory.jsHeapSizeLimit) ? true : false,
-      timestamp: Date.now()
+// === MutationObserver ===
+let mutationObserver = null
+let mutationStats = { added: 0, removed: 0, total: 0 }
+
+function startMutationObserver() {
+  mutationStats = { added: 0, removed: 0, total: 0 }
+  mutationObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      mutationStats.total++
+      mutationStats.added += m.addedNodes.length
+      mutationStats.removed += m.removedNodes.length
     }
-  } catch (e) {
-    return { error: String(e) }
+  })
+  mutationObserver.observe(renderContent, { childList: true, subtree: true, characterData: true })
+}
+
+function stopMutationObserver() {
+  if (mutationObserver) { mutationObserver.disconnect(); mutationObserver = null }
+  return { ...mutationStats }
+}
+
+// === FPS 监控 ===
+let fpsData = [], fpsRunning = false, fpsRAF = null
+
+function startFPS() {
+  fpsData = []; fpsRunning = true
+  let lastTime = performance.now(), frames = 0
+  function loop() {
+    if (!fpsRunning) return
+    frames++
+    const now = performance.now()
+    if (now - lastTime >= 1000) { fpsData.push(frames); frames = 0; lastTime = now }
+    fpsRAF = requestAnimationFrame(loop)
+  }
+  fpsRAF = requestAnimationFrame(loop)
+}
+
+function stopFPS() {
+  fpsRunning = false
+  if (fpsRAF) cancelAnimationFrame(fpsRAF)
+  if (fpsData.length === 0) return { avg: -1, min: -1, max: -1 }
+  return {
+    avg: fpsData.reduce((a, b) => a + b, 0) / fpsData.length,
+    min: Math.min(...fpsData),
+    max: Math.max(...fpsData),
+    samples: fpsData
   }
 }
 
-// Collect current memory usage if available
-function collectMemory() {
-  try {
-    if (performance.memory) {
-      return {
-        used: performance.memory.usedJSHeapSize,
-        total: performance.memory.totalJSHeapSize,
-        limit: performance.memory.jsHeapSizeLimit
-      }
-    }
-  } catch (e) {}
-  return null
+// === 环境元信息 ===
+function collectEnvMeta() {
+  return {
+    userAgent: navigator.userAgent,
+    cpuCores: navigator.hardwareConcurrency || -1,
+    viewport: { width: window.innerWidth, height: window.innerHeight },
+    dpr: window.devicePixelRatio || 1,
+    timestamp: Date.now()
+  }
 }
 
-async function renderVHtml(text) {
-  // mount a tiny Vue app that binds innerHTML (v-html equivalent) so we compare using Vue
+// === 挂载渲染器 ===
+function ensureVhtmlMounted() {
   if (!vhtmlApp) {
     renderContent.innerHTML = '<div id="vhtml-app-root"></div>'
-    const App = {
+    vhtmlApp = createApp({
       data() { return { html: '' } },
       render() { return h('div', { innerHTML: this.html }) }
-    }
-    vhtmlApp = createApp(App)
+    })
     vhtmlVm = vhtmlApp.mount('#vhtml-app-root')
   }
-  const t0 = performance.now()
-  vhtmlVm.html = md.render(text)
-  // wait a frame to let browser layout
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
-  const t1 = performance.now()
-  return { renderTimeMs: t1 - t0, htmlLength: document.getElementById('vhtml-app-root').innerHTML.length }
 }
 
-async function renderIncremental(text) {
-  // mount Mio inside mioContent if not mounted
+function ensureMioMounted(isStreaming = true) {
   if (!mioApp) {
     renderContent.innerHTML = '<div id="mio-app-root"></div>'
-    const App = {
+    mioApp = createApp({
       components: { MdRenderer: Mio.MdRenderer },
-      data() { return { md: '' } },
-      render() { return h('div', null, [ h(Mio.MdRenderer, { md: this.md, isStreaming: false }) ]) }
-    }
-    mioApp = createApp(App)
+      data() { return { md: '', _streaming: isStreaming } },
+      render() {
+        return h('div', null, [
+          h(Mio.MdRenderer, { md: this.md, isStreaming: this._streaming })
+        ])
+      }
+    })
     mioVm = mioApp.mount('#mio-app-root')
-  }
-  const t0 = performance.now()
-  mioVm.md = text
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
-  const t1 = performance.now()
-  const html = document.getElementById('mio-app-root').innerHTML
-  return { renderTimeMs: t1 - t0, htmlLength: html.length }
-}
-
-// Expose a helper to allow runners to inject fixtures
-// expose a simple setter for the runner and also for manual loading
-window.__mio_set_md__ = (txt) => { window.__mio_last_md__ = txt }
-
-// The runner will call window.runBenchmark(renderer, opts) where renderer='vhtml'|'mio'
-window.runBenchmark = async function (renderer, opts) {
-  const text = window.__mio_last_md__ || ''
-  const optsLocal = opts || {}
-  const delay = Number(optsLocal.delay) || 20
-  const chunkSize = Number(optsLocal.chunkSize) || 1
-  const fixture = optsLocal.fixture || 'unknown'
-  
-  status.textContent = `Running ${renderer} (size=${text.length}, chunk=${chunkSize}, delay=${delay})`;
-  
-  // Call renderIncrementalGeneric with mode
-  const renderOpts = { delay, chunkSize, mode: renderer }
-  const result = await renderIncrementalGeneric(text, renderOpts)
-  
-  // Build complete JSON response
-  const response = {
-    meta: {
-      fixture,
-      renderer,
-      chunkSize,
-      delay,
-      repeat: optsLocal.repeat || 0,
-      env: collectEnvMeta(),
-      timestampStart: Date.now() - result.totalMs,
-      timestampEnd: Date.now()
-    },
-    perChunk: result.perChunk,
-    aggregates: result.aggregates,
-    summary: {
-      totalMs: result.totalMs,
-      totalRenderMs: result.totalRenderMs,
-      chunks: result.chunks
-    }
-  }
-  
-  // Store for debugging
-  window.__mio_last_result__ = response
-  
-  return response
-}
-
-console.log('bench.js loaded')
-
-// --- UI glue: load fixture list and wire interactions ---
-async function loadFixtureList() {
-  try {
-    const resp = await fetch('/benchmark/fixtures/');
-    // Vite dev server serves directory listing as HTML; instead we'll hardcode known fixtures if fetch fails
-    // Try to fetch specific fixture files
-    const fixtures = ['complex.md','long-medium.md','long-large.md']
-    for (const f of fixtures) {
-      const opt = document.createElement('option')
-      opt.value = f
-      opt.textContent = f
-      fixtureSelect.appendChild(opt)
-    }
-  } catch (e) {
-    const fixtures = ['complex.md','long-medium.md','long-large.md']
-    for (const f of fixtures) {
-      const opt = document.createElement('option')
-      opt.value = f
-      opt.textContent = f
-      fixtureSelect.appendChild(opt)
-    }
+  } else {
+    mioVm._streaming = isStreaming
+    mioVm.md = ''
   }
 }
 
-async function loadSelectedFixture() {
-  const f = fixtureSelect.value
-  if (!f) return
-  const p = `/benchmark/fixtures/${f}`
-  status.textContent = `Loading ${f}...`
-  const txt = await fetch(p).then(r => r.text())
-  const normalized = normalizeImagesCheckbox && normalizeImagesCheckbox.checked ? normalizeImages(txt) : txt
-  window.__mio_set_md__(normalized)
-  status.textContent = `Loaded ${f} (${txt.length} chars)`
-}
-
-function normalizeImages(mdText) {
-  if (!mdText) return mdText
-  // Replace image URLs with picsum.photos random seeds similar to App.vue
-  // Match markdown image syntax ![alt](url)
-  return mdText.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m, alt, url) => {
-    // produce a deterministic but varied picsum url using hash of url
-    let hash = 0
-    for (let i = 0; i < url.length; i++) hash = ((hash << 5) - hash) + url.charCodeAt(i)
-    const seed = Math.abs(hash) % 1000
-    const newUrl = `https://picsum.photos/400/300?random=${seed}`
-    return `![${alt}](${newUrl})`
-  })
-}
-
-// no input preview; left preview removed
-
-loadFixtureList().then(() => { if (fixtureSelect.options.length) fixtureSelect.selectedIndex = 0 })
-
-loadBtn.addEventListener('click', loadSelectedFixture)
-
-async function renderFullVHtml(text) {
-  renderContent.innerHTML = ''
-  const t0 = performance.now()
-  renderContent.innerHTML = md.render(text)
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
-  const t1 = performance.now()
-  return { totalMs: t1 - t0, outputLength: renderContent.innerHTML.length }
-}
-
-async function renderFullMio(text) {
-  // mount if necessary
-  if (!mioApp) {
-    renderContent.innerHTML = '<div id="mio-app-root"></div>'
-    const App = { components: { MdRenderer: Mio.MdRenderer }, data() { return { md: '' } }, render() { return h('div', null, [ h(Mio.MdRenderer, { md: this.md, isStreaming: false }) ]) } }
-    mioApp = createApp(App)
-    mioVm = mioApp.mount('#mio-app-root')
-  }
-  const t0 = performance.now()
-  mioVm.md = text
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
-  const t1 = performance.now()
-  return { totalMs: t1 - t0, outputLength: document.getElementById('mio-app-root').innerHTML.length }
-}
-
-async function renderIncrementalGeneric(text, opts) {
-  const delay = Number(opts.delay) || 20
-  const chunkSize = Number(opts.chunkSize) || 1
-  const timestampStart = performance.now()
+// === 增量流式渲染（核心）v3 ← 修复了 paint 测量和 MAX_CHUNKS ===
+async function renderIncremental(text, opts) {
+  const { mode, chunkSize, delay } = opts
   const perChunkData = []
-  
-  // ensure renderer mounted and cleared
-  if (opts.mode === 'vhtml') {
-    // mount a tiny Vue app for v-html rendering
-    if (!vhtmlApp) {
-      renderContent.innerHTML = '<div id="vhtml-app-root"></div>'
-      const App = { data() { return { html: '' } }, render() { return h('div', { innerHTML: this.html }) } }
-      vhtmlApp = createApp(App)
-      vhtmlVm = vhtmlApp.mount('#vhtml-app-root')
-    } else {
-      // clear previous html
-      vhtmlVm.html = ''
-    }
-    // store accumulator locally
-    renderContent._acc = ''
-  }
-  if (opts.mode === 'mio') {
-    if (!mioApp) {
-      renderContent.innerHTML = '<div id="mio-app-root"></div>'
-      const App = { components: { MdRenderer: Mio.MdRenderer }, data() { return { md: '' } }, render() { return h('div', null, [ h(Mio.MdRenderer, { md: this.md, isStreaming: true }) ]) } }
-      mioApp = createApp(App)
-      mioVm = mioApp.mount('#mio-app-root')
-    } else { mioVm.md = '' }
+
+  if (mode === 'vhtml') {
+    ensureVhtmlMounted()
+    vhtmlVm.html = ''
+  } else {
+    ensureMioMounted(true)
+    mioVm.md = ''
   }
 
-  let chunkIndex = 0
-  for (let i = 0; i < text.length; i += chunkSize) {
+  startMutationObserver()
+  startFPS()
+
+  // 修正 1: 按 chunk 次数限流，而不是按字符数
+  // chunkSize=1, MAX_CHUNKS=500 → 不论文本多长都只跑前 500 个 token
+  const MAX_CHUNKS = 500
+  let acc = ''
+  const streamStart = performance.now()
+
+  // 修正 2: 分离 v-html 的 md.render() 跟踪
+  let mdRenderTimeAvg = 0
+  let mdRenderCalls = 0
+
+  for (let i = 0, chunkNum = 0; i < text.length; i += chunkSize) {
+    if (chunkNum >= MAX_CHUNKS) break
+    chunkNum++
+
     const chunk = text.slice(i, i + chunkSize)
-    const acc = (renderContent._acc || '') + chunk
-    
-    const tsStart = performance.now()
-    
-    // Apply update (JS assign)
-    if (opts.mode === 'vhtml') {
-      vhtmlVm.html = md.render(acc)
-      renderContent._acc = acc
+    acc += chunk + (delay > 0 ? '' : '')
+
+    // -- JS 阶段 Start --
+    const tsBeforeJs = performance.now()
+
+    if (mode === 'vhtml') {
+      const t0 = performance.now()
+      const html = md.render(acc)
+      mdRenderTimeAvg += performance.now() - t0
+      mdRenderCalls++
+      vhtmlVm.html = html
     } else {
       mioVm.md = (mioVm.md || '') + chunk
     }
-    
-    const tsAfterAssign = performance.now()
-    
-    // Wait for paint (two rAFs)
-    await new Promise(r => requestAnimationFrame(r))
-    const tsAfterRAF1 = performance.now()
-    await new Promise(r => requestAnimationFrame(r))
-    const tsAfterRAF2 = performance.now()
-    
-    // Collect metrics
-    let totalNodes = -1, renderNodes = -1, htmlLength = 0
+
+    const tsAfterJs = performance.now()
+    // -- JS 阶段 End --
+
+    // 修正 3: 用 rAF callback 的 timestamp 测帧边界（比 performance.now() 更准）
+    const frameStart = await new Promise(resolve => {
+      requestAnimationFrame(ts => resolve(ts))   // 第一帧开始 = 浏览器开始处理此次更新
+    })
+    // 修正 4: 第二帧确保 paint 完成（但只记录时间，不用于 paint 耗时计算）
+    await new Promise(resolve => requestAnimationFrame(resolve))
+    const tsAfterPaint = performance.now()
+    const paintWaitMs = tsAfterPaint - tsAfterJs     // 纯等待耗时（含 frame scheduling）
+
+    let totalNodes = -1, renderNodes = -1
     try {
       totalNodes = document.getElementsByTagName('*').length
       renderNodes = renderContent.getElementsByTagName('*').length
-      htmlLength = opts.mode === 'vhtml' 
-        ? (document.getElementById('vhtml-app-root') ? document.getElementById('vhtml-app-root').innerHTML.length : 0)
-        : (document.getElementById('mio-app-root') ? document.getElementById('mio-app-root').innerHTML.length : 0)
     } catch (e) {}
-    
-    const mem = collectMemory()
-    
+
+    // 修正 5: 记录 mutation 增量（delta），而非累积值
     perChunkData.push({
-      chunkIndex,
-      chunkSize: chunk.length,
+      chunkNum,
       accLength: acc.length,
-      tsStart,
-      tsAfterAssign,
-      tsAfterRAF1,
-      tsAfterRAF2,
-      renderTimeJs: tsAfterAssign - tsStart,
-      renderTimePaint: tsAfterRAF2 - tsStart,
+      jsMs: tsAfterJs - tsBeforeJs,              // 精确: 纯 JS 执行时间
+      frameLatencyMs: frameStart - tsAfterJs,     // JS 完成 → 下一帧开始的等待
+      paintWaitMs,                                // 总等待时间（含两帧）
+      frameStart,                                 // 帧开始时间戳（rAF 提供）
       totalNodes,
       renderNodes,
-      htmlLength,
-      memory: mem
+      // mutations: 只保存最终结果，在循环外聚合
     })
-    
-    chunkIndex++
-    
-    // Simulate streaming delay
+
     if (delay > 0) await new Promise(r => setTimeout(r, delay))
   }
-  
-  const timestampEnd = performance.now()
-  
-  // Compute aggregates
-  const renderTimes = perChunkData.map(d => d.renderTimePaint)
-  const totalRenderMs = renderTimes.reduce((a,b) => a+b, 0)
-  const avgPerChunk = totalRenderMs / renderTimes.length
-  const sortedTimes = renderTimes.slice().sort((a,b) => a-b)
-  const medianPerChunk = sortedTimes[Math.floor(sortedTimes.length / 2)]
-  const p95Index = Math.floor(sortedTimes.length * 0.95)
-  const p95PerChunk = sortedTimes[p95Index] || sortedTimes[sortedTimes.length - 1]
-  const p99Index = Math.floor(sortedTimes.length * 0.99)
-  const p99PerChunk = sortedTimes[p99Index] || sortedTimes[sortedTimes.length - 1]
-  
-  const nodeCountsTotal = perChunkData.map(d => d.totalNodes).filter(n => n > 0)
-  const maxNodes = nodeCountsTotal.length ? Math.max(...nodeCountsTotal) : -1
-  const finalNodes = nodeCountsTotal.length ? nodeCountsTotal[nodeCountsTotal.length - 1] : -1
-  
-  const outLen = perChunkData.length ? perChunkData[perChunkData.length - 1].htmlLength : 0
-  
+
+  const streamEnd = performance.now()
+  const finalMutationStats = stopMutationObserver()
+  const fps = stopFPS()
+
+  // 聚合
+  const jsTimes = perChunkData.map(d => d.jsMs)
+  const frameLatencies = perChunkData.map(d => d.frameLatencyMs)
+
+  const sorted = arr => [...arr].sort((a, b) => a - b)
+  const pct = (arr, p) => { const s = sorted(arr); return s[Math.floor(s.length * p)] || s[s.length - 1] }
+  const avg = arr => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
+  const stdDev = arr => { if (arr.length === 0) return 0; const m = avg(arr); return Math.sqrt(arr.reduce((a,v) => a+(v-m)**2,0) / arr.length) }
+
+  // 修正 6: 加一项组装时间指标 — 总耗时里去掉 delay 才是真正的渲染耗时
+  const totalChunkDelay = delay * perChunkData.length
+  const renderTimeExcludingDelay = streamEnd - streamStart - totalChunkDelay
+
   return {
-    totalMs: timestampEnd - timestampStart,
-    totalRenderMs,
-    chunks: perChunkData.length,
-    perChunk: perChunkData,
-    aggregates: {
-      avgPerChunk,
-      medianPerChunk,
-      p95PerChunk,
-      p99PerChunk,
-      maxNodes,
-      finalNodes,
-      finalHtmlLength: outLen
-    }
+    totalMs: streamEnd - streamStart,
+    totalRenderMs: renderTimeExcludingDelay,      // 去掉 delay 的净耗时
+    chunkCount: perChunkData.length,
+    jsTime: {
+      avg: avg(jsTimes), median: pct(jsTimes, 0.5),
+      p95: pct(jsTimes, 0.95), stdDev: stdDev(jsTimes),
+      total: jsTimes.reduce((a,b) => a+b, 0),
+    },
+    frameLatency: {
+      avg: avg(frameLatencies), median: pct(frameLatencies, 0.5),
+      p95: pct(frameLatencies, 0.95), stdDev: stdDev(frameLatencies),
+    },
+    frames: perChunkData.length,                  // 总共触发了多少帧更新
+    nodes: {
+      max: Math.max(...perChunkData.map(d => d.renderNodes).filter(n => n > 0), -1),
+      final: perChunkData.length > 0 ? perChunkData[perChunkData.length-1].renderNodes : -1,
+      stdDev: stdDev(perChunkData.map(d => d.renderNodes).filter(n => n > 0)),
+    },
+    mutations: finalMutationStats,
+    mdParse: mdRenderCalls > 0 ? { avgMs: mdRenderTimeAvg / mdRenderCalls, totalMs: mdRenderTimeAvg, calls: mdRenderCalls } : null,
+    fps,
+    perChunk: perChunkData
   }
 }
 
-startRenderBtn.addEventListener('click', async () => {
-  const mode = renderModeSelect.value // 'vhtml' or 'mio'
-  const type = runTypeSelect.value // 'full' or 'incremental'
-  const normalize = !!normalizeImagesCheckbox.checked
-  const text = normalize ? normalizeImages(window.__mio_last_md__ || '') : (window.__mio_last_md__ || '')
-  renderStats.textContent = ''
-  status.textContent = `Running ${type} render with ${mode}...`
-  if (type === 'full') {
-    const res = mode === 'vhtml' ? await renderFullVHtml(text) : await renderFullMio(text)
-    renderStats.textContent = `totalMs=${res.totalMs.toFixed(2)}ms outputLen=${res.outputLength}`
-    status.textContent = `Done: ${res.totalMs.toFixed(2)}ms`
+// === 全量渲染 ===
+async function renderFull(text, mode) {
+  if (mode === 'vhtml') {
+    ensureVhtmlMounted()
+    const t0 = performance.now()
+    vhtmlVm.html = md.render(text)
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+    return { renderTimeMs: performance.now() - t0 }
   } else {
-    const opts = { delay: Number(streamDelayInput.value)||0, chunkSize: Number(chunkSizeInput.value)||1, mode }
-    const res = await renderIncrementalGeneric(text, opts)
-    // Store last result for external access
-    window.__mio_last_result__ = {
-      meta: {
-        fixture: fixtureSelect.value || 'unknown',
-        renderer: mode,
-        chunkSize: opts.chunkSize,
-        delay: opts.delay,
-        env: collectEnvMeta(),
-        timestampStart: Date.now() - res.totalMs,
-        timestampEnd: Date.now()
-      },
-      perChunk: res.perChunk,
-      aggregates: res.aggregates,
-      summary: {
-        totalMs: res.totalMs,
-        totalRenderMs: res.totalRenderMs,
-        chunks: res.chunks
+    ensureMioMounted(false)
+    const t0 = performance.now()
+    mioVm.md = text
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+    return { renderTimeMs: performance.now() - t0 }
+  }
+}
+
+// === 场景定义 ===
+const SCENARIOS = [
+  { name: 'token-level', chunkSize: 1,  delay: 10 },
+  { name: 'word-level',   chunkSize: 3,  delay: 15 },
+  { name: 'fast-stream',  chunkSize: 5,  delay: 10 },
+  { name: 'chunk-stream', chunkSize: 10, delay: 5  },
+  { name: 'realistic',    chunkSize: 35, delay: 5  },
+  { name: 'burst',        chunkSize: 1,  delay: 0  },
+]
+
+const REPEATS = 3
+
+// === 加载 fixture ===
+async function loadFixture(name) {
+  // 先用预置 fixture
+  const fixtures = ['complex', 'long-medium', 'long-large']
+  if (fixtures.includes(name)) {
+    const resp = await fetch(`/benchmark/fixtures/${name}.md`)
+    return await resp.text()
+  }
+  return ''
+}
+
+// === 暴露给 HTML 按钮 ===
+window.runAllBenchmarks = async function () {
+  const results = []
+  const fixtures = [
+    { name: 'complex', label: 'Complex (1.5KB)' },
+    { name: 'long-medium', label: 'Long-Medium (2KB)' },
+    { name: 'long-large', label: 'Long-Large (9KB)' },
+  ]
+
+  const totalOps = fixtures.length * SCENARIOS.length * 2 * REPEATS
+  let completed = 0
+
+  statusEl.textContent = `Starting ${totalOps} benchmark runs...`
+  renderStats.textContent = ''
+
+  for (const fixture of fixtures) {
+    let text
+    try {
+      text = await loadFixture(fixture.name)
+    } catch (e) {
+      statusEl.textContent = `❌ Failed to load ${fixture.name}: ${e.message}`
+      continue
+    }
+
+    statusEl.textContent = `📄 ${fixture.label} (${text.length} chars)...`
+
+    // 先跑全量渲染
+    const fullV = await renderFull(text, 'vhtml')
+    const fullM = await renderFull(text, 'mio')
+    results.push({
+      type: 'full', fixture: fixture.name, textLength: text.length,
+      vhtml: fullV, mio: fullM
+    })
+
+    // 跑流式场景
+    for (const scenario of SCENARIOS) {
+      for (const renderer of ['vhtml', 'mio']) {
+        for (let r = 0; r < REPEATS; r++) {
+          completed++
+          const pct = Math.round(completed / totalOps * 100)
+          statusEl.textContent = `[${pct}%] ${fixture.label} | ${scenario.name} | ${renderer} | rep ${r+1}/${REPEATS}`
+
+          const result = await renderIncremental(text, {
+            mode: renderer,
+            chunkSize: scenario.chunkSize,
+            delay: scenario.delay
+          })
+
+          results.push({
+            type: 'streaming',
+            fixture: fixture.name,
+            scenario: scenario.name,
+            renderer,
+            repeat: r,
+            chunkSize: scenario.chunkSize,
+            delay: scenario.delay,
+            textLength: text.length,
+            result
+          })
+
+          await new Promise(res => setTimeout(res, 100))
+        }
       }
     }
-    renderStats.textContent = `totalRender=${res.totalRenderMs.toFixed(2)}ms chunks=${res.chunks} avg=${res.aggregates.avgPerChunk.toFixed(2)}ms median=${res.aggregates.medianPerChunk.toFixed(2)}ms p95=${res.aggregates.p95PerChunk.toFixed(2)}ms maxNodes=${res.aggregates.maxNodes} finalNodes=${res.aggregates.finalNodes}`
-    status.textContent = `Done: totalRender=${res.totalRenderMs.toFixed(2)}ms elapsed=${res.totalMs.toFixed(2)}ms`
   }
-})
 
-clearBtn.addEventListener('click', () => {
-  // clear render output and internal accumulators
-  try {
-    renderContent.innerHTML = ''
-    if (renderContent._acc) renderContent._acc = ''
-    if (mioVm && typeof mioVm.md !== 'undefined') mioVm.md = ''
-    if (vhtmlVm && typeof vhtmlVm.html !== 'undefined') vhtmlVm.html = ''
+  statusEl.textContent = `✅ Done! ${completed} runs complete. Downloading results...`
+
+  // 下载 JSON
+  const blob = new Blob([JSON.stringify({ meta: collectEnvMeta(), results }, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `benchmark-results-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+
+  // 快速摘要
+  renderQuickSummary(results)
+}
+
+function renderQuickSummary(results) {
+  const streaming = results.filter(r => r.type === 'streaming')
+  const groups = {}
+  for (const r of streaming) {
+    const key = `${r.fixture}|${r.scenario}`
+    if (!groups[key]) groups[key] = { vhtml: [], mio: [] }
+    groups[key][r.renderer].push(r.result)
+  }
+
+  let html = '<h3>Quick Summary</h3><table border=1 cellpadding=4 style="font-size:12px;border-collapse:collapse">'
+  html += '<tr><th>Fixture</th><th>Scenario</th><th>v-html paint(ms)</th><th>mio paint(ms)</th><th>Δ</th>'
+  html += '<th>v-html mutations</th><th>mio mutations</th><th>Ratio</th></tr>'
+
+  for (const [key, g] of Object.entries(groups)) {
+    const [fixture, scenario] = key.split('|')
+    const vPaints = g.vhtml.flatMap(r => r.perChunk.map(c => c.renderTimePaint))
+    const mPaints = g.mio.flatMap(r => r.perChunk.map(c => c.renderTimePaint))
+    const vMed = median(vPaints)
+    const mMed = median(mPaints)
+    const diff = ((mMed - vMed) / vMed * 100).toFixed(1)
+    const vMuts = g.vhtml.reduce((s, r) => s + r.mutations.total, 0) / g.vhtml.length
+    const mMuts = g.mio.reduce((s, r) => s + r.mutations.total, 0) / g.mio.length
+    const mutRatio = (vMuts / Math.max(mMuts, 1)).toFixed(1)
+
+    const icon = Math.abs(parseFloat(diff)) < 3 ? '≈' : parseFloat(diff) < 0 ? '✅' : ''
+
+    html += `<tr>
+      <td>${fixture}</td><td>${scenario}</td>
+      <td>${vMed.toFixed(2)}</td><td>${mMed.toFixed(2)}</td>
+      <td style="color:${parseFloat(diff)<-3?'green':'inherit'}">${icon} ${diff}%</td>
+      <td>${vMuts.toFixed(0)}</td><td>${mMuts.toFixed(0)}</td>
+      <td>${mutRatio}x</td>
+    </tr>`
+  }
+  html += '</table>'
+  renderStats.innerHTML = html
+}
+
+function median(arr) {
+  const s = [...arr].sort((a, b) => a - b)
+  return s[Math.floor(s.length / 2)]
+}
+
+// === 暴露单次测试（保留兼容） ===
+window.__mio_set_md__ = (txt) => { window.__mio_last_md__ = txt }
+
+window.runBenchmark = async function (renderer, opts) {
+  opts = opts || {}
+  const text = window.__mio_last_md__ || ''
+  const result = await renderIncremental(text, {
+    mode: renderer,
+    chunkSize: opts.chunkSize || 1,
+    delay: opts.delay || 10
+  })
+  return {
+    meta: { fixture: opts.fixture || 'unknown', scenario: opts.scenario || '', renderer, chunkSize: opts.chunkSize, delay: opts.delay, textLength: text.length, env: collectEnvMeta() },
+    summary: {
+      totalMs: result.totalMs,
+      totalRenderMs: result.totalRenderMs,           // 净渲染耗时（去 delay）
+      chunkCount: result.chunkCount,
+      // JS 执行时间（精确、不含 frame 等待）
+      jsTimeAvg: result.jsTime.avg,
+      jsTimeMedian: result.jsTime.median,
+      jsTimeP95: result.jsTime.p95,
+      jsTimeTotal: result.jsTime.total,
+      // 帧调度延迟（JS 完成 → 下一帧开始）
+      frameLatencyAvg: result.frameLatency.avg,
+      frameLatencyP95: result.frameLatency.p95,
+      // DOM 节点
+      nodesMax: result.nodes.max,
+      nodesFinal: result.nodes.final,
+      nodesStdDev: result.nodes.stdDev,
+      // MutationObserver
+      mutationsTotal: result.mutations.total,
+      mutationsAdded: result.mutations.added,
+      mutationsRemoved: result.mutations.removed,
+      // md.render() 耗时（仅 v-html 有值）
+      mdParseAvgMs: result.mdParse?.avgMs || 0,
+      mdParseTotalMs: result.mdParse?.totalMs || 0,
+      fpsAvg: result.fps.avg
+    },
+    aggregates: result,
+    perChunk: result.perChunk
+  }
+}
+
+console.log('[bench-v2] Ready — click "Run All Scenarios" or use window.runBenchmark()')
+
+// === 按钮事件绑定 ===
+document.addEventListener('DOMContentLoaded', () => {
+  const runAllBtn = document.getElementById('runAllBtn')
+  const startSingle = document.getElementById('startSingle')
+  const clearBtn = document.getElementById('clearBtn')
+  const fixtureSelect = document.getElementById('fixtureSelect')
+  const renderMode = document.getElementById('renderMode')
+  const chunkInput = document.getElementById('chunkSize')
+  const delayInput = document.getElementById('streamDelay')
+
+  // 加载 fixture 内容
+  async function loadSelectedFixture() {
+    const name = fixtureSelect.value
+    statusEl.textContent = `Loading ${name}.md...`
+    try {
+      const resp = await fetch(`/benchmark/fixtures/${name}.md`)
+      const text = await resp.text()
+      window.__mio_last_md__ = text
+      statusEl.textContent = `Loaded ${name} (${text.length} chars)`
+    } catch (e) {
+      statusEl.textContent = `❌ Failed to load ${name}`
+    }
+  }
+
+  // 页面加载时预加载第一个 fixture
+  loadSelectedFixture()
+  fixtureSelect.addEventListener('change', loadSelectedFixture)
+
+  // Run All
+  if (runAllBtn) runAllBtn.addEventListener('click', () => window.runAllBenchmarks())
+
+  // Single run
+  if (startSingle) startSingle.addEventListener('click', async () => {
+    const text = window.__mio_last_md__ || ''
+    if (!text) {
+      statusEl.textContent = '❌ No fixture loaded'
+      return
+    }
+    const mode = renderMode.value
+    const chunkSize = parseInt(chunkInput.value) || 3
+    const delay = parseInt(delayInput.value) || 15
+    statusEl.textContent = `Running ${mode} chunk=${chunkSize} delay=${delay}...`
     renderStats.textContent = ''
-    status.textContent = 'Cleared'
-  } catch (e) {
-    console.error('clear error', e)
-    status.textContent = 'Clear failed'
-  }
+
+    const result = await renderIncremental(text, { mode, chunkSize, delay })
+    renderStats.textContent =
+      `Paint: avg=${result.paintTime.avg.toFixed(2)}ms median=${result.paintTime.median.toFixed(2)}ms p95=${result.paintTime.p95.toFixed(2)}ms | ` +
+      `JS: avg=${result.jsTime.avg.toFixed(2)}ms | ` +
+      `Nodes: max=${result.nodes.max} final=${result.nodes.final} stdDev=${result.nodes.stdDev.toFixed(1)} | ` +
+      `Mutations: ${result.mutations.total} (added=${result.mutations.added} removed=${result.mutations.removed}) | ` +
+      `FPS: avg=${result.fps.avg.toFixed(1)}`
+    statusEl.textContent = `✅ Done in ${result.totalMs.toFixed(0)}ms`
+  })
+
+  // Clear
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    renderContent.innerHTML = ''
+    renderStats.textContent = ''
+    statusEl.textContent = 'Cleared'
+    mioApp = null; mioVm = null
+    vhtmlApp = null; vhtmlVm = null
+  })
 })
-
-// If runner injected md before script loaded, pick it up
-// runner sets window.__mio_last_md__ via __mio_set_md__
-

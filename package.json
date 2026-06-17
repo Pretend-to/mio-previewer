@@ -12,7 +12,8 @@
     "build:types": "tsc -p tsconfig.build.json",
     "build": "pnpm run build:lib && pnpm run build:types",
     "preview": "vite preview",
-    "benchmark": "node benchmark/runner.cjs",
+    "benchmark": "node benchmark/analyze.cjs",
+    "benchmark:runner": "node benchmark/runner.cjs",
     "benchmark:high-freq": "node benchmark/run-high-freq.js",
     "prepare": "pnpm run build"
   },
@@ -35,6 +36,7 @@
     "@types/markdown-it-container": "^2.0.10",
     "@types/prismjs": "^1.26.5",
     "@vitejs/plugin-vue": "^6.0.1",
+    "puppeteer": "^25.1.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.0",
     "vite-plugin-vue-devtools": "^8.0.2",
