@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.81 - 2026-06-21
+
+### ✨ Theme / Dark Mode Compatibility
+- **Enhanced Dark Mode Detection**: Added support for `.dark` and `.light` classes, and `[data-theme="dark"]` and `[data-theme="light"]` HTML attributes in theme detection.
+- **Media Query Isolation**: Scoped `@media (prefers-color-scheme: dark)` style overrides to not apply when the host application explicitly selects light mode (using `.theme-light`, `.light`, or `[data-theme="light"]`).
+
 ## 0.2.80 - 2026-06-21
 
 ### ✨ Enhancements

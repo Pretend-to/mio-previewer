@@ -600,7 +600,9 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 }
 
 /* 阴间模式覆盖 (Dark Theme) */
-:global(.theme-dark) .code-block-wrapper {
+:global(.theme-dark) .code-block-wrapper,
+:global(.dark) .code-block-wrapper,
+:global([data-theme="dark"]) .code-block-wrapper {
   --cb-bg: #181824;
   --cb-border: #1f1f2e;
   --cb-header-bg: #1f1f2e;
@@ -631,7 +633,7 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 }
 
 @media (prefers-color-scheme: dark) {
-  :global(:root:not(.theme-light)) .code-block-wrapper {
+  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .code-block-wrapper {
     --cb-bg: #181824;
     --cb-border: #1f1f2e;
     --cb-header-bg: #1f1f2e;

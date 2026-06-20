@@ -74,13 +74,22 @@ const isFullscreen = ref(false)
 const svgElement = ref<SVGSVGElement | null>(null)
 const originalViewBox = ref<{ x: number; y: number; width: number; height: number } | null>(null)
 
-// 检测当前主题（优先级：.theme-dark/light class > prefers-color-scheme）
+// 检测当前主题（优先级：.theme-dark/light/dark/light class/attribute > prefers-color-scheme）
 const detectTheme = (): 'dark' | 'default' => {
-  // 检查文档根元素是否有主题类
+  // 检查文档根元素是否有主题类或属性
   const hasThemeDark = document.documentElement.classList.contains('theme-dark') ||
-                       document.body.classList.contains('theme-dark')
+                       document.body.classList.contains('theme-dark') ||
+                       document.documentElement.classList.contains('dark') ||
+                       document.body.classList.contains('dark') ||
+                       document.documentElement.getAttribute('data-theme') === 'dark' ||
+                       document.body.getAttribute('data-theme') === 'dark'
+                       
   const hasThemeLight = document.documentElement.classList.contains('theme-light') ||
-                        document.body.classList.contains('theme-light')
+                        document.body.classList.contains('theme-light') ||
+                        document.documentElement.classList.contains('light') ||
+                        document.body.classList.contains('light') ||
+                        document.documentElement.getAttribute('data-theme') === 'light' ||
+                        document.body.getAttribute('data-theme') === 'light'
   
   if (hasThemeDark) return 'dark'
   if (hasThemeLight) return 'default'
@@ -555,39 +564,49 @@ watch(() => [props.code, props.isStreaming], () => {
 
 /* 暗色主题支持 */
 :global(.theme-dark) .mermaid-controls,
-:global(.theme-dark) .mermaid-diagram-wrapper.fullscreen {
+:global(.theme-dark) .mermaid-diagram-wrapper.fullscreen,
+:global(.dark) .mermaid-controls,
+:global(.dark) .mermaid-diagram-wrapper.fullscreen,
+:global([data-theme="dark"]) .mermaid-controls,
+:global([data-theme="dark"]) .mermaid-diagram-wrapper.fullscreen {
   background: rgba(30, 30, 30, 0.95) !important;
 }
 
-:global(.theme-dark) .control-btn {
+:global(.theme-dark) .control-btn,
+:global(.dark) .control-btn,
+:global([data-theme="dark"]) .control-btn {
   color: #bbb;
 }
 
-:global(.theme-dark) .control-btn:hover {
+:global(.theme-dark) .control-btn:hover,
+:global(.dark) .control-btn:hover,
+:global([data-theme="dark"]) .control-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
-:global(.theme-dark) .zoom-indicator {
+:global(.theme-dark) .zoom-indicator,
+:global(.dark) .zoom-indicator,
+:global([data-theme="dark"]) .zoom-indicator {
   color: #999;
 }
 
 @media (prefers-color-scheme: dark) {
-  .mermaid-controls,
-  .mermaid-diagram-wrapper.fullscreen {
+  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .mermaid-controls,
+  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .mermaid-diagram-wrapper.fullscreen {
     background: rgba(30, 30, 30, 0.95) !important;
   }
   
-  .control-btn {
+  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .control-btn {
     color: #bbb;
   }
   
-  .control-btn:hover {
+  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .control-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
   }
   
-  .zoom-indicator {
+  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .zoom-indicator {
     color: #999;
   }
 }
