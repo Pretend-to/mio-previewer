@@ -51,7 +51,7 @@ export default defineComponent({
         return h(
           node.name,
           attribs,
-          node.children ? node.children.map(renderNode) : []
+          (attribs && attribs.innerHTML !== undefined) ? undefined : (node.children ? node.children.map(renderNode) : [])
         );
       }
 

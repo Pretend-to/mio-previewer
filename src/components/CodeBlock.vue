@@ -103,10 +103,16 @@
     >
       <pre
         ref="preRef"
-        :class="[`language-${language}`, { 'is-collapsed': enableCollapse && isCollapsed && shouldShowCollapseButton && !isFullscreen }]"
+        :class="[
+          `language-${language}`, 
+          { 
+            'is-collapsed': enableCollapse && isCollapsed && shouldShowCollapseButton && !isFullscreen,
+            'line-numbers': showLineNumbers
+          }
+        ]"
         :style="preStyle"
         @scroll="handleScroll"
-      ><code :class="`language-${language}`" v-html="highlightedCode"></code></pre>
+      ><span v-if="showLineNumbers" class="line-numbers-rows" aria-hidden="true"><span v-for="n in lineCount" :key="n"></span></span><code :class="`language-${language}`" v-html="highlightedCode"></code></pre>
       
       <!-- 符合主题的向下展开提示栏 -->
       <div 
@@ -116,6 +122,16 @@
       >
         <span class="expand-prompt-text">展开全部代码</span>
         <span class="expand-prompt-icon" v-html="expandSvg"></span>
+      </div>
+
+      <!-- 符合主题的向上收起提示栏 -->
+      <div 
+        v-if="enableCollapse && shouldShowCollapseButton && !isCollapsed && !isFullscreen" 
+        class="collapse-expand-bar collapse-bar"
+        @click="toggleCollapse"
+      >
+        <span class="expand-prompt-text">收起全部代码</span>
+        <span class="expand-prompt-icon" v-html="collapseSvg"></span>
       </div>
     </div>
     
@@ -170,10 +186,12 @@ const props = withDefaults(
     onPublished?: (url: string) => void;
     enableCollapse?: boolean;
     collapseMaxHeight?: number;
+    showLineNumbers?: boolean;
   }>(),
   {
     enableCollapse: true,
     collapseMaxHeight: 300,
+    showLineNumbers: true,
   }
 );
 
@@ -191,6 +209,12 @@ const isCollapsed = ref(true);
 const shouldShowCollapseButton = ref(false);
 const isScrollAtBottom = ref(false);
 const preRef = ref<HTMLPreElement | null>(null);
+
+const lineCount = computed(() => {
+  if (!props.code) return 0;
+  const matches = props.code.match(/\n(?!$)/g);
+  return matches ? matches.length + 1 : 1;
+});
 
 // Tooltip 消息
 const tooltipMessage = ref('');
@@ -536,13 +560,106 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 
 <style scoped>
 .code-block-wrapper {
+  /* 默认：阳间模式 (Light Theme) */
+  --cb-bg: #ffffff;
+  --cb-border: #d0d7de;
+  --cb-header-bg: #f6f8fa;
+  --cb-header-border: #d0d7de;
+  --cb-lang-color: #57606a;
+  --cb-btn-color: #57606a;
+  --cb-btn-hover-bg: rgba(0, 0, 0, 0.05);
+  --cb-pre-bg: #f6f8fa;
+  --cb-pre-color: #24292f;
+  --cb-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --cb-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --cb-expand-hover-bg: #eaeef2;
+
+  /* Light Theme Tokens */
+  --token-comment: #6a737d;
+  --token-punctuation: #24292f;
+  --token-tag: #d73a49;
+  --token-attr-name: #6f42c1;
+  --token-function-name: #6f42c1;
+  --token-number: #005cc5;
+  --token-class-name: #6f42c1;
+  --token-constant: #005cc5;
+  --token-keyword: #d73a49;
+  --token-string: #032f62;
+  --token-operator: #d73a49;
+  --token-entity: #e36209;
+  --token-url: #032f62;
+
   margin: 1.5em 0;
-  background: #262733;
+  background: var(--cb-bg);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 6px 0 rgba(110, 125, 140, 0.07);
-  border: 1px solid #222229;
+  box-shadow: var(--cb-shadow);
+  border: 1px solid var(--cb-border);
   position: relative;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* 阴间模式覆盖 (Dark Theme) */
+:global(.theme-dark) .code-block-wrapper {
+  --cb-bg: #181824;
+  --cb-border: #1f1f2e;
+  --cb-header-bg: #1f1f2e;
+  --cb-header-border: #1a1a26;
+  --cb-lang-color: #75799e;
+  --cb-btn-color: #75799e;
+  --cb-btn-hover-bg: rgba(255, 255, 255, 0.08);
+  --cb-pre-bg: #0f0f1a;
+  --cb-pre-color: #a6accd;
+  --cb-scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --cb-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --cb-expand-hover-bg: #2d303f;
+
+  /* Dark Theme Tokens */
+  --token-comment: #676e95;
+  --token-punctuation: #89ddff;
+  --token-tag: #f07178;
+  --token-attr-name: #f07178;
+  --token-function-name: #82aaff;
+  --token-number: #f78c6c;
+  --token-class-name: #82aaff;
+  --token-constant: #f78c6c;
+  --token-keyword: #c792ea;
+  --token-string: #c3e88d;
+  --token-operator: #c792ea;
+  --token-entity: #c792ea;
+  --token-url: #c3e88d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.theme-light)) .code-block-wrapper {
+    --cb-bg: #181824;
+    --cb-border: #1f1f2e;
+    --cb-header-bg: #1f1f2e;
+    --cb-header-border: #1a1a26;
+    --cb-lang-color: #75799e;
+    --cb-btn-color: #75799e;
+    --cb-btn-hover-bg: rgba(255, 255, 255, 0.08);
+    --cb-pre-bg: #0f0f1a;
+    --cb-pre-color: #a6accd;
+    --cb-scrollbar-thumb: rgba(255, 255, 255, 0.15);
+    --cb-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --cb-expand-hover-bg: #2d303f;
+
+    /* Dark Theme Tokens */
+    --token-comment: #676e95;
+    --token-punctuation: #89ddff;
+    --token-tag: #f07178;
+    --token-attr-name: #f07178;
+    --token-function-name: #82aaff;
+    --token-number: #f78c6c;
+    --token-class-name: #82aaff;
+    --token-constant: #f78c6c;
+    --token-keyword: #c792ea;
+    --token-string: #c3e88d;
+    --token-operator: #c792ea;
+    --token-entity: #c792ea;
+    --token-url: #c3e88d;
+  }
 }
 
 /* Tooltip 样式 - 使用 fixed 定位，因为通过 Teleport 渲染到 body */
@@ -587,17 +704,19 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #2d2f3a;
+  background: var(--cb-header-bg);
   padding: 0.35rem 0.85rem;
-  border-bottom: 1px solid #23242d;
+  border-bottom: 1px solid var(--cb-header-border);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .lang-label {
-  color: #a3b0d0;
+  color: var(--cb-lang-color);
   font-size: 0.89em;
   font-weight: 600;
   letter-spacing: 1px;
   user-select: none;
+  transition: color 0.3s;
 }
 
 .op-btn-group {
@@ -609,7 +728,7 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
   border: none;
   outline: none;
   background: transparent;
-  color: #8fa3c1;
+  color: var(--cb-btn-color);
   cursor: pointer;
   border-radius: 3px;
   padding: 0.21em;
@@ -622,7 +741,7 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 }
 
 .op-btn-group button:hover:not(:disabled) {
-  background: #ecf6ff1a;
+  background: var(--cb-btn-hover-bg);
 }
 
 .op-btn-group button:disabled {
@@ -631,7 +750,7 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 }
 
 .copy-code-button {
-  color: #8fa3c1;
+  color: var(--cb-btn-color);
 }
 
 .publish-html-button {
@@ -644,7 +763,7 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 
 .close-preview-button {
   color: #ff5d5b;
-  background: #fae8e410;
+  background: var(--cb-btn-hover-bg);
 }
 
 .fullscreen-button {
@@ -662,14 +781,15 @@ code {
   font-family: 'JetBrains Mono', 'Fira Code', Consolas, Menlo, Monaco, monospace;
   font-size: 0.92em;
   line-height: 1.6;
-  color: #ddd;
+  color: var(--cb-pre-color);
 }
 
 pre {
   margin: 0;
   padding: 1rem;
   overflow-x: auto;
-  background: #1e1e2e;
+  background: var(--cb-pre-bg);
+  transition: background 0.3s;
 }
 
 
@@ -716,14 +836,17 @@ pre {
 
 .code-block-wrapper.fullscreen pre {
   flex: 1;
-  overflow: auto;
-  max-height: none;
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch;
+  max-height: none !important;
+  min-height: 0;
 }
 
 .code-block-wrapper.fullscreen .iframe-wrapper {
   flex: 1;
   height: auto !important;
   border: none;
+  min-height: 0;
 }
 
 .code-block-wrapper.fullscreen .html-preview-iframe {
@@ -741,11 +864,11 @@ pre {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #2d2f3a;
+  background: var(--cb-header-bg);
   padding: 8px 12px;
-  border-top: 1px solid #23242d;
+  border-top: 1px solid var(--cb-header-border);
   cursor: pointer;
-  color: #8fa3c1;
+  color: var(--cb-btn-color);
   font-size: 12px;
   font-weight: 500;
   user-select: none;
@@ -753,8 +876,8 @@ pre {
 }
 
 .collapse-expand-bar:hover {
-  background: #353746;
-  color: #fff;
+  background: var(--cb-expand-hover-bg);
+  color: var(--cb-pre-color);
 }
 
 .collapse-expand-bar :deep(svg) {
@@ -767,22 +890,79 @@ pre {
   transform: translateY(2px);
 }
 
+.collapse-expand-bar.collapse-bar:hover :deep(svg) {
+  transform: translateY(-2px);
+}
+
 .collapse-toggle-button {
-  color: #8fa3c1;
+  color: var(--cb-btn-color);
 }
 
 /* Fullscreen mode overrides */
 .code-block-wrapper.fullscreen .pre-container {
   max-height: none !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .code-block-wrapper.fullscreen pre {
   max-height: none !important;
   flex: 1;
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+}
+
+/* Line Numbers Styling */
+pre.line-numbers {
+  display: flex !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+}
+
+pre.line-numbers > code {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+  padding-right: 1rem !important;
+  flex: 1;
+}
+
+.line-numbers-rows {
+  position: sticky;
+  left: 0;
+  flex-shrink: 0;
+  width: 2.8rem;
+  margin-right: 0.8rem;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+  border-right: 1px solid var(--cb-border);
+  background: var(--cb-pre-bg);
+  text-align: right;
+  user-select: none;
+  z-index: 5;
+  counter-reset: linenumber;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.line-numbers-rows > span {
+  display: block;
+  counter-increment: linenumber;
+  height: 1.6em;
+  line-height: 1.6em;
+}
+
+.line-numbers-rows > span:before {
+  content: counter(linenumber);
+  color: var(--cb-lang-color);
+  opacity: 0.5;
+  display: block;
+  padding-right: 0.6rem;
+  font-size: 0.82em;
+  font-family: monospace;
 }
 </style>
 
@@ -796,28 +976,29 @@ pre {
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-track {
-  background: #1e1e2e !important;
+  background: var(--cb-pre-bg) !important;
   border-radius: 0 !important;
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-thumb {
-  background-color: rgba(136, 136, 136, 0.3) !important;
+  background-color: var(--cb-scrollbar-thumb) !important;
   border-radius: 4px !important;
-  border: 2px solid #1e1e2e !important;
+  border: 2px solid var(--cb-pre-bg) !important;
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(136, 136, 136, 0.6) !important;
+  background-color: var(--cb-scrollbar-thumb) !important;
+  filter: brightness(0.8);
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-corner {
-  background: #1e1e2e !important;
+  background: var(--cb-pre-bg) !important;
 }
 
 /* 使用高优先级选择器强制覆盖背景色 */
 .code-block-wrapper.code-block-wrapper pre {
-  background-color: #1e1e2e !important;
-  background: #1e1e2e !important;
+  background-color: var(--cb-pre-bg) !important;
+  background: var(--cb-pre-bg) !important;
   margin: 0 !important;
 }
 
@@ -827,8 +1008,8 @@ pre {
 
 /* 覆盖 Prism 主题的 language-* 类 */
 .code-block-wrapper pre[class*="language-"] {
-  background-color: #1e1e2e !important;
-  background: #1e1e2e !important;
+  background-color: var(--cb-pre-bg) !important;
+  background: var(--cb-pre-bg) !important;
 }
 
 .code-block-wrapper code[class*="language-"] {
@@ -841,14 +1022,86 @@ pre {
 .code-block-wrapper pre code,
 .code-block-wrapper pre[class*="language-"],
 .code-block-wrapper code[class*="language-"] {
-  background-color: #1e1e2e !important;
-  background: #1e1e2e !important;
+  background-color: var(--cb-pre-bg) !important;
+  background: var(--cb-pre-bg) !important;
 }
 
 /* 覆盖 markdown-body 容器内的代码块 */
 .markdown-body .code-block-wrapper pre,
 .markdown-body .code-block-wrapper pre[class*="language-"] {
-  background-color: #1e1e2e !important;
-  background: #1e1e2e !important;
+  background-color: var(--cb-pre-bg) !important;
+  background: var(--cb-pre-bg) !important;
+}
+
+/* Prism 语法高亮颜色重写 */
+.code-block-wrapper .token.comment,
+.code-block-wrapper .token.prolog,
+.code-block-wrapper .token.doctype,
+.code-block-wrapper .token.cdata {
+  color: var(--token-comment) !important;
+  font-style: italic;
+}
+
+.code-block-wrapper .token.punctuation {
+  color: var(--token-punctuation) !important;
+}
+
+.code-block-wrapper .token.namespace {
+  opacity: .7;
+}
+
+.code-block-wrapper .token.property,
+.code-block-wrapper .token.tag,
+.code-block-wrapper .token.boolean,
+.code-block-wrapper .token.number,
+.code-block-wrapper .token.constant,
+.code-block-wrapper .token.symbol,
+.code-block-wrapper .token.deleted {
+  color: var(--token-tag) !important;
+}
+
+.code-block-wrapper .token.number,
+.code-block-wrapper .token.boolean,
+.code-block-wrapper .token.constant {
+  color: var(--token-number) !important;
+}
+
+.code-block-wrapper .token.selector,
+.code-block-wrapper .token.attr-name,
+.code-block-wrapper .token.string,
+.code-block-wrapper .token.char,
+.code-block-wrapper .token.builtin,
+.code-block-wrapper .token.inserted {
+  color: var(--token-string) !important;
+}
+
+.code-block-wrapper .token.attr-name {
+  color: var(--token-attr-name) !important;
+}
+
+.code-block-wrapper .token.operator,
+.code-block-wrapper .token.entity,
+.code-block-wrapper .token.url,
+.language-css .token.string,
+.style .token.string {
+  color: var(--token-operator) !important;
+  background: transparent !important;
+}
+
+.code-block-wrapper .token.atrule,
+.code-block-wrapper .token.attr-value,
+.code-block-wrapper .token.keyword {
+  color: var(--token-keyword) !important;
+}
+
+.code-block-wrapper .token.function,
+.code-block-wrapper .token.class-name {
+  color: var(--token-function-name) !important;
+}
+
+.code-block-wrapper .token.regex,
+.code-block-wrapper .token.important,
+.code-block-wrapper .token.variable {
+  color: var(--token-entity) !important;
 }
 </style>

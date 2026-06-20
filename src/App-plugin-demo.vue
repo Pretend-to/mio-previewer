@@ -17,14 +17,27 @@
       </div>
       <div class="control-row">
         <label>光标形状:</label>
-        <select v-model="cursorShape" @change="updateCursorPlugin">
+        <select v-model="cursorShape" @change="updatePlugins">
           <option value="square">方形 ▮</option>
           <option value="line">竖线 |</option>
         </select>
       </div>
       <div class="control-row">
         <label>光标颜色:</label>
-        <input type="color" v-model="cursorColor" @change="updateCursorPlugin" />
+        <input type="color" v-model="cursorColor" @change="updatePlugins" />
+      </div>
+      <div class="control-row">
+        <label class="switch-label">
+          <input 
+            type="checkbox" 
+            v-model="showLineNumbers" 
+            class="switch-checkbox"
+            @change="updatePlugins"
+          />
+          <span class="switch-text">
+            显示代码行号
+          </span>
+        </label>
       </div>
       <div class="button-row">
         <button @click="startRendering">{{ enableStreaming ? '开始流式渲染' : '全量渲染' }}</button>
@@ -61,6 +74,7 @@ const isStreaming = ref(false)
 const enableStreaming = ref(true) // 控制是否启用流式输出
 const cursorShape = ref<'square' | 'line'>('square') // 光标形状
 const cursorColor = ref('#0066ff') // 光标颜色
+const showLineNumbers = ref(true) // 是否显示代码行号
 
 // 示例文本，包含自定义标记
 // @ts-ignore - TypeScript 误解析模板字符串中的 $ 符号
@@ -327,7 +341,8 @@ const customPlugins = ref([
       publishUrl: 'https://httpbin.org/post', // 测试用的发布接口
       onPublished: (url: string) => {
         console.log('HTML 已发布到:', url);
-      }
+      },
+      showLineNumbers: showLineNumbers.value
     }
   },
   { plugin: emojiPlugin }       // priority: 10
@@ -379,8 +394,8 @@ function resetStreaming() {
   isStreaming.value = false;
 }
 
-// 更新光标插件配置
-function updateCursorPlugin() {
+// 更新插件配置
+function updatePlugins() {
   customPlugins.value = [
     { 
       plugin: cursorPlugin, 
@@ -391,7 +406,16 @@ function updateCursorPlugin() {
       } 
     },
     { plugin: mermaidPlugin },
-    { plugin: codeBlockPlugin },
+    { 
+      plugin: codeBlockPlugin,
+      options: {
+        publishUrl: 'https://httpbin.org/post',
+        onPublished: (url: string) => {
+          console.log('HTML 已发布到:', url);
+        },
+        showLineNumbers: showLineNumbers.value
+      }
+    },
     { plugin: emojiPlugin }
   ];
 }

@@ -13,14 +13,26 @@ function findChrome() {
   if (fs.existsSync(cacheDir)) {
     const versions = fs.readdirSync(cacheDir).sort().reverse();
     for (const v of versions) {
-      const p = path.join(cacheDir, v, 'chrome-linux64', 'chrome');
-      if (fs.existsSync(p)) {
-        console.log(`Found Chrome: ${p}`);
-        return p;
+      const paths = [
+        path.join(cacheDir, v, 'chrome-linux64', 'chrome'),
+        path.join(cacheDir, v, 'chrome-mac-x64', 'Google Chrome.app/Contents/MacOS/Google Chrome'),
+        path.join(cacheDir, v, 'chrome-mac-arm64', 'Google Chrome.app/Contents/MacOS/Google Chrome')
+      ];
+      for (const p of paths) {
+        if (fs.existsSync(p)) {
+          console.log(`Found Chrome in cache: ${p}`);
+          return p;
+        }
       }
     }
   }
-  // 2. 系统 which
+  // 2. Mac 默认安装路径
+  const macPath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  if (fs.existsSync(macPath)) {
+    console.log(`Found Chrome on Mac: ${macPath}`);
+    return macPath;
+  }
+  // 3. 系统 which
   for (const bin of ['google-chrome-stable', 'google-chrome', 'chromium-browser', 'chromium']) {
     try {
       const result = require('child_process').execSync(`which ${bin} 2>/dev/null`, { encoding: 'utf8' }).trim();

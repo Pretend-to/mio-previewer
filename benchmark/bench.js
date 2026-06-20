@@ -77,8 +77,15 @@ function collectEnvMeta() {
 }
 
 // === 挂载渲染器 ===
+// === 挂载渲染器 ===
 function ensureVhtmlMounted() {
-  if (!vhtmlApp) {
+  const container = document.getElementById('vhtml-app-root')
+  if (!container || !vhtmlApp) {
+    if (vhtmlApp) {
+      try { vhtmlApp.unmount() } catch (e) {}
+      vhtmlApp = null
+      vhtmlVm = null
+    }
     renderContent.innerHTML = '<div id="vhtml-app-root"></div>'
     vhtmlApp = createApp({
       data() { return { html: '' } },
@@ -89,7 +96,13 @@ function ensureVhtmlMounted() {
 }
 
 function ensureMioMounted(isStreaming = true) {
-  if (!mioApp) {
+  const container = document.getElementById('mio-app-root')
+  if (!container || !mioApp) {
+    if (mioApp) {
+      try { mioApp.unmount() } catch (e) {}
+      mioApp = null
+      mioVm = null
+    }
     renderContent.innerHTML = '<div id="mio-app-root"></div>'
     mioApp = createApp({
       components: { MdRenderer: Mio.MdRenderer },
@@ -110,6 +123,7 @@ function ensureMioMounted(isStreaming = true) {
 // === 增量流式渲染（核心）v3 ← 修复了 paint 测量和 MAX_CHUNKS ===
 async function renderIncremental(text, opts) {
   const { mode, chunkSize, delay } = opts
+  const maxChunks = opts.maxChunks || 100
   const perChunkData = []
 
   if (mode === 'vhtml') {
@@ -125,7 +139,7 @@ async function renderIncremental(text, opts) {
 
   // 修正 1: 按 chunk 次数限流，而不是按字符数
   // chunkSize=1, MAX_CHUNKS=500 → 不论文本多长都只跑前 500 个 token
-  const MAX_CHUNKS = 500
+  const MAX_CHUNKS = maxChunks
   let acc = ''
   const streamStart = performance.now()
 
@@ -204,6 +218,8 @@ async function renderIncremental(text, opts) {
   const totalChunkDelay = delay * perChunkData.length
   const renderTimeExcludingDelay = streamEnd - streamStart - totalChunkDelay
 
+  const paintTimes = perChunkData.map(d => d.paintWaitMs)
+
   return {
     totalMs: streamEnd - streamStart,
     totalRenderMs: renderTimeExcludingDelay,      // 去掉 delay 的净耗时
@@ -216,6 +232,10 @@ async function renderIncremental(text, opts) {
     frameLatency: {
       avg: avg(frameLatencies), median: pct(frameLatencies, 0.5),
       p95: pct(frameLatencies, 0.95), stdDev: stdDev(frameLatencies),
+    },
+    paintTime: {
+      avg: avg(paintTimes), median: pct(paintTimes, 0.5),
+      p95: pct(paintTimes, 0.95), stdDev: stdDev(paintTimes),
     },
     frames: perChunkData.length,                  // 总共触发了多少帧更新
     nodes: {
@@ -279,7 +299,12 @@ window.runAllBenchmarks = async function () {
     { name: 'long-large', label: 'Long-Large (9KB)' },
   ]
 
-  const totalOps = fixtures.length * SCENARIOS.length * 2 * REPEATS
+  const repeatsSelect = document.getElementById('repeats')
+  const maxChunksInput = document.getElementById('maxChunks')
+  const repeats = repeatsSelect ? parseInt(repeatsSelect.value) || 3 : 3
+  const maxChunks = maxChunksInput ? parseInt(maxChunksInput.value) || 100 : 100
+
+  const totalOps = fixtures.length * SCENARIOS.length * 2 * repeats
   let completed = 0
 
   statusEl.textContent = `Starting ${totalOps} benchmark runs...`
@@ -307,15 +332,16 @@ window.runAllBenchmarks = async function () {
     // 跑流式场景
     for (const scenario of SCENARIOS) {
       for (const renderer of ['vhtml', 'mio']) {
-        for (let r = 0; r < REPEATS; r++) {
+        for (let r = 0; r < repeats; r++) {
           completed++
           const pct = Math.round(completed / totalOps * 100)
-          statusEl.textContent = `[${pct}%] ${fixture.label} | ${scenario.name} | ${renderer} | rep ${r+1}/${REPEATS}`
+          statusEl.textContent = `[${pct}%] ${fixture.label} | ${scenario.name} | ${renderer} | rep ${r+1}/${repeats}`
 
           const result = await renderIncremental(text, {
             mode: renderer,
             chunkSize: scenario.chunkSize,
-            delay: scenario.delay
+            delay: scenario.delay,
+            maxChunks
           })
 
           results.push({
@@ -366,8 +392,8 @@ function renderQuickSummary(results) {
 
   for (const [key, g] of Object.entries(groups)) {
     const [fixture, scenario] = key.split('|')
-    const vPaints = g.vhtml.flatMap(r => r.perChunk.map(c => c.renderTimePaint))
-    const mPaints = g.mio.flatMap(r => r.perChunk.map(c => c.renderTimePaint))
+    const vPaints = g.vhtml.flatMap(r => r.perChunk.map(c => c.paintWaitMs || c.renderTimePaint || 0))
+    const mPaints = g.mio.flatMap(r => r.perChunk.map(c => c.paintWaitMs || c.renderTimePaint || 0))
     const vMed = median(vPaints)
     const mMed = median(mPaints)
     const diff = ((mMed - vMed) / vMed * 100).toFixed(1)
@@ -403,7 +429,8 @@ window.runBenchmark = async function (renderer, opts) {
   const result = await renderIncremental(text, {
     mode: renderer,
     chunkSize: opts.chunkSize || 1,
-    delay: opts.delay || 10
+    delay: opts.delay || 10,
+    maxChunks: opts.maxChunks || 100
   })
   return {
     meta: { fixture: opts.fixture || 'unknown', scenario: opts.scenario || '', renderer, chunkSize: opts.chunkSize, delay: opts.delay, textLength: text.length, env: collectEnvMeta() },
@@ -419,6 +446,10 @@ window.runBenchmark = async function (renderer, opts) {
       // 帧调度延迟（JS 完成 → 下一帧开始）
       frameLatencyAvg: result.frameLatency.avg,
       frameLatencyP95: result.frameLatency.p95,
+      // 真实/物理 Paint 等待
+      paintTimeAvg: result.paintTime.avg,
+      paintTimeMedian: result.paintTime.median,
+      paintTimeP95: result.paintTime.p95,
       // DOM 节点
       nodesMax: result.nodes.max,
       nodesFinal: result.nodes.final,
@@ -480,10 +511,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const mode = renderMode.value
     const chunkSize = parseInt(chunkInput.value) || 3
     const delay = parseInt(delayInput.value) || 15
+    const maxChunksInput = document.getElementById('maxChunks')
+    const maxChunks = maxChunksInput ? parseInt(maxChunksInput.value) || 100 : 100
+
     statusEl.textContent = `Running ${mode} chunk=${chunkSize} delay=${delay}...`
     renderStats.textContent = ''
 
-    const result = await renderIncremental(text, { mode, chunkSize, delay })
+    const result = await renderIncremental(text, { mode, chunkSize, delay, maxChunks })
     renderStats.textContent =
       `Paint: avg=${result.paintTime.avg.toFixed(2)}ms median=${result.paintTime.median.toFixed(2)}ms p95=${result.paintTime.p95.toFixed(2)}ms | ` +
       `JS: avg=${result.jsTime.avg.toFixed(2)}ms | ` +

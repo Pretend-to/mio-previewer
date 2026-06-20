@@ -42,6 +42,11 @@ export interface CodeBlockPluginOptions {
    * 折叠触发的最高高度（像素），默认 300
    */
   collapseMaxHeight?: number;
+
+  /**
+   * 是否显示行号，默认开启 (true)
+   */
+  showLineNumbers?: boolean;
 }
 
 /**
@@ -77,7 +82,8 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
     onPublished,
     cssUrl,
     enableCollapse = true,
-    collapseMaxHeight = 300
+    collapseMaxHeight = 300,
+    showLineNumbers = true
   } = options || {};
   // If a cssUrl is provided by the consumer, load it via loadCss utility.
   if (cssUrl && typeof window !== 'undefined') {
@@ -146,7 +152,8 @@ export function codeBlockPlugin(options?: CodeBlockPluginOptions): CustomPlugin 
       publishUrl,
       onPublished,
       enableCollapse,
-      collapseMaxHeight
+      collapseMaxHeight,
+      showLineNumbers
     });
   }
   };

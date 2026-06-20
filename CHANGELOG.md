@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.2.80 - 2026-06-21
+
+### ✨ Enhancements
+
+#### **Code Block UX Upgrades**
+- **Configurable Line Numbers**: Introduced `showLineNumbers` option in `codeBlockPlugin` (defaults to `true`). Consumers can set it to `false` to completely disable code block line numbers.
+- **Bottom Collapse Interactive Bar**: Added a symmetrical "收起全部代码" (Collapse all code) bar at the bottom of expanded code blocks.
+- **Hover Micro-Animations**: Added directional hover spring micro-animations for code block toggle bars—expand bar icon moves down on hover, and the collapse bar icon moves up on hover.
+
+### 🐛 Bug Fixes
+
+#### **Streaming Stability**
+- **Parser Robustness**: Reverted the core Markdown parsing engine to the mature `markdown-it` to resolve upstream colon truncation bugs on emojis and URLs (e.g. `:eyes:` or `https://`).
+- **Text Drift Prevention**: Removed the internal fast-path text append optimization. Every streaming chunk now undergoes a full VNode diff to guarantee rendering alignment and prevent text block drift.
+- **Recursive Double Rendering**: Fixed children rendering when `innerHTML` attributes are present in VNodes inside `RecursiveRenderer.vue`.
+
+### 📊 Benchmark
+- Upgraded the benchmark suite (v3) to measure precise JS performance timestamps and isolate `mdParse` overhead, with added options in the UI runner.
+
+---
+
 ## 0.2.79 - 2026-06-03
 
 ### ✨ Enhancements
