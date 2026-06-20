@@ -4,7 +4,7 @@
       <div 
         ref="wrapperRef"
         class="code-block-wrapper" 
-        :class="{ 'fullscreen': isFullscreen }"
+        :class="{ 'fullscreen': isFullscreen, 'theme-dark': isDark, 'theme-light': !isDark }"
         :data-lang="language"
       >
     <!-- Tooltip 提示 - 使用 Teleport 渲染到 body -->
@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted, inject, type Ref } from 'vue';
 import Prism from 'prismjs';
 // Import Prism theme so CSS is included in the build
 import 'prismjs/themes/prism-tomorrow.css';
@@ -203,6 +203,9 @@ const isPublishing = ref(false);
 const isPublished = ref(false);
 const isFullscreen = ref(false);
 const wrapperRef = ref<HTMLDivElement | null>(null);
+
+const isMarkdownDark = inject<Ref<boolean>>('isMarkdownDark');
+const isDark = computed(() => isMarkdownDark ? isMarkdownDark.value : false);
 
 // Collapse state
 const isCollapsed = ref(true);
@@ -600,9 +603,7 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
 }
 
 /* 阴间模式覆盖 (Dark Theme) */
-:global(.theme-dark) .code-block-wrapper,
-:global(.dark) .code-block-wrapper,
-:global([data-theme="dark"]) .code-block-wrapper {
+.code-block-wrapper.theme-dark {
   --cb-bg: #181824;
   --cb-border: #1f1f2e;
   --cb-header-bg: #1f1f2e;
@@ -630,38 +631,6 @@ const collapseSvg = `<svg width="16" height="16" viewBox="0 0 24 24"><path fill=
   --token-operator: #c792ea;
   --token-entity: #c792ea;
   --token-url: #c3e88d;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .code-block-wrapper {
-    --cb-bg: #181824;
-    --cb-border: #1f1f2e;
-    --cb-header-bg: #1f1f2e;
-    --cb-header-border: #1a1a26;
-    --cb-lang-color: #75799e;
-    --cb-btn-color: #75799e;
-    --cb-btn-hover-bg: rgba(255, 255, 255, 0.08);
-    --cb-pre-bg: #0f0f1a;
-    --cb-pre-color: #a6accd;
-    --cb-scrollbar-thumb: rgba(255, 255, 255, 0.15);
-    --cb-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    --cb-expand-hover-bg: #2d303f;
-
-    /* Dark Theme Tokens */
-    --token-comment: #676e95;
-    --token-punctuation: #89ddff;
-    --token-tag: #f07178;
-    --token-attr-name: #f07178;
-    --token-function-name: #82aaff;
-    --token-number: #f78c6c;
-    --token-class-name: #82aaff;
-    --token-constant: #f78c6c;
-    --token-keyword: #c792ea;
-    --token-string: #c3e88d;
-    --token-operator: #c792ea;
-    --token-entity: #c792ea;
-    --token-url: #c3e88d;
-  }
 }
 
 /* Tooltip 样式 - 使用 fixed 定位，因为通过 Teleport 渲染到 body */

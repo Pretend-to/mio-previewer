@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.82 - 2026-06-21
+
+### 🛠️ Unified Theme Refactoring
+- **Unified Root Theme Management**: Refactored the renderer to manage the theme at the root component (`MdRenderer.vue`). It automatically tracks classes/attributes on the document root and provides a reactive `isMarkdownDark` reference via Vue `provide`.
+- **Decoupled Plugins**: Removed all system media queries and global class selector overrides from child components (`CodeBlock.vue` and `MermaidDiagram.vue`). They now inject `isMarkdownDark` and use self-contained classes (`.theme-dark`, `.theme-light`).
+
 ## 0.2.81 - 2026-06-21
 
 ### ✨ Theme / Dark Mode Compatibility

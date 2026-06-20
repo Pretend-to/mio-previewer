@@ -2,7 +2,7 @@
   <Teleport to="body" :disabled="!isFullscreen">
     <div 
       class="mermaid-diagram-wrapper"
-      :class="{ 'fullscreen': isFullscreen }"
+      :class="{ 'fullscreen': isFullscreen, 'theme-dark': isDark, 'theme-light': !isDark }"
     >
       <div class="mermaid-controls">
         <button @click="resetZoom" class="control-btn" title="重置缩放">
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, inject, computed, type Ref } from 'vue'
 import mermaid from 'mermaid'
 
 const props = defineProps<{
@@ -74,33 +74,21 @@ const isFullscreen = ref(false)
 const svgElement = ref<SVGSVGElement | null>(null)
 const originalViewBox = ref<{ x: number; y: number; width: number; height: number } | null>(null)
 
-// 检测当前主题（优先级：.theme-dark/light/dark/light class/attribute > prefers-color-scheme）
+const isMarkdownDark = inject<Ref<boolean>>('isMarkdownDark');
+const isDark = computed(() => isMarkdownDark ? isMarkdownDark.value : false);
+
+// 检测当前主题
 const detectTheme = (): 'dark' | 'default' => {
-  // 检查文档根元素是否有主题类或属性
-  const hasThemeDark = document.documentElement.classList.contains('theme-dark') ||
-                       document.body.classList.contains('theme-dark') ||
-                       document.documentElement.classList.contains('dark') ||
-                       document.body.classList.contains('dark') ||
-                       document.documentElement.getAttribute('data-theme') === 'dark' ||
-                       document.body.getAttribute('data-theme') === 'dark'
-                       
-  const hasThemeLight = document.documentElement.classList.contains('theme-light') ||
-                        document.body.classList.contains('theme-light') ||
-                        document.documentElement.classList.contains('light') ||
-                        document.body.classList.contains('light') ||
-                        document.documentElement.getAttribute('data-theme') === 'light' ||
-                        document.body.getAttribute('data-theme') === 'light'
-  
-  if (hasThemeDark) return 'dark'
-  if (hasThemeLight) return 'default'
-  
-  // 检查 prefers-color-scheme
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark'
-  }
-  
-  return 'default'
+  return isDark.value ? 'dark' : 'default';
 }
+
+// 监听主题变化
+watch(() => isDark.value, (newVal) => {
+  const newTheme = newVal ? 'dark' : 'default';
+  currentTheme.value = newTheme;
+  initMermaid(newTheme);
+  renderDiagram();
+});
 
 // 初始化 mermaid 配置
 const initMermaid = (theme: 'dark' | 'default') => {
@@ -373,12 +361,6 @@ const renderDiagram = async () => {
   }
 }
 
-// 监听系统主题变化
-let mediaQuery: MediaQueryList | null = null
-const handleThemeChange = () => {
-  renderDiagram()
-}
-
 onMounted(() => {
   // 初始化主题
   currentTheme.value = detectTheme()
@@ -387,42 +369,11 @@ onMounted(() => {
   // 首次渲染
   renderDiagram()
   
-  // 监听系统主题变化
-  if (window.matchMedia) {
-    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQuery.addEventListener('change', handleThemeChange)
-  }
-  
-  // 监听 class 变化（使用 MutationObserver）
-  const observer = new MutationObserver(() => {
-    renderDiagram()
-  })
-  
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['class']
-  })
-  observer.observe(document.body, {
-    attributes: true,
-    attributeFilter: ['class']
-  })
-  
-  // 保存 observer 以便清理
-  ;(diagramRef.value as any).__observer = observer
-  
   // 监听 ESC 键
   window.addEventListener('keydown', handleEscKey)
 })
 
 onUnmounted(() => {
-  if (mediaQuery) {
-    mediaQuery.removeEventListener('change', handleThemeChange)
-  }
-  
-  if (diagramRef.value && (diagramRef.value as any).__observer) {
-    ;(diagramRef.value as any).__observer.disconnect()
-  }
-  
   // 清理键盘监听器与样式
   window.removeEventListener('keydown', handleEscKey)
   document.body.style.overflow = ''
@@ -563,51 +514,21 @@ watch(() => [props.code, props.isStreaming], () => {
 }
 
 /* 暗色主题支持 */
-:global(.theme-dark) .mermaid-controls,
-:global(.theme-dark) .mermaid-diagram-wrapper.fullscreen,
-:global(.dark) .mermaid-controls,
-:global(.dark) .mermaid-diagram-wrapper.fullscreen,
-:global([data-theme="dark"]) .mermaid-controls,
-:global([data-theme="dark"]) .mermaid-diagram-wrapper.fullscreen {
+.mermaid-diagram-wrapper.theme-dark .mermaid-controls,
+.mermaid-diagram-wrapper.theme-dark.fullscreen {
   background: rgba(30, 30, 30, 0.95) !important;
 }
 
-:global(.theme-dark) .control-btn,
-:global(.dark) .control-btn,
-:global([data-theme="dark"]) .control-btn {
+.mermaid-diagram-wrapper.theme-dark .control-btn {
   color: #bbb;
 }
 
-:global(.theme-dark) .control-btn:hover,
-:global(.dark) .control-btn:hover,
-:global([data-theme="dark"]) .control-btn:hover {
+.mermaid-diagram-wrapper.theme-dark .control-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
-:global(.theme-dark) .zoom-indicator,
-:global(.dark) .zoom-indicator,
-:global([data-theme="dark"]) .zoom-indicator {
+.mermaid-diagram-wrapper.theme-dark .zoom-indicator {
   color: #999;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .mermaid-controls,
-  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .mermaid-diagram-wrapper.fullscreen {
-    background: rgba(30, 30, 30, 0.95) !important;
-  }
-  
-  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .control-btn {
-    color: #bbb;
-  }
-  
-  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .control-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-  }
-  
-  :global(:root:not(.theme-light):not(.light):not([data-theme="light"])) .zoom-indicator {
-    color: #999;
-  }
 }
 </style>

@@ -1,6 +1,10 @@
 <!-- MdRenderer.vue (可选 Worker 版本) -->
 <template>
-  <div :class="['mio-previewer', props.theme === 'github' ? 'markdown-body' : '']">
+  <div :class="[
+    'mio-previewer', 
+    props.theme === 'github' ? 'markdown-body' : '',
+    isDark ? 'theme-dark' : 'theme-light'
+  ]">
     <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :context="renderContext" />
     <!-- 隐藏的容器用于 Viewer.js 管理图片 -->
     <div ref="imageViewerContainer" style="display: none;"></div>
@@ -12,7 +16,7 @@
 import MarkdownIt from 'markdown-it';
 import { parseDocument } from 'htmlparser2';
 
-import { ref, watch, onMounted, onUnmounted, computed, type Ref } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed, provide, type Ref } from 'vue';
 
 // Include GitHub markdown CSS in the package; component will apply it only when theme === 'github'
 import 'github-markdown-css/github-markdown.css';
@@ -29,6 +33,7 @@ type Props = {
   useWorker?: boolean;
   /** Optional theme: when set to 'github' the GitHub markdown CSS will be loaded */
   theme?: 'github' | string;
+  themeMode?: 'light' | 'dark' | 'auto';
   markdownItPlugins?: MarkdownItPluginConfig[];
   markdownItOptions?: Record<string, any>;
   customPlugins?: CustomPluginConfig[];
@@ -39,6 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
   isStreaming: false,
   useWorker: false,
   theme: undefined,
+  themeMode: 'auto',
   markdownItPlugins: () => [],
   markdownItOptions: () => ({}),
   customPlugins: () => [],
@@ -268,8 +274,97 @@ onMounted(() => {
   }
 });
 
+// === Theme Management (Unified) ===
+const isDark = ref(false);
+provide('isMarkdownDark', isDark);
+
+function detectTheme() {
+  if (props.themeMode === 'dark') {
+    isDark.value = true;
+    return;
+  }
+  if (props.themeMode === 'light') {
+    isDark.value = false;
+    return;
+  }
+
+  // 'auto' or undefined: detect from document/body classes, attributes, or media queries
+  const hasThemeDark = document.documentElement.classList.contains('theme-dark') ||
+                       document.body.classList.contains('theme-dark') ||
+                       document.documentElement.classList.contains('dark') ||
+                       document.body.classList.contains('dark') ||
+                       document.documentElement.getAttribute('data-theme') === 'dark' ||
+                       document.body.getAttribute('data-theme') === 'dark';
+                       
+  const hasThemeLight = document.documentElement.classList.contains('theme-light') ||
+                        document.body.classList.contains('theme-light') ||
+                        document.documentElement.classList.contains('light') ||
+                        document.body.classList.contains('light') ||
+                        document.documentElement.getAttribute('data-theme') === 'light' ||
+                        document.body.getAttribute('data-theme') === 'light';
+
+  if (hasThemeDark) {
+    isDark.value = true;
+  } else if (hasThemeLight) {
+    isDark.value = false;
+  } else {
+    isDark.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+}
+
+let observer: MutationObserver | null = null;
+let mediaQuery: MediaQueryList | null = null;
+
+const handleMediaQueryChange = () => {
+  detectTheme();
+};
+
+onMounted(() => {
+  detectTheme();
+
+  // Watch for class and attribute changes on html/body elements
+  if (typeof window !== 'undefined' && window.MutationObserver) {
+    observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.attributeName === 'class' ||
+          mutation.attributeName === 'data-theme'
+        ) {
+          detectTheme();
+        }
+      });
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme']
+    });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme']
+    });
+  }
+
+  // Watch for system theme changes
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', handleMediaQueryChange);
+  }
+});
+
+// Watch for props.themeMode changes
+watch(() => props.themeMode, () => {
+  detectTheme();
+});
+
 // 组件卸载时终止 worker 和清理图片管理器
 onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+  }
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', handleMediaQueryChange);
+  }
+
   // Only terminate if workers are actually used (and not temporarily disabled)
   if (!TEMP_DISABLE_WORKER && worker) {
     worker.terminate();
