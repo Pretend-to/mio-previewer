@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.83 - 2026-06-23
+
+### 🛠️ Code Block Styling Refactoring
+- **Line Numbers Divider Fix**: Refactored the `border-right` of code block line numbers. Moved the divider border from the parent container `.line-numbers-rows` to individual line `span`s, and added `::before` and `::after` pseudo-elements to fill the top and bottom padding zones. This ensures the vertical divider line is completely continuous without any gaps at the top or bottom of the code block.
+- **Improved Spacing & Positioning**: Relocated `margin-right` from `.line-numbers-rows` to `pre.line-numbers > code` padding-left, added `position: relative` to `pre.line-numbers` to anchor stickiness, and added `min-width: 0` to prevent horizontal layout overflow.
+
 ## 0.2.82 - 2026-06-21
 
 ### 🛠️ Unified Theme Refactoring

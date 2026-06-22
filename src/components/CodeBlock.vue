@@ -893,13 +893,16 @@ pre.line-numbers {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   padding-left: 0 !important;
+  position: relative !important;
 }
 
 pre.line-numbers > code {
   padding-top: 1rem !important;
   padding-bottom: 1rem !important;
+  padding-left: 0.8rem !important;
   padding-right: 1rem !important;
   flex: 1;
+  min-width: 0;
 }
 
 .line-numbers-rows {
@@ -907,10 +910,9 @@ pre.line-numbers > code {
   left: 0;
   flex-shrink: 0;
   width: 2.8rem;
-  margin-right: 0.8rem;
+  margin-right: 0;
   padding-top: 1rem !important;
   padding-bottom: 1rem !important;
-  border-right: 1px solid var(--cb-border);
   background: var(--cb-pre-bg);
   text-align: right;
   user-select: none;
@@ -919,11 +921,33 @@ pre.line-numbers > code {
   transition: background 0.3s, border-color 0.3s;
 }
 
+.line-numbers-rows::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 1rem;
+  border-right: 1px solid var(--cb-border);
+  transition: border-color 0.3s;
+}
+
+.line-numbers-rows::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 1rem;
+  border-right: 1px solid var(--cb-border);
+  transition: border-color 0.3s;
+}
+
 .line-numbers-rows > span {
   display: block;
   counter-increment: linenumber;
   height: 1.6em;
   line-height: 1.6em;
+  border-right: 1px solid var(--cb-border);
+  transition: border-color 0.3s;
 }
 
 .line-numbers-rows > span:before {
