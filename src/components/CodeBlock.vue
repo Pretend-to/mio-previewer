@@ -263,7 +263,20 @@ const checkHeight = () => {
     return;
   }
   if (preRef.value) {
-    shouldShowCollapseButton.value = preRef.value.scrollHeight > props.collapseMaxHeight;
+    const scrollHeight = preRef.value.scrollHeight;
+    // 增加 16px 的安全缓冲区，防止横向滚动条出现时的临界高度抖动
+    const threshold = props.collapseMaxHeight + 16;
+    
+    if (scrollHeight > threshold) {
+      shouldShowCollapseButton.value = true;
+    } else {
+      // 只有在以下情况才可以隐藏折叠按钮：
+      // 1. 没有被折叠（此时高度是自适应的，scrollHeight 绝对准确反映真实高度）
+      // 2. 且真实高度确实小于等于阈值
+      if (!isCollapsed.value) {
+        shouldShowCollapseButton.value = false;
+      }
+    }
   }
 };
 
@@ -294,26 +307,37 @@ const handleScroll = () => {
 
 // 初始化和监听 props 变化
 updateHighlight();
-watch(() => [props.code, props.language], () => {
-  let wasAtBottom = true;
-  if (preRef.value) {
-    const { scrollTop, scrollHeight, clientHeight } = preRef.value;
-    wasAtBottom = scrollHeight <= clientHeight || (scrollHeight - scrollTop <= clientHeight + 30);
-  }
-  
-  updateHighlight();
-  
-  setTimeout(() => {
-    checkHeight();
-    if (preRef.value) {
-      if (wasAtBottom) {
-        preRef.value.scrollTop = preRef.value.scrollHeight;
-      }
-      handleScroll();
+watch(
+  () => [props.code, props.language],
+  (newVal, oldVal) => {
+    const [newCode, newLang] = newVal;
+    const [oldCode, oldLang] = oldVal || [];
+    
+    // 如果是全新代码（如长度从 0 开始，或者新代码跟旧代码完全没有继承关系），重置折叠和按钮状态
+    if (!oldCode || newLang !== oldLang || newCode.length < oldCode.length) {
+      isCollapsed.value = true;
+      shouldShowCollapseButton.value = false;
     }
-  }, 50);
-});
-
+    
+    let wasAtBottom = true;
+    if (preRef.value) {
+      const { scrollTop, scrollHeight, clientHeight } = preRef.value;
+      wasAtBottom = scrollHeight <= clientHeight || (scrollHeight - scrollTop <= clientHeight + 30);
+    }
+    
+    updateHighlight();
+    
+    setTimeout(() => {
+      checkHeight();
+      if (preRef.value) {
+        if (wasAtBottom) {
+          preRef.value.scrollTop = preRef.value.scrollHeight;
+        }
+        handleScroll();
+      }
+    }, 50);
+  }
+);
 // 打开预览
 const handlePreview = () => {
   isPreviewOpen.value = true;
