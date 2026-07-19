@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.84 - 2026-07-19
+
+### 🐛 Bug Fixes
+
+#### **Code Block Collapsing Oscillation**
+- **Fixed**: Solved a classic layout-thrashing bug where the code block collapses and expands continuously when its height is near the threshold limit.
+  - Introduced a 16px safe buffer margin (`collapseMaxHeight + 16`) to prevent false-positive collapsing triggers caused by horizontal scrollbars.
+  - Implemented a state lock mechanism: once collapsed, the collapse toggle bar will not be hidden dynamically due to container re-renders unless the block is explicitly expanded or reset by new code contents.
+
+### ✨ Enhancements
+
+#### **Inner Overlay Scrollbars**
+- **Enhanced**: Polished custom scrollbars inside the code block to make them feel like native overlay scrollbars (matching VS Code/macOS styling).
+  - Set scrollbar track background and corners to transparent.
+  - Scaled the thumb scrollbar using `border: 2px solid transparent` and `background-clip: padding-box` for a modern, 4px-wide hover-expandable pill indicator.
+
+---
+
 ## 0.2.83 - 2026-06-23
 
 ### 🛠️ Code Block Styling Refactoring

@@ -995,23 +995,23 @@ pre.line-numbers > code {
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-track {
-  background: var(--cb-pre-bg) !important;
-  border-radius: 0 !important;
+  background: transparent !important;
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-thumb {
   background-color: var(--cb-scrollbar-thumb) !important;
-  border-radius: 4px !important;
-  border: 2px solid var(--cb-pre-bg) !important;
+  border-radius: 9999px !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-thumb:hover {
   background-color: var(--cb-scrollbar-thumb) !important;
-  filter: brightness(0.8);
+  filter: brightness(1.2);
 }
 
 .code-block-wrapper pre::-webkit-scrollbar-corner {
-  background: var(--cb-pre-bg) !important;
+  background: transparent !important;
 }
 
 /* 使用高优先级选择器强制覆盖背景色 */
