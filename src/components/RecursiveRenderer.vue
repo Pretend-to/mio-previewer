@@ -54,7 +54,9 @@ export default defineComponent({
         if (cfg) {
           return h(resolveComponent(cfg.component), node.attribs || {});
         }
-        return null;
+        // 不在 vueComponents 注册表时不能 return null：
+        // cursor 等组件节点（{ type: 'component', name: 'cursor' }）由
+        // customPlugins（cursorPlugin）渲染，需继续走下方插件匹配
       }
 
       // 1. block 级 Vue 组件（代码块语言匹配，优先于 customPlugins）
