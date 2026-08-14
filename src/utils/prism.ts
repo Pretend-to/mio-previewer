@@ -12,8 +12,19 @@ let prismPromise: Promise<any> | null = null;
 export function getPrism(): Promise<any> {
   if (!prismPromise) {
     prismPromise = (async () => {
-      const [{ default: Prism }] = await Promise.all([
-        import('prismjs'),
+      // 先加载核心：拿到 Prism 实例
+      const { default: Prism } = await import('prismjs');
+
+      // prismjs 的语言子模块是 UMD 遗留代码，内部以 free variable 引用
+      // 全局 Prism（如 `}(Prism);`），不会从模块系统拿引用。
+      // 必须先挂到 window，否则语言 chunk 执行时 ReferenceError:
+      // "Prism is not defined"
+      if (typeof window !== 'undefined') {
+        (window as any).Prism = Prism;
+      }
+
+      // 核心就绪后再加载语言模块（顺序保证，不并行）
+      await Promise.all([
         // 主题 CSS（副作用）
         import('prismjs/themes/prism-tomorrow.css'),
         // 常用语言（副作用注册到 Prism.languages）
