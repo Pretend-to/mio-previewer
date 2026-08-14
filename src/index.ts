@@ -7,7 +7,10 @@ export type {
   CustomPlugin,
   CustomPluginConfig,
   MarkdownItPluginConfig,
-  MdRendererProps
+  MdRendererProps,
+  VueInlineComponentConfig,
+  VueBlockComponentConfig,
+  VueComponentsConfig
 } from './types'
 
 // Export custom rendering plugins
@@ -25,9 +28,10 @@ export type {
 } from './plugins/custom'
 
 // Export markdown-it plugins
+// katexPlugin 刻意不在此导出：katex (~367KB) 只在消息里出现数学公式时才有用，
+// 请通过 'mio-previewer/plugins/markdown-it' 子路径按需导入，避免拖累主入口体积
 export {
-  alertPlugin,
-  katexPlugin
+  alertPlugin
 } from './plugins/markdown-it'
 
 // Provide both named and default export to be robust for dynamic imports

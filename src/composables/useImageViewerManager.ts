@@ -1,5 +1,13 @@
-import { ref, provide, onMounted, onUnmounted } from 'vue';
-import Viewer from 'viewerjs';
+import { ref, provide } from 'vue';
+
+// viewerjs 惰性加载：只有点击图片真正打开查看器时才下载 (~60KB)
+let viewerjsPromise: Promise<any> | null = null;
+function getViewer(): Promise<any> {
+  if (!viewerjsPromise) {
+    viewerjsPromise = import('viewerjs').then((m: any) => m.default);
+  }
+  return viewerjsPromise;
+}
 
 /**
  * 创建图片查看器管理器的 composable
@@ -7,14 +15,16 @@ import Viewer from 'viewerjs';
  */
 export function useImageViewerManager(viewerOptions: any = {}) {
   const images = ref<HTMLImageElement[]>([]);
-  let viewerInstance: Viewer | null = null;
+  let viewerInstance: any = null;
   const containerRef = ref<HTMLElement | null>(null);
+
+  let rebuildTimer: any = null;
 
   // 注册图片
   function registerImage(img: HTMLImageElement) {
     if (!images.value.includes(img)) {
       images.value.push(img);
-      updateViewer();
+      scheduleRebuild();
     }
   }
 
@@ -23,12 +33,24 @@ export function useImageViewerManager(viewerOptions: any = {}) {
     const index = images.value.indexOf(img);
     if (index > -1) {
       images.value.splice(index, 1);
-      updateViewer();
+      scheduleRebuild();
     }
   }
 
-  // 更新 Viewer 实例
-  function updateViewer() {
+  /**
+   * 流式渲染时图片列表高频变化（每条 token 都可能触发注册/注销），
+   * 每次都销毁并重建 Viewer 实例会产生大量临时 DOM 和 GC 压力。
+   * 这里合并为 150ms 防抖，只在图片列表稳定后重建一次。
+   */
+  function scheduleRebuild() {
+    clearTimeout(rebuildTimer);
+    rebuildTimer = setTimeout(() => {
+      void doRebuild();
+    }, 150);
+  }
+
+  // 重建 Viewer 实例
+  async function doRebuild() {
     // 销毁旧实例
     if (viewerInstance) {
       viewerInstance.destroy();
@@ -37,9 +59,10 @@ export function useImageViewerManager(viewerOptions: any = {}) {
 
     // 如果有图片，创建新实例
     if (images.value.length > 0 && containerRef.value) {
+      const Viewer = await getViewer();
       // 清空容器
       containerRef.value.innerHTML = '';
-      
+
       // 将所有图片添加到容器中
       images.value.forEach(img => {
         const clone = img.cloneNode(true) as HTMLImageElement;
@@ -87,7 +110,11 @@ export function useImageViewerManager(viewerOptions: any = {}) {
   }
 
   // 显示指定索引的图片
-  function show(index: number = 0) {
+  async function show(index: number = 0) {
+    // 若实例尚未就绪（防抖窗口内被点击），先立即重建
+    if (!viewerInstance) {
+      await doRebuild();
+    }
     if (viewerInstance) {
       viewerInstance.view(index);
     }
@@ -95,6 +122,7 @@ export function useImageViewerManager(viewerOptions: any = {}) {
 
   // 清理
   function cleanup() {
+    clearTimeout(rebuildTimer);
     if (viewerInstance) {
       viewerInstance.destroy();
       viewerInstance = null;

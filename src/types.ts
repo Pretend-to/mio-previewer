@@ -1,4 +1,4 @@
-import type { VNode } from 'vue';
+import type { VNode, Component } from 'vue';
 
 /**
  * AST 节点类型（htmlparser2 输出）
@@ -159,4 +159,45 @@ export type MdRendererProps = {
    * 是否自动处理跨域图片，或者指定的域名列表
    */
   autoCors?: boolean | string[];
+};
+
+/**
+ * Vue 组件注册配置（inline 级）
+ * 将 Markdown 文本中匹配正则的内容直接渲染为 Vue 组件，
+ * 无需再经过 markdown-it 规则 + htmlparser2 中转。
+ */
+export type VueInlineComponentConfig = {
+  /** 配置名（AST 节点标识，需唯一） */
+  name: string;
+  /** 匹配正则（必须带 /g 全局标志，否则只会匹配第一处） */
+  pattern: RegExp;
+  /** Vue 组件：同步组件对象，或异步加载函数 () => import('...vue') */
+  component: Component | (() => Promise<{ default: Component } | Component>);
+  /** 从匹配结果提取 props（可选） */
+  getProps?: (match: RegExpMatchArray, source: string) => Record<string, any>;
+};
+
+/**
+ * Vue 组件注册配置（block 级，fenced code block）
+ * 将指定语言的代码块直接渲染为 Vue 组件（优先于 customPlugins 匹配）。
+ */
+export type VueBlockComponentConfig = {
+  /** 配置名 */
+  name: string;
+  /** 匹配的代码块语言（单个或数组） */
+  lang: string | string[];
+  /** Vue 组件：同步组件对象，或异步加载函数 () => import('...vue') */
+  component: Component | (() => Promise<{ default: Component } | Component>);
+  /** 从代码块内容提取 props（可选） */
+  getProps?: (code: string, lang: string) => Record<string, any>;
+};
+
+/**
+ * MdRenderer 的 vueComponents prop
+ */
+export type VueComponentsConfig = {
+  /** inline 级组件（正则匹配文本片段） */
+  inline?: VueInlineComponentConfig[];
+  /** block 级组件（代码块语言匹配） */
+  block?: VueBlockComponentConfig[];
 };

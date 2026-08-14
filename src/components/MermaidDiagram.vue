@@ -46,7 +46,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, inject, computed, type Ref } from 'vue'
-import mermaid from 'mermaid'
+// mermaid 引擎惰性加载：只有真正渲染图表时才下载 (~400KB+)
+let mermaidPromise: Promise<any> | null = null;
+function getMermaid(): Promise<any> {
+  if (!mermaidPromise) {
+    mermaidPromise = import('mermaid').then((m: any) => m.default);
+  }
+  return mermaidPromise;
+}
 
 const props = defineProps<{
   code: string
@@ -83,15 +90,16 @@ const detectTheme = (): 'dark' | 'default' => {
 }
 
 // 监听主题变化
-watch(() => isDark.value, (newVal) => {
+watch(() => isDark.value, async (newVal) => {
   const newTheme = newVal ? 'dark' : 'default';
   currentTheme.value = newTheme;
-  initMermaid(newTheme);
+  await initMermaid(newTheme);
   renderDiagram();
 });
 
 // 初始化 mermaid 配置
-const initMermaid = (theme: 'dark' | 'default') => {
+const initMermaid = async (theme: 'dark' | 'default') => {
+  const mermaid = await getMermaid();
   mermaid.initialize({
     suppressErrorRendering: true,
     startOnLoad: false,
@@ -307,6 +315,7 @@ const renderDiagram = async () => {
       initMermaid(newTheme)
     }
 
+    const mermaid = await getMermaid();
     const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`
     const { svg } = await mermaid.render(id, props.code)
     diagramRef.value.innerHTML = svg
@@ -361,10 +370,10 @@ const renderDiagram = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 初始化主题
   currentTheme.value = detectTheme()
-  initMermaid(currentTheme.value)
+  await initMermaid(currentTheme.value)
   
   // 首次渲染
   renderDiagram()

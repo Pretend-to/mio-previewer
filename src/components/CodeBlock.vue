@@ -152,31 +152,9 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted, inject, type Ref } from 'vue';
-import Prism from 'prismjs';
-// Import Prism theme so CSS is included in the build
-import 'prismjs/themes/prism-tomorrow.css';
-
-// 导入常用语言支持
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-c';
-import 'prismjs/components/prism-cpp';
-import 'prismjs/components/prism-go';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-markup-templating'; // PHP 依赖
-import 'prismjs/components/prism-php';
-import 'prismjs/components/prism-ruby';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-markdown';
+// Prism 改为按需异步加载（见 utils/prism.ts），避免代码块组件静态引入
+// 把 Prism 核心 + 20 个语言模块全部打进主 bundle
+import { getHighlightedCode } from '../utils/prism';
 
 const props = withDefaults(
   defineProps<{
@@ -241,20 +219,11 @@ function isHtmlLang() {
          props.language.toLowerCase() === 'markup';
 }
 
-// 计算高亮后的代码
-function getHighlightedCode(): string {
-  const lang = props.language || 'plaintext';
-  if (Prism.languages[lang]) {
-    return Prism.highlight(props.code, Prism.languages[lang], lang);
-  }
-  return Prism.util.encode(props.code) as string;
-}
-
 const highlightedCode = ref('');
 
-// 更新高亮代码
-const updateHighlight = () => {
-  highlightedCode.value = getHighlightedCode();
+// 更新高亮代码（异步：首次渲染先显示纯文本，Prism 加载完成后高亮）
+const updateHighlight = async () => {
+  highlightedCode.value = await getHighlightedCode(props.code, props.language);
 };
 
 const checkHeight = () => {
@@ -305,11 +274,11 @@ const handleScroll = () => {
   }
 };
 
-// 初始化和监听 props 变化
-updateHighlight();
+// 初始化和监听 props 变化（异步，不阻塞渲染）
+void updateHighlight();
 watch(
   () => [props.code, props.language],
-  (newVal, oldVal) => {
+  async (newVal, oldVal) => {
     const [newCode, newLang] = newVal;
     const [oldCode, oldLang] = oldVal || [];
     
@@ -325,7 +294,7 @@ watch(
       wasAtBottom = scrollHeight <= clientHeight || (scrollHeight - scrollTop <= clientHeight + 30);
     }
     
-    updateHighlight();
+    await updateHighlight();
     
     setTimeout(() => {
       checkHeight();

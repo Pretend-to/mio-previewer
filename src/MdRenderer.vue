@@ -5,7 +5,7 @@
     props.theme === 'github' ? 'markdown-body' : '',
     isDark ? 'theme-dark' : 'theme-light'
   ]">
-    <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :context="renderContext" />
+    <RecursiveRenderer :nodes="ast" :plugins="allPlugins" :context="renderContext" :vue-components="props.vueComponents" />
     <!-- 隐藏的容器用于 Viewer.js 管理图片 -->
     <div ref="imageViewerContainer" style="display: none;"></div>
   </div>
@@ -24,7 +24,7 @@ import 'github-markdown-css/github-markdown.css';
 import RecursiveRenderer from './components/RecursiveRenderer.vue';
 import { useImageViewerManager } from './composables/useImageViewerManager';
 
-import type { CustomPluginConfig, MarkdownItPluginConfig, RenderContext, ASTNode } from './types';
+import type { CustomPluginConfig, MarkdownItPluginConfig, RenderContext, ASTNode, VueComponentsConfig, VueInlineComponentConfig } from './types';
 
 // === Props ===
 type Props = {
@@ -38,6 +38,8 @@ type Props = {
   markdownItOptions?: Record<string, any>;
   customPlugins?: CustomPluginConfig[];
   autoCors?: boolean | string[];
+  /** Vue 组件注册：inline 正则匹配 / block 代码块语言匹配，直接渲染 Vue 组件 */
+  vueComponents?: VueComponentsConfig;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -48,7 +50,8 @@ const props = withDefaults(defineProps<Props>(), {
   markdownItPlugins: () => [],
   markdownItOptions: () => ({}),
   customPlugins: () => [],
-  autoCors: undefined
+  autoCors: undefined,
+  vueComponents: () => ({})
 });
 
 // 初始化 markdown-it 实例（支持动态配置）
@@ -247,8 +250,71 @@ const parseMarkdown = (markdownText: string) => {
       (window as any).__mio_last_ast__ = parsedAst;
     }
   } catch (e) {}
-  return parsedAst;
+  // 应用 inline 级 Vue 组件匹配（正则 → Vue 组件，无需 markdown-it 中转）
+  return applyInlineVueComponents(parsedAst);
 };
+
+// === Vue 组件 inline 匹配 ===
+// 在 AST 文本节点上按注册的 pattern 拆分，匹配片段生成 component 节点，
+// 由 RecursiveRenderer 直接渲染为 Vue 组件（如群聊 @Agent 提及）。
+function applyInlineVueComponents(nodes: ASTNode[]): ASTNode[] {
+  const inlineConfigs: VueInlineComponentConfig[] = props.vueComponents?.inline || [];
+  if (inlineConfigs.length === 0) return nodes;
+  transformInline(nodes, inlineConfigs);
+  return nodes;
+}
+
+function transformInline(nodes: ASTNode[], configs: VueInlineComponentConfig[]) {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (node.type === 'text' && node.data) {
+      const parts = splitTextByPatterns(node.data, configs);
+      if (parts.length > 1) {
+        nodes.splice(i, 1, ...parts);
+        i += parts.length - 1;
+      }
+    }
+    if (node.children) {
+      transformInline(node.children, configs);
+    }
+  }
+}
+
+function splitTextByPatterns(text: string, configs: VueInlineComponentConfig[]): ASTNode[] {
+  // 按注册顺序逐 pattern 切分；前一个 pattern 产生的 component 节点不再被后续 pattern 二次匹配
+  let nodes: ASTNode[] = [{ type: 'text', data: text }];
+  for (const cfg of configs) {
+    const next: ASTNode[] = [];
+    for (const node of nodes) {
+      if (node.type !== 'text') {
+        next.push(node);
+        continue;
+      }
+      const str = node.data || '';
+      const pattern = cfg.pattern;
+      pattern.lastIndex = 0;
+      let last = 0;
+      let matched = false;
+      let m: RegExpExecArray | null;
+      while ((m = pattern.exec(str)) !== null) {
+        matched = true;
+        if (m.index > last) next.push({ type: 'text', data: str.slice(last, m.index) });
+        const compProps = cfg.getProps ? cfg.getProps(m, str) : {};
+        next.push({ type: 'component', name: cfg.name, attribs: compProps });
+        last = m.index + m[0].length;
+        // 防零宽匹配死循环
+        if (m[0].length === 0) pattern.lastIndex++;
+      }
+      if (matched) {
+        if (last < str.length) next.push({ type: 'text', data: str.slice(last) });
+      } else {
+        next.push(node);
+      }
+    }
+    nodes = next;
+  }
+  return nodes;
+}
 
 // === 初始化 Worker (如果 useWorker 为 true) ===
 onMounted(() => {

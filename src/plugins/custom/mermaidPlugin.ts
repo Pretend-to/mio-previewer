@@ -11,16 +11,22 @@
         props.theme = theme;
       }
       
-      return h(MermaidDiagram, props)
+      return h(AsyncMermaidDiagram, props)
     }
   }
 }ms
  */
 
-import { h } from 'vue'
+import { defineAsyncComponent, h } from 'vue'
 import type { CustomPlugin, ASTNode } from '../../types'
-import MermaidDiagram from '../../components/MermaidDiagram.vue'
 import { loadCss } from '../../utils/loadCss'
+
+// 异步加载 MermaidDiagram（其内部 mermaid 也是动态 import），
+// 只有消息中真正出现 mermaid 代码块时才下载图表引擎
+const AsyncMermaidDiagram = defineAsyncComponent({
+  loader: () => import('../../components/MermaidDiagram.vue'),
+  delay: 200,
+});
 
 /**
  * Mermaid 插件配置选项
@@ -154,7 +160,7 @@ export function mermaidPlugin(options?: MermaidPluginOptions): CustomPlugin {
         props.onError = onError;
       }
       
-      return h(MermaidDiagram, props)
+      return h(AsyncMermaidDiagram, props)
     }
   };
 }
