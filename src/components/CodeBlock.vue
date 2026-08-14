@@ -221,9 +221,26 @@ function isHtmlLang() {
 
 const highlightedCode = ref('');
 
-// 更新高亮代码（异步：首次渲染先显示纯文本，Prism 加载完成后高亮）
+// HTML 转义：Prism 未就绪 / 加载失败时，保证源码始终可见
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// 更新高亮代码（渐进增强）：
+// 1. 先渲染纯文本转义源码 —— 代码块内容永不空白
+// 2. Prism 异步加载完成后升级为语法高亮；失败则保留纯文本并告警
 const updateHighlight = async () => {
-  highlightedCode.value = await getHighlightedCode(props.code, props.language);
+  highlightedCode.value = escapeHtml(props.code);
+  try {
+    highlightedCode.value = await getHighlightedCode(props.code, props.language);
+  } catch (err) {
+    console.error('[mio-previewer] Prism 高亮失败，保留纯文本:', err);
+  }
 };
 
 const checkHeight = () => {
