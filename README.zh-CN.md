@@ -97,6 +97,71 @@ const interval = setInterval(() => {
 </script>
 ```
 
+## Vue 组件注册（v0.3.0+）
+
+`MdRenderer` 新增 `vueComponents` prop，支持**直接在 Markdown 中渲染你自己的 Vue 组件**——再也不需要 hack `md.renderer.rules` 生成假 HTML、再经过 htmlparser2 和 AST 层层转译。
+
+支持两种注册方式：
+
+### `inline` —— 正则匹配文本片段 → 组件
+
+按正则拆分文本节点，命中处渲染组件（典型场景：群聊里的 `@Agent` 提及）：
+
+```vue
+<script setup>
+import { MdRenderer } from "mio-previewer";
+import "mio-previewer/dist/mio-previewer.css";
+
+const content = "Hey @Alice(42), let's review this";
+
+const vueComponents = {
+  inline: [{
+    name: "agent-mention",
+    // 注意：正则必须带 /g 全局标志
+    pattern: /@(['\u2018\u2019]?)([\w\u4e00-\u9fa5]+)\1(?:\(\d+\))?/g,
+    // 同步组件，或异步加载函数：() => import("./AgentBadge.vue")
+    component: AgentBadge,
+    getProps: (m) => ({ agentName: m[2] })
+  }]
+};
+</script>
+
+<template>
+  <MdRenderer :md="content" :vue-components="vueComponents" />
+</template>
+```
+
+### `block` —— 代码块语言匹配 → 组件
+
+按 fenced code block 的语言拦截（**优先级高于 customPlugins**，包括内置 mermaidPlugin）：
+
+```vue
+<script setup>
+import { MdRenderer } from "mio-previewer";
+
+const vueComponents = {
+  block: [{
+    name: "game-card",
+    lang: "doudizhu",          // 单个语言或数组
+    component: () => import("./DoudizhuCard.vue"),
+    getProps: (code) => ({ payload: JSON.parse(code) })
+  }]
+};
+</script>
+
+<template>
+  <MdRenderer :md="'```doudizhu\n{\"hand\": [\"3\", \"4\", \"5\"]}\n```'" :vue-components="vueComponents" />
+</template>
+```
+
+### 说明
+
+- `component` 可以是**同步组件对象**，也可以是**异步加载函数** `() => import('...')`——异步的会被 `defineAsyncComponent` 包装，自动代码分割。
+- `inline` 的 pattern 按注册顺序依次应用；已被匹配的片段不会被后续 pattern 二次匹配。
+- 核心价值：**无需 markdown-it 规则 hack**，Vue props 直通，自动异步加载。
+
+---
+
 ## 插件系统
 
 ### 使用内置插件

@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.3.0 - 2026-08-14
+
+### 🚀 Performance: Heavy Dependencies Fully On-Demand
+
+The biggest release so far for bundle size and startup memory:
+
+- **Mermaid engine** (`mermaid`, `cytoscape`, diagram parsers) is no longer statically imported. It's loaded **only when a `mermaid` code block actually renders** (via `defineAsyncComponent` + dynamic `import`).
+- **Prism** core + 20 language modules are now loaded lazily on first code block render (see `utils/prism.ts`). The code block shows escaped plain-text source immediately, then upgrades to syntax highlighting.
+- **Viewer.js** (image lightbox) loads only when the user clicks an image.
+- **KaTeX** is no longer exported from the package entry (`mio-previewer`) — import it from the `mio-previewer/plugins/markdown-it` subpath instead. This keeps `katex` (~367KB) out of the main bundle.
+- Result: main entry bundle dropped from **2.8MB → ~450KB** when bundled by consumers; nothing heavy is parsed at app startup.
+
+### ✨ New API: `vueComponents` — Render Vue Components Directly from Markdown
+
+Previously, rendering a custom Vue component (e.g. an `@agent` mention badge) required hacking `md.renderer.rules` to emit fake HTML, round-tripping through `htmlparser2`, then matching AST nodes. Painful.
+
+Now `MdRenderer` accepts a `vueComponents` prop with two kinds of registrations:
+
+```ts
+// inline: match text fragments with a regex, render a Vue component
+<MdRenderer
+  :md="content"
+  :vue-components="{
+    inline: [{
+      name: 'agent-mention',
+      pattern: /@([\w\u4e00-\u9fa5]+)/g,  // must include /g
+      component: () => import('./AgentBadge.vue'),  // or a sync component
+      getProps: (m) => ({ name: m[1] })
+    }],
+    block: [{
+      name: 'game-card',
+      lang: 'doudizhu',                        // fenced code block language
+      component: DoudizhuCard,
+      getProps: (code, lang) => ({ payload: JSON.parse(code) })
+    }]
+  }"
+/>
+```
+
+- `inline` entries split text nodes on their `pattern` (global flag required) and render `component` with props from `getProps(match, source)`.
+- `block` entries intercept fenced code blocks by `lang`, taking precedence over `customPlugins` (e.g. mermaid).
+- Components may be sync objects or async loaders (`() => import('...')`) — async ones are wrapped in `defineAsyncComponent`, so they're automatically code-split.
+
+### 🐛 Bug Fixes
+
+- **Cursor disappears in streaming mode**: `RecursiveRenderer`'s new `component` node handling returned `null` when a `component` node wasn't in `vueComponents`, swallowing the cursor node rendered by `cursorPlugin`. It now falls through to `customPlugins` matching.
+- **Code block renders blank**: `updateHighlight` awaited Prism lazily with an empty initial value; now plain-text escaped source is rendered first (never blank), then highlighting upgrades.
+- **`Prism is not defined` ReferenceError**: Prism's language submodules are UMD leftovers referencing a *global* `Prism`. `getPrism()` now attaches `window.Prism` after loading the core, before loading language modules.
+- **Image viewer thrash during streaming**: `useImageViewerManager` now debounces Viewer.js rebuilds (150ms), avoiding destroy/clone/recreate per token.
+
+---
+
 ## 0.2.84 - 2026-07-19
 
 ### 🐛 Bug Fixes

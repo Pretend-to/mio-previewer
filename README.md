@@ -69,6 +69,71 @@ const interval = setInterval(() => {
 </script>
 ```
 
+## Vue Component Registration
+
+Since v0.3.0, `MdRenderer` accepts a `vueComponents` prop that renders **your own Vue components directly from Markdown** — no more hacking `md.renderer.rules` to emit fake HTML and round-tripping through the AST.
+
+Two kinds of registrations:
+
+### `inline` — regex → component
+
+Splits text nodes on the pattern and renders the component where it matches (e.g. group-chat `@agent` mentions):
+
+```vue
+<script setup>
+import { MdRenderer } from "mio-previewer";
+import "mio-previewer/dist/mio-previewer.css";
+
+const content = "Hey @Alice(42), let's review this";
+
+const vueComponents = {
+  inline: [{
+    name: "agent-mention",
+    // NOTE: must include the /g flag
+    pattern: /@(['\u2018\u2019]?)([\w\u4e00-\u9fa5]+)\1(?:\(\d+\))?/g,
+    // sync component, or async loader: () => import("./AgentBadge.vue")
+    component: AgentBadge,
+    getProps: (m) => ({ agentName: m[2] })
+  }]
+};
+</script>
+
+<template>
+  <MdRenderer :md="content" :vue-components="vueComponents" />
+</template>
+```
+
+### `block` — fenced code block language → component
+
+Intercepts code blocks by language. Takes precedence over `customPlugins` (including the built-in `mermaidPlugin`):
+
+```vue
+<script setup>
+import { MdRenderer } from "mio-previewer";
+
+const vueComponents = {
+  block: [{
+    name: "game-card",
+    lang: "doudizhu",          // single lang or array of langs
+    component: () => import("./DoudizhuCard.vue"),
+    getProps: (code) => ({ payload: JSON.parse(code) })
+  }]
+};
+</script>
+
+<template>
+  <MdRenderer :md="'```doudizhu\n{\"hand\": [\"3\", \"4\", \"5\"]}\n```'" :vue-components="vueComponents" />
+</template>
+```
+
+### Notes
+
+- `component` may be a **sync component object** or an **async loader** `() => import('...')` — async ones are wrapped in `defineAsyncComponent`, so they are automatically code-split.
+- `inline` patterns are applied in registration order; an already-matched fragment won't be re-matched by later patterns.
+- The whole point: **no markdown-it rule hacking**, direct Vue props, automatic async loading.
+
+---
+
 ## Plugin System
 
 ### Using Built-in Plugins
