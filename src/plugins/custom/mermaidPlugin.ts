@@ -1,20 +1,6 @@
 /**
  * Mermaid Plugin for RecursiveRenderer
- * Detects code blocks with language="mermaid" and renders them a      
-      // 传递配置的主题和流式状态
-      const props: any = { 
-        code, 
-        isStreaming: context?.isStreaming || false
-      };
-      
-      if (theme) {
-        props.theme = theme;
-      }
-      
-      return h(MermaidDiagram, props)
-    }
-  }
-}ms
+ * Detects code blocks with language="mermaid" and renders them as interactive SVG diagrams
  */
 
 import { h } from 'vue'

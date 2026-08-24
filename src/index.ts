@@ -15,13 +15,15 @@ export {
   codeBlockPlugin,
   emojiPlugin,
   mermaidPlugin,
-  cursorPlugin
+  cursorPlugin,
+  imageViewerPlugin
 } from './plugins/custom'
 export type { 
   CodeBlockPluginOptions,
   EmojiPluginOptions,
   MermaidPluginOptions,
-  CursorPluginOptions 
+  CursorPluginOptions,
+  ImageViewerPluginOptions
 } from './plugins/custom'
 
 // Export markdown-it plugins

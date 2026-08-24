@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mio Previewer E2E Test Bench</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    #app {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { createApp, ref, h } from 'vue';
+    import MdRenderer from '../src/MdRenderer.vue';
+    import { 
+      mermaidPlugin, 
+      codeBlockPlugin, 
+      cursorPlugin, 
+      imageViewerPlugin, 
+      emojiPlugin 
+    } from '../src/plugins/custom/index.ts';
+    import { katexPlugin, alertPlugin } from '../src/plugins/markdown-it/index.ts';
+
+    const defaultPlugins = [
+      { plugin: codeBlockPlugin },
+      { plugin: mermaidPlugin },
+      { plugin: cursorPlugin, options: { shape: 'circle' } },
+      { plugin: imageViewerPlugin },
+      { plugin: emojiPlugin }
+    ];
+
+    const defaultMarkdownItPlugins = [
+      { plugin: katexPlugin },
+      { plugin: alertPlugin }
+    ];
+
+    const App = {
+      setup() {
+        const md = ref('');
+        const isStreaming = ref(false);
+        const theme = ref('github');
+        const themeMode = ref('auto');
+        const customPlugins = ref(defaultPlugins);
+        const markdownItPlugins = ref(defaultMarkdownItPlugins);
+
+        // Expose controls to Playwright
+        window.__mio_e2e__ = {
+          setMarkdown: (text, streaming = false) => {
+            md.value = text;
+            isStreaming.value = streaming;
+          },
+          setTheme: (t) => {
+            theme.value = t;
+          },
+          setThemeMode: (m) => {
+            themeMode.value = m;
+          },
+          setCustomPlugins: (p) => {
+            customPlugins.value = p;
+          },
+          getMd: () => md.value
+        };
+
+        return () => h(MdRenderer, {
+          md: md.value,
+          isStreaming: isStreaming.value,
+          theme: theme.value,
+          themeMode: themeMode.value,
+          customPlugins: customPlugins.value,
+          markdownItPlugins: markdownItPlugins.value
+        });
+      }
+    };
+
+    createApp(App).mount('#app');
+    window.__mio_e2e_ready__ = true;
+  </script>
+</body>
+</html>

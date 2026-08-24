@@ -143,3 +143,9 @@ benchmark/results/
 benchmark/results/*.json
 benchmark/results/*.png
 benchmark/results/*.csv
+
+# Playwright Test
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
