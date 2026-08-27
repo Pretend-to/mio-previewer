@@ -60,7 +60,7 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/Pretend-to/mio-previewer.git"
   },
   "exports": {
     ".": {
