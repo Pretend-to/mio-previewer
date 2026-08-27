@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.1 - 2026-08-27
+
+### 🐛 Bug Fixes
+
+#### **Prism Syntax Highlighting & Language Dependencies**
+- **Fixed**: Resolved `TypeError: Cannot set properties of undefined (setting 'comment')` caused by missing `prism-clike` base import and improper import topological ordering.
+  - Explicitly imported `prismjs/components/prism-clike` as the base grammar for C-like languages (`c`, `cpp`, `java`, `php`, `ruby`, `go`, `rust`, `javascript`).
+  - Reorganized language imports according to strict dependency graph order (`markup`/`clike` -> `javascript`/`c` -> `typescript`/`jsx`/`cpp`/`php` -> `tsx`).
+  - Added defensive `try-catch` error handling in `getHighlightedCode` to gracefully fall back to encoded plaintext upon any syntax highlighting error.
+
+---
+
 ## 0.2.84 - 2026-07-19
 
 ### 🐛 Bug Fixes

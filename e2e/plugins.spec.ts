@@ -84,4 +84,74 @@ function greet(user: User): string {
     await expect(page.locator('.custom-alert.alert-info')).toBeVisible();
     await expect(page.locator('.custom-alert.alert-warning')).toBeVisible();
   });
+
+  test('should highlight multiple languages (c, cpp, php, ruby, go, rust, java, python, ts) without errors', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error' || msg.type() === 'warning') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    const multiLangContent = `
+\`\`\`c
+#include <stdio.h>
+int main() {
+    // Comment in C
+    printf("Hello C\\n");
+    return 0;
+}
+\`\`\`
+
+\`\`\`cpp
+#include <iostream>
+int main() {
+    // Comment in C++
+    std::cout << "Hello C++" << std::endl;
+    return 0;
+}
+\`\`\`
+
+\`\`\`php
+<?php
+// PHP Comment
+$greeting = "Hello PHP";
+echo $greeting;
+?>
+\`\`\`
+
+\`\`\`ruby
+# Ruby Comment
+def hello
+  puts "Hello Ruby"
+end
+\`\`\`
+
+\`\`\`python
+# Python Comment
+def hello():
+    print("Hello Python")
+\`\`\`
+
+\`\`\`javascript
+// JS Comment
+const msg = "Hello JS";
+console.log(msg);
+\`\`\`
+`;
+
+    await page.evaluate((text) => {
+      (window as any).__mio_e2e__.setMarkdown(text);
+    }, multiLangContent);
+
+    const wrappers = page.locator('.code-block-wrapper');
+    await expect(wrappers).toHaveCount(6);
+
+    // Ensure tokens are created (syntax highlighted)
+    await expect(page.locator('.token.comment').first()).toBeVisible();
+
+    // Verify there are no Prism errors logged
+    const prismErrors = consoleErrors.filter((e) => e.includes('Prism 高亮失败') || e.includes('setting \'comment\''));
+    expect(prismErrors).toEqual([]);
+  });
 });

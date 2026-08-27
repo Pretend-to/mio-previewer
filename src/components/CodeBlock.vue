@@ -156,27 +156,37 @@ import Prism from 'prismjs';
 // Import Prism theme so CSS is included in the build
 import 'prismjs/themes/prism-tomorrow.css';
 
-// 导入常用语言支持
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
+// 导入常用语言支持（严格按依赖拓扑顺序导入）
+// 1. 基础语法（无前置依赖）
+import 'prismjs/components/prism-markup'; // HTML / XML / SVG / MathML
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-clike'; // C-like 核心基类 (C, JS, Java, PHP, Ruby 等的前置依赖)
+
+// 2. 依赖 markup / clike 的一阶扩展
+import 'prismjs/components/prism-javascript'; // 依赖 clike，修改 markup
+import 'prismjs/components/prism-c'; // 依赖 clike
+import 'prismjs/components/prism-java'; // 依赖 clike
+import 'prismjs/components/prism-go'; // 依赖 clike
+import 'prismjs/components/prism-rust'; // 依赖 clike
+import 'prismjs/components/prism-ruby'; // 依赖 clike
+import 'prismjs/components/prism-markup-templating'; // 依赖 markup
+
+// 3. 依赖前置语言的二阶扩展
+import 'prismjs/components/prism-typescript'; // 依赖 javascript
+import 'prismjs/components/prism-jsx'; // 依赖 markup, javascript
+import 'prismjs/components/prism-cpp'; // 依赖 c
+import 'prismjs/components/prism-php'; // 依赖 clike, markup-templating
+import 'prismjs/components/prism-markdown'; // 依赖 markup
+
+// 4. 依赖二阶语言的三阶扩展
+import 'prismjs/components/prism-tsx'; // 依赖 jsx, typescript
+
+// 5. 独立语言包
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-c';
-import 'prismjs/components/prism-cpp';
-import 'prismjs/components/prism-go';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-markup-templating'; // PHP 依赖
-import 'prismjs/components/prism-php';
-import 'prismjs/components/prism-ruby';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-markdown';
 
 const props = withDefaults(
   defineProps<{
@@ -237,15 +247,19 @@ const iframeId = `iframe-${Math.random().toString(36).substr(2, 9)}-${Date.now()
 
 // 计算是否为 HTML 语言
 function isHtmlLang() {
-  return props.language.toLowerCase() === 'html' || 
-         props.language.toLowerCase() === 'markup';
+  const lang = (props.language || '').toLowerCase();
+  return lang === 'html' || lang === 'markup';
 }
 
 // 计算高亮后的代码
 function getHighlightedCode(): string {
-  const lang = props.language || 'plaintext';
-  if (Prism.languages[lang]) {
-    return Prism.highlight(props.code, Prism.languages[lang], lang);
+  const lang = (props.language || 'plaintext').toLowerCase();
+  try {
+    if (Prism.languages[lang]) {
+      return Prism.highlight(props.code, Prism.languages[lang], lang);
+    }
+  } catch (error) {
+    console.warn('[mio-previewer] Prism 高亮失败，保留纯文本:', error);
   }
   return Prism.util.encode(props.code) as string;
 }
