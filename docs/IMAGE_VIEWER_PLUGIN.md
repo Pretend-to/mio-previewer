@@ -21,7 +21,7 @@
 
 ```typescript
 import MdRenderer from 'mio-previewer';
-import { imageViewerPlugin } from 'mio-previewer/plugins';
+import { imageViewerPlugin } from 'mio-previewer/plugins/custom';
 
 const customPlugins = [
   { plugin: imageViewerPlugin }  // 使用默认配置
@@ -261,7 +261,7 @@ function registerImage(img: HTMLImageElement) {
 <script setup>
 import { ref } from 'vue';
 import MdRenderer from 'mio-previewer';
-import { imageViewerPlugin } from 'mio-previewer/plugins';
+import { imageViewerPlugin } from 'mio-previewer/plugins/custom';
 
 const markdownStream = ref('');
 const isStreaming = ref(false);

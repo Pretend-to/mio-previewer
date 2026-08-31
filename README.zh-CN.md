@@ -31,35 +31,9 @@ yarn add mio-previewer
 </template>
 
 <script setup>
-impor## 浏览器支持
-
-- Chrome/Edge: 最新 2 个版本
-- Firefox: 最新 2 个版本
-- Safari: 最新 2 个版本
-
-## 文档
-
-📚 **[完整文档 →](./docs/README.md)**
-
-### 快速链接
-- [内置插件配置指南](./PLUGINS.zh-CN.md) - 所有内置插件的配置 Schema
-- [插件系统指南](./docs/PLUGINS.md) - 完整的插件系统开发文档
-- [自定义代码块样式](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md) - 代码块主题定制
-- [KaTeX 配置](./docs/KATEX_DELIMITERS.md) - 数学公式设置
-- [更新日志](./CHANGELOG.md) - 版本历史
-
-## 许可证
-
-MIT
-
-## 链接
-
-- [GitHub 仓库](https://github.com/Pretend-to/mio-previewer)
-- [npm 包](https://www.npmjs.com/package/mio-previewer)
-- [文档中心](./docs/README.md)
-vue'
+import { ref } from 'vue'
 import { MdRenderer } from 'mio-previewer'
-import 'mio-previewer/dist/mio-previewer.css'
+import 'mio-previewer/style.css'
 
 const markdown = ref('# Hello World\n\n这是 **Markdown** 渲染!')
 </script>
@@ -77,7 +51,7 @@ const markdown = ref('# Hello World\n\n这是 **Markdown** 渲染!')
 <script setup>
 import { ref } from "vue";
 import { MdRenderer } from "mio-previewer";
-import "mio-previewer/dist/mio-previewer.css";
+import "mio-previewer/style.css";
 
 const streamContent = ref("");
 const isStreaming = ref(true);
@@ -107,7 +81,7 @@ const interval = setInterval(() => {
 <script setup>
 import { MdRenderer } from 'mio-previewer'
 import { katexPlugin } from 'mio-previewer/plugins/markdown-it'
-import 'mio-previewer/dist/mio-previewer.css'
+import 'mio-previewer/style.css'
 
 const markdown = \`
 # 数学示例
@@ -135,8 +109,8 @@ const markdownItPlugins = [
 ```vue
 <script setup>
 import { MdRenderer } from 'mio-previewer'
-import { AlertPlugin } from 'mio-previewer/plugins/markdown-it'
-import 'mio-previewer/dist/mio-previewer.css'
+import { alertPlugin } from 'mio-previewer/plugins/markdown-it'
+import 'mio-previewer/style.css'
 
 const markdown = \`
 ::: info
@@ -157,7 +131,7 @@ const markdown = \`
 \`
 
 const markdownItPlugins = [
-  { plugin: AlertPlugin }
+  { plugin: alertPlugin }
 ]
 </script>
 
@@ -171,8 +145,8 @@ const markdownItPlugins = [
 ```vue
 <script setup>
 import { MdRenderer } from 'mio-previewer'
-import { CodeBlockPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import { codeBlockPlugin } from 'mio-previewer/plugins/custom'
+import 'mio-previewer/style.css'
 
 const markdown = \`
 \\\`\\\`\\\`javascript
@@ -187,7 +161,7 @@ def greet():
 \\\`\\\`\\\`
 \`
 
-const customPlugins = [CodeBlockPlugin]
+const customPlugins = [{ plugin: codeBlockPlugin }]
 </script>
 
 <template>
@@ -201,7 +175,7 @@ const customPlugins = [CodeBlockPlugin]
 <script setup>
 import { MdRenderer } from 'mio-previewer'
 import { mermaidPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import 'mio-previewer/style.css'
 
 const markdown = \`
 \\\`\\\`\\\`mermaid
@@ -212,7 +186,7 @@ graph TD
 \\\`\\\`\\\`
 \`
 
-const customPlugins = [mermaidPlugin]
+const customPlugins = [{ plugin: mermaidPlugin }]
 </script>
 
 <template>
@@ -225,12 +199,12 @@ const customPlugins = [mermaidPlugin]
 ```vue
 <script setup>
 import { MdRenderer } from "mio-previewer";
-import { EmojiPlugin } from "mio-previewer/plugins/custom";
-import "mio-previewer/dist/mio-previewer.css";
+import { emojiPlugin } from "mio-previewer/plugins/custom";
+import "mio-previewer/style.css";
 
 const markdown = "你好 :smile: 欢迎！ :tada: :rocket:";
 
-const customPlugins = [EmojiPlugin];
+const customPlugins = [{ plugin: emojiPlugin }];
 </script>
 
 <template>
@@ -244,9 +218,9 @@ const customPlugins = [EmojiPlugin];
 <script setup>
 import { ref } from 'vue'
 import { MdRenderer } from 'mio-previewer'
-import { AlertPlugin, katexPlugin } from 'mio-previewer/plugins/markdown-it'
-import { mermaidPlugin, CodeBlockPlugin, EmojiPlugin } from 'mio-previewer/plugins/custom'
-import 'mio-previewer/dist/mio-previewer.css'
+import { alertPlugin, katexPlugin } from 'mio-previewer/plugins/markdown-it'
+import { mermaidPlugin, codeBlockPlugin, emojiPlugin } from 'mio-previewer/plugins/custom'
+import 'mio-previewer/style.css'
 
 const markdown = ref(\`# 完整演示 :rocket:
 
@@ -275,13 +249,13 @@ graph LR
 \`)
 
 const customPlugins = [
-  mermaidPlugin,
-  CodeBlockPlugin,
-  EmojiPlugin
+  { plugin: mermaidPlugin },
+  { plugin: codeBlockPlugin },
+  { plugin: emojiPlugin }
 ]
 
 const markdownItPlugins = [
-  { plugin: AlertPlugin },
+  { plugin: alertPlugin },
   { plugin: katexPlugin }
 ]
 </script>
@@ -351,10 +325,13 @@ const markdownItPlugins = [{ plugin: customContainerPlugin }];
 | --------------------- | ---------------------------- | --------- | ---------------------- |
 | \`md\`                | \`string\`                   | \`''\`    | 要渲染的 Markdown 内容 |
 | \`isStreaming\`       | \`boolean\`                  | \`false\` | 流式模式时显示光标     |
-| \`useWorker\`         | \`boolean\`                  | \`false\` | 使用 Web Worker 解析   |
-| \`customPlugins\`     | \`CustomPlugin[]\`           | \`[]\`    | 自定义渲染插件         |
+| \`useWorker\`         | \`boolean\`                  | \`false\` | 保留字段；当前仍在主线程解析 |
+| \`customPlugins\`     | \`CustomPluginConfig[]\`     | \`[]\`    | 自定义渲染插件工厂及其配置 |
 | \`markdownItPlugins\` | \`MarkdownItPluginConfig[]\` | \`[]\`    | Markdown-it 插件       |
 | \`markdownItOptions\` | \`object\`                   | \`{}\`    | Markdown-it 配置选项   |
+| \`theme\`             | \`string\`                   | —           | 设为 \`github\` 时启用内置 GitHub Markdown 样式 |
+| \`themeMode\`         | \`'light' \| 'dark' \| 'auto'\` | \`'auto'\` | 颜色模式 |
+| \`autoCors\`          | \`boolean \| string[]\`      | —           | 图片跨域处理配置 |
 
 ### 插件类型
 
@@ -369,8 +346,18 @@ interface CustomPlugin {
     node: ASTNode,
     renderChildren: () => VNode[],
     h: typeof import("vue").h,
+    context?: RenderContext,
   ) => VNode | string | null;
 }
+```
+
+自定义渲染插件需要以工厂配置的形式传入：
+
+```typescript
+const customPlugins: CustomPluginConfig[] = [
+  { plugin: codeBlockPlugin },
+  { plugin: cursorPlugin, options: { shape: "line" } },
+];
 ```
 
 #### MarkdownItPluginConfig
@@ -388,7 +375,7 @@ interface MarkdownItPluginConfig {
 
 | 插件            | 导入路径                              | 说明                                    |
 | --------------- | ------------------------------------- | --------------------------------------- |
-| \`AlertPlugin\` | \`mio-previewer/plugins/markdown-it\` | 警告框（info、warning、error、success） |
+| \`alertPlugin\` | \`mio-previewer/plugins/markdown-it\` | 警告框（info、warning、error、success） |
 | \`katexPlugin\` | \`mio-previewer/plugins/markdown-it\` | KaTeX 数学公式                          |
 
 ### 自定义插件（渲染）
@@ -396,8 +383,9 @@ interface MarkdownItPluginConfig {
 | 插件                | 导入路径                         | 说明             |
 | ------------------- | -------------------------------- | ---------------- |
 | \`mermaidPlugin\`   | \`mio-previewer/plugins/custom\` | Mermaid 图表渲染 |
-| \`CodeBlockPlugin\` | \`mio-previewer/plugins/custom\` | Prism 语法高亮   |
-| \`EmojiPlugin\`     | \`mio-previewer/plugins/custom\` | Emoji 代码替换   |
+| \`codeBlockPlugin\` | \`mio-previewer/plugins/custom\` | Prism 语法高亮   |
+| \`emojiPlugin\`     | \`mio-previewer/plugins/custom\` | Emoji 代码替换   |
+| \`imageViewerPlugin\` | \`mio-previewer/plugins/custom\` | 图片缩放与预览 |
 
 ## 高级用法
 
@@ -420,15 +408,7 @@ const markdownItOptions = {
 
 ### Web Worker 模式
 
-处理大文档时获得更好的性能：
-
-```vue
-<template>
-  <MdRenderer :md="largeMarkdown" :useWorker="true" />
-</template>
-```
-
-**注意：** Worker 模式需要 \`public/parser.worker.js\` 文件可访问。
+`useWorker` 属性目前仅为兼容而保留，Worker 解析暂时关闭；设置该属性不会把解析移出主线程。
 
 ## 开发
 
@@ -457,11 +437,11 @@ mio-previewer/
 │   │   ├── BlinkingCursor.vue   # 流式光标
 │   │   └── CodeBlock.vue        # 代码高亮
 │   ├── plugins/
-│   │   ├── AlertPlugin.ts       # 警告框
-│   │   ├── katexPlugin.ts       # 数学公式
-│   │   ├── mermaidPlugin.ts     # 图表
-│   │   ├── CodeBlockPlugin.ts   # 语法高亮
-│   │   └── EmojiPlugin.ts       # Emoji 支持
+│   │   ├── markdown-it/alertPlugin.ts # 警告框
+│   │   ├── markdown-it/katexPlugin.ts # 数学公式
+│   │   ├── custom/mermaidPlugin.ts    # 图表
+│   │   ├── custom/codeBlockPlugin.ts  # 语法高亮
+│   │   └── custom/emojiPlugin.ts      # Emoji 支持
 │   └── index.ts                 # 库入口
 ├── public/
 │   └── parser.worker.js         # 可选 Web Worker
@@ -474,6 +454,16 @@ mio-previewer/
 - Firefox：最新 2 个版本
 - Safari：最新 2 个版本
 
+## 文档
+
+📚 **[完整文档 →](./docs/README.md)**
+
+- [内置插件配置指南](./PLUGINS.zh-CN.md)
+- [插件系统指南](./docs/PLUGINS.md)
+- [自定义代码块样式](./docs/CUSTOMIZE_CODEBLOCK_STYLE.md)
+- [KaTeX 配置](./docs/KATEX_DELIMITERS.md)
+- [更新日志](./CHANGELOG.md)
+
 ## 许可证
 
 MIT
@@ -482,5 +472,5 @@ MIT
 
 - [GitHub 仓库](https://github.com/Pretend-to/mio-previewer)
 - [npm 包](https://www.npmjs.com/package/mio-previewer)
-- [插件指南](./docs/PLUGIN_GUIDE.md)
+- [文档中心](./docs/README.md)
 - [更新日志](./CHANGELOG.md)

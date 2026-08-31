@@ -31,7 +31,7 @@ yarn add mio-previewer
 <script setup>
 import { ref } from "vue";
 import { MdRenderer } from "mio-previewer";
-import "mio-previewer/dist/mio-previewer.css";
+import "mio-previewer/style.css";
 
 const markdown = ref("# Hello World\n\nThis is **markdown**!");
 </script>
@@ -49,7 +49,7 @@ Perfect for AI chatbots or real-time content:
 <script setup>
 import { ref } from "vue";
 import { MdRenderer } from "mio-previewer";
-import "mio-previewer/dist/mio-previewer.css";
+import "mio-previewer/style.css";
 
 const streamContent = ref("");
 const isStreaming = ref(true);
@@ -79,7 +79,7 @@ const interval = setInterval(() => {
 <script setup>
 import { MdRenderer } from "mio-previewer";
 import { katexPlugin } from "mio-previewer/plugins/markdown-it";
-import "mio-previewer/dist/mio-previewer.css";
+import "mio-previewer/style.css";
 
 const markdown = `
 # Math Example
@@ -105,8 +105,8 @@ const markdownItPlugins = [{ plugin: katexPlugin }];
 ```vue
 <script setup>
 import { MdRenderer } from "mio-previewer";
-import { AlertPlugin } from "mio-previewer/plugins/markdown-it";
-import "mio-previewer/dist/mio-previewer.css";
+import { alertPlugin } from "mio-previewer/plugins/markdown-it";
+import "mio-previewer/style.css";
 
 const markdown = `
 ::: info
@@ -126,7 +126,7 @@ This is an **info** alert with markdown support!
 :::
 `;
 
-const markdownItPlugins = [{ plugin: AlertPlugin }];
+const markdownItPlugins = [{ plugin: alertPlugin }];
 </script>
 
 <template>
@@ -139,8 +139,8 @@ const markdownItPlugins = [{ plugin: AlertPlugin }];
 ```vue
 <script setup>
 import { MdRenderer } from "mio-previewer";
-import { CodeBlockPlugin } from "mio-previewer/plugins/custom";
-import "mio-previewer/dist/mio-previewer.css";
+import { codeBlockPlugin } from "mio-previewer/plugins/custom";
+import "mio-previewer/style.css";
 
 const markdown = `
 \`\`\`javascript
@@ -155,7 +155,7 @@ def greet():
 \`\`\`
 `;
 
-const customPlugins = [CodeBlockPlugin];
+const customPlugins = [{ plugin: codeBlockPlugin }];
 </script>
 
 <template>
@@ -169,7 +169,7 @@ const customPlugins = [CodeBlockPlugin];
 <script setup>
 import { MdRenderer } from "mio-previewer";
 import { mermaidPlugin } from "mio-previewer/plugins/custom";
-import "mio-previewer/dist/mio-previewer.css";
+import "mio-previewer/style.css";
 
 const markdown = `
 \`\`\`mermaid
@@ -180,7 +180,7 @@ graph TD
 \`\`\`
 `;
 
-const customPlugins = [mermaidPlugin];
+const customPlugins = [{ plugin: mermaidPlugin }];
 </script>
 
 <template>
@@ -202,7 +202,6 @@ For other plugin styles (KaTeX, Mermaid, Prism), we intentionally do NOT auto-lo
 ```js
 // example (app's main.js)
 import "katex/dist/katex.min.css"; // if you use the KaTeX plugin
-import "mermaid/dist/mermaid.min.css"; // if you use the Mermaid plugin
 import "prismjs/themes/prism.css"; // if you use the CodeBlock/Prism plugin
 ```
 
@@ -213,12 +212,12 @@ This keeps the library flexible and avoids network/CDN reliance in restricted en
 ```vue
 <script setup>
 import { MdRenderer } from "mio-previewer";
-import { EmojiPlugin } from "mio-previewer/plugins/custom";
-import "mio-previewer/dist/mio-previewer.css";
+import { emojiPlugin } from "mio-previewer/plugins/custom";
+import "mio-previewer/style.css";
 
 const markdown = "Hello :smile: Welcome! :tada: :rocket:";
 
-const customPlugins = [EmojiPlugin];
+const customPlugins = [{ plugin: emojiPlugin }];
 </script>
 
 <template>
@@ -232,13 +231,13 @@ const customPlugins = [EmojiPlugin];
 <script setup>
 import { ref } from "vue";
 import { MdRenderer } from "mio-previewer";
-import { AlertPlugin, katexPlugin } from "mio-previewer/plugins/markdown-it";
+import { alertPlugin, katexPlugin } from "mio-previewer/plugins/markdown-it";
 import {
   mermaidPlugin,
-  CodeBlockPlugin,
-  EmojiPlugin,
+  codeBlockPlugin,
+  emojiPlugin,
 } from "mio-previewer/plugins/custom";
-import "mio-previewer/dist/mio-previewer.css";
+import "mio-previewer/style.css";
 
 const markdown = ref(`# Complete Demo :rocket:
 
@@ -266,9 +265,13 @@ graph LR
 Great work! :thumbsup: :100:
 `);
 
-const customPlugins = [mermaidPlugin, CodeBlockPlugin, EmojiPlugin];
+const customPlugins = [
+  { plugin: mermaidPlugin },
+  { plugin: codeBlockPlugin },
+  { plugin: emojiPlugin },
+];
 
-const markdownItPlugins = [{ plugin: AlertPlugin }, { plugin: katexPlugin }];
+const markdownItPlugins = [{ plugin: alertPlugin }, { plugin: katexPlugin }];
 </script>
 
 <template>
@@ -336,10 +339,13 @@ const markdownItPlugins = [{ plugin: customContainerPlugin }];
 | ------------------- | -------------------------- | ------- | ---------------------------- |
 | `md`                | `string`                   | `''`    | Markdown content to render   |
 | `isStreaming`       | `boolean`                  | `false` | Show cursor during streaming |
-| `useWorker`         | `boolean`                  | `false` | Use Web Worker for parsing   |
-| `customPlugins`     | `CustomPlugin[]`           | `[]`    | Custom rendering plugins     |
+| `useWorker`         | `boolean`                  | `false` | Reserved; parsing currently stays on the main thread |
+| `customPlugins`     | `CustomPluginConfig[]`     | `[]`    | Custom rendering plugin factories and options |
 | `markdownItPlugins` | `MarkdownItPluginConfig[]` | `[]`    | Markdown-it plugins          |
 | `markdownItOptions` | `object`                   | `{}`    | Markdown-it options          |
+| `theme`             | `string`                   | —       | Use `github` to enable bundled GitHub Markdown styles |
+| `themeMode`         | `'light' \| 'dark' \| 'auto'` | `'auto'` | Color mode |
+| `autoCors`          | `boolean \| string[]`      | —       | CORS handling for images |
 
 ### Plugin Types
 
@@ -354,8 +360,18 @@ interface CustomPlugin {
     node: ASTNode,
     renderChildren: () => VNode[],
     h: typeof import("vue").h,
+    context?: RenderContext,
   ) => VNode | string | null;
 }
+```
+
+Pass custom rendering plugins as factory configurations:
+
+```typescript
+const customPlugins: CustomPluginConfig[] = [
+  { plugin: codeBlockPlugin },
+  { plugin: cursorPlugin, options: { shape: "line" } },
+];
 ```
 
 #### MarkdownItPluginConfig
@@ -373,7 +389,7 @@ interface MarkdownItPluginConfig {
 
 | Plugin        | Import Path                         | Description                                 |
 | ------------- | ----------------------------------- | ------------------------------------------- |
-| `AlertPlugin` | `mio-previewer/plugins/markdown-it` | Alert boxes (info, warning, error, success) |
+| `alertPlugin` | `mio-previewer/plugins/markdown-it` | Alert boxes (info, warning, error, success) |
 | `katexPlugin` | `mio-previewer/plugins/markdown-it` | Math formulas with KaTeX                    |
 
 ### Custom Plugins (Rendering)
@@ -381,8 +397,8 @@ interface MarkdownItPluginConfig {
 | Plugin              | Import Path                    | Description                                                                |
 | ------------------- | ------------------------------ | -------------------------------------------------------------------------- |
 | `mermaidPlugin`     | `mio-previewer/plugins/custom` | Diagram rendering with Mermaid                                             |
-| `CodeBlockPlugin`   | `mio-previewer/plugins/custom` | Syntax highlighting with Prism                                             |
-| `EmojiPlugin`       | `mio-previewer/plugins/custom` | Emoji code replacement                                                     |
+| `codeBlockPlugin`   | `mio-previewer/plugins/custom` | Syntax highlighting with Prism                                             |
+| `emojiPlugin`       | `mio-previewer/plugins/custom` | Emoji code replacement                                                     |
 | `imageViewerPlugin` | `mio-previewer/plugins/custom` | Image preview with zoom & gestures ([docs](./docs/IMAGE_VIEWER_PLUGIN.md)) |
 
 ## Advanced Usage
@@ -406,15 +422,7 @@ const markdownItOptions = {
 
 ### Web Worker Mode
 
-For better performance with large documents:
-
-```vue
-<template>
-  <MdRenderer :md="largeMarkdown" :useWorker="true" />
-</template>
-```
-
-**Note:** Worker mode requires `public/parser.worker.js` to be accessible.
+The `useWorker` prop is reserved for compatibility, but worker parsing is currently disabled. Setting it does not move parsing off the main thread.
 
 ## Development
 
@@ -443,11 +451,11 @@ mio-previewer/
 │   │   ├── BlinkingCursor.vue   # Streaming cursor
 │   │   └── CodeBlock.vue        # Code highlighting
 │   ├── plugins/
-│   │   ├── AlertPlugin.ts       # Alert boxes
-│   │   ├── katexPlugin.ts       # Math formulas
-│   │   ├── mermaidPlugin.ts     # Diagrams
-│   │   ├── CodeBlockPlugin.ts   # Syntax highlighting
-│   │   └── EmojiPlugin.ts       # Emoji support
+│   │   ├── markdown-it/alertPlugin.ts # Alert boxes
+│   │   ├── markdown-it/katexPlugin.ts # Math formulas
+│   │   ├── custom/mermaidPlugin.ts    # Diagrams
+│   │   ├── custom/codeBlockPlugin.ts  # Syntax highlighting
+│   │   └── custom/emojiPlugin.ts      # Emoji support
 │   └── index.ts                 # Library entry
 ├── public/
 │   └── parser.worker.js         # Optional Web Worker

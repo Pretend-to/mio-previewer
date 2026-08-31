@@ -16,6 +16,8 @@
     "benchmark:runner": "node benchmark/runner.cjs",
     "benchmark:high-freq": "node benchmark/run-high-freq.js",
     "prepare": "pnpm run build",
+    "test": "pnpm run build && pnpm run test:package",
+    "test:package": "node --test tests/package-exports.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -44,7 +46,7 @@
     "vite-plugin-vue-devtools": "^8.0.2",
     "vue-tsc": "^1.1.0"
   },
-  "main": "dist/mio-previewer.cjs.js",
+  "main": "dist/mio-previewer.cjs",
   "module": "dist/mio-previewer.es.js",
   "types": "dist/types/index.d.ts",
   "peerDependencies": {
@@ -66,17 +68,17 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/mio-previewer.es.js",
-      "require": "./dist/mio-previewer.cjs.js"
+      "require": "./dist/mio-previewer.cjs"
     },
     "./plugins/custom": {
       "types": "./dist/types/plugins/custom/index.d.ts",
       "import": "./dist/plugins/custom.es.js",
-      "require": "./dist/plugins/custom.cjs.js"
+      "require": "./dist/plugins/custom.cjs"
     },
     "./plugins/markdown-it": {
       "types": "./dist/types/plugins/markdown-it/index.d.ts",
       "import": "./dist/plugins/markdown-it.es.js",
-      "require": "./dist/plugins/markdown-it.cjs.js"
+      "require": "./dist/plugins/markdown-it.cjs"
     },
     "./style.css": "./dist/mio-previewer.css",
     "./package.json": "./package.json"

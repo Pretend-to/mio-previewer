@@ -156,6 +156,11 @@ export type MdRendererProps = {
   theme?: Theme;
 
   /**
+   * 主题模式。auto 会跟随系统颜色偏好
+   */
+  themeMode?: 'light' | 'dark' | 'auto';
+
+  /**
    * 是否自动处理跨域图片，或者指定的域名列表
    */
   autoCors?: boolean | string[];

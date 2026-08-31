@@ -27,10 +27,12 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => {
         // keep original top-level filenames for the main index
-        if (entryName === 'index') return `mio-previewer.${format}.js`;
+        if (entryName === 'index') {
+          return format === 'es' ? 'mio-previewer.es.js' : 'mio-previewer.cjs';
+        }
         // for plugins, preserve folder structure
         if (entryName.startsWith('plugins/')) {
-          const ext = format === 'es' ? 'es.js' : 'cjs.js';
+          const ext = format === 'es' ? 'es.js' : 'cjs';
           return `${entryName}.${ext}`;
         }
         return `[name].${format}.js`;
@@ -40,6 +42,9 @@ export default defineConfig({
       // don't bundle vue
       external: ['vue'],
       output: {
+        // The main entry intentionally exposes both default and named exports.
+        // Declaring the CJS shape keeps `require()` stable without dropping either API.
+        exports: 'named',
         globals: {
           vue: 'Vue'
         }

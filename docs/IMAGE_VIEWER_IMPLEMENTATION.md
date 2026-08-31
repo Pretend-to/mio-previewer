@@ -215,7 +215,7 @@ render: (
 
 <script setup>
 import { MdRenderer } from 'mio-previewer';
-import { imageViewerPlugin } from 'mio-previewer/plugins';
+import { imageViewerPlugin } from 'mio-previewer/plugins/custom';
 
 // 最简配置 - 使用默认值
 const customPlugins = [
